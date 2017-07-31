@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="email=no">
+  <title>友你梦想</title>
+  <meta name="description" content="友你梦想">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <link rel="shortcut icon" type="image/x-icon" href="static/favicon.ico">
+  <link rel="stylesheet" href="static/css/main.css">
+  <script>
+    // 动态计算字体尺寸
+    (function (doc, win) {
+      var docEl = doc.documentElement
+      var resizeEvt = 'orientationchange' in window ? 'orientationchange' : 'resize'
+      var recalc = function () {
+        var clientWidth = docEl.clientWidth
+        if (!clientWidth) return
+        var fz = 32 * (clientWidth / 720)
+        fz = (fz > 32 ? 32 : fz)
+        docEl.style.fontSize = fz + 'px'
+        win._fz = fz
+      }
+      if (!doc.addEventListener) return
+      recalc()
+      win.addEventListener(resizeEvt, recalc, false)
+      doc.addEventListener('DOMContentLoaded', recalc, false)
+      window.recalc = recalc
+    })(document, window)
+  </script>
+  <script src="//res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+  <script>
+    // 百度统计
+
+    //    // 分享配置
+    //    window.mcShare.shareWord('打地鼠', {
+    //        title: '打地鼠',
+    //        description: '打地鼠',
+    //        iconUrl: 'http://share.m.kakamobi.com/activity.kakamobi.com/summer-hit-hamster-10007/static/img/logo.png',
+    //        url: 'http://share.m.kakamobi.com/activity.kakamobi.com/summer-hit-hamster-10007?shareProduct=jiakaobaodian&shareKey=summer-hit-hamster-10007&placeKey=summer-hit-hamster-10007'
+    //      },
+    //      function (status) {
+    //      }
+    //    );
+  </script>
+  <!--<script>-->
+    <!--//微信配置-->
+    <!--var Utils = window.mcShare.Utils;-->
+    <!--window.weixinAuthBase = function (callback, appId, store) {-->
+      <!--try {-->
+        <!--appId = 'wx7bc5c9daf377753a'; //appId || window.wxConfig.authAppId;-->
+        <!--var url = decodeURIComponent(window.location.href + (window.location.href.indexOf('?') > -1 ? '&' : '?') + '_=' + Math.random());-->
+        <!--var hashstr = decodeURIComponent(window.location.hash);-->
+        <!--var authObj = {-->
+          <!--appid: appId,-->
+          <!--redirect_uri: url.replace(hashstr, ''),-->
+          <!--response_type: 'code',-->
+          <!--//scope: 'snsapi_base',//静默授权-->
+          <!--scope: 'snsapi_userinfo',//用户确认授权-->
+          <!--state: hashstr.replace('#', '')-->
+        <!--};-->
+        <!--var code = Utils.request.getSearch('code');-->
+      <!--} catch (e) {-->
+        <!--alert(e.message);-->
+      <!--}-->
+
+      <!--if (!code || code == 'undefined') {-->
+        <!--document.write('正在授权，如果无响应请<a href="javascript:location.reload();">点击刷新</a>');-->
+        <!--location.href = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=' + authObj.appid + '&redirect_uri=' + encodeURIComponent(authObj.redirect_uri) + '&response_type=' + authObj.response_type + '&scope=' + authObj.scope + '&state=' + encodeURIComponent(authObj.state) + '#wechat_redirect';-->
+      <!--} else {-->
+        <!--window.location.hash = Utils.request.getSearch('state');-->
+        <!--Utils.ajax({-->
+          <!--method: 'get',-->
+          <!--data: {-->
+            <!--code: code,-->
+            <!--weixinApp: appId,-->
+            <!--_r: sign(1)-->
+          <!--},-->
+          <!--//url: store || window.location.protocol +'//api.share.m.kakamobi.com/api/open/sign/token.htm',-->
+          <!--url: store || window.location.protocol + '//api-share-m.kakamobi.com/api/open/sign/read-user-info.htm',-->
+          <!--dataType: 'json',-->
+          <!--async: true,-->
+          <!--success: function (ret) {-->
+            <!--callback(ret.data);-->
+          <!--},-->
+          <!--error: function () {-->
+            <!--callback('error');-->
+          <!--}-->
+        <!--})-->
+      <!--}-->
+    <!--}-->
+  <!--</script>-->
+  <script>
+    /*
+     * 注意：
+     * 1. 所有的JS接口只能在公众号绑定的域名下调用，公众号开发者需要先登录微信公众平台进入“公众号设置”的“功能设置”里填写“JS接口安全域名”。
+     * 2. 如果发现在 Android 不能分享自定义内容，请到官网下载最新的包覆盖安装，Android 自定义分享接口需升级至 6.0.2.58 版本及以上。
+     * 3. 常见问题及完整 JS-SDK 文档地址：http://mp.weixin.qq.com/wiki/7/aaa137b55fb2e0456bf8dd9148dd613f.html
+     *
+     * 开发中遇到问题详见文档“附录5-常见错误及解决办法”解决，如仍未能解决可通过以下渠道反馈：
+     * 邮箱地址：weixin-open@qq.com
+     * 邮件主题：【微信JS-SDK反馈】具体问题
+     * 邮件内容说明：用简明的语言描述问题所在，并交代清楚遇到该问题的场景，可附上截屏图片，微信团队会尽快处理你的反馈。
+     */
+    wx.config({
+      debug: false,
+      appId: 'wxf8b4f85f3a794e77',
+      timestamp: 1501306564,
+      nonceStr: 'XZERdHFemWky56GT',
+      signature: '176d6709e84d9f8dc2c41ee55cb427363b7d72bb',
+      jsApiList: [
+        'checkJsApi',
+        'onMenuShareTimeline',
+        'onMenuShareAppMessage',
+        'onMenuShareQQ',
+        'onMenuShareWeibo',
+        'onMenuShareQZone',
+        'hideMenuItems',
+        'showMenuItems',
+        'hideAllNonBaseMenuItem',
+        'showAllNonBaseMenuItem',
+        'translateVoice',
+        'startRecord',
+        'stopRecord',
+        'onVoiceRecordEnd',
+        'playVoice',
+        'onVoicePlayEnd',
+        'pauseVoice',
+        'stopVoice',
+        'uploadVoice',
+        'downloadVoice',
+        'chooseImage',
+        'previewImage',
+        'uploadImage',
+        'downloadImage',
+        'getNetworkType',
+        'openLocation',
+        'getLocation',
+        'hideOptionMenu',
+        'showOptionMenu',
+        'closeWindow',
+        'scanQRCode',
+        'chooseWXPay',
+        'openProductSpecificView',
+        'addCard',
+        'chooseCard',
+        'openCard'
+      ]
+    });
+  </script>
+</head>
+<body>
+<div class="share-info">
+  <h1>友你梦想</h1>
+  <p>健康生活每一天</p>
+  <img src="static/img/logo.png" alt="">
+</div>
+<div id="app"></div>
+<!--<von-app></von-app>-->
+<!-- built files will be auto injected -->
+</body>
+</html>
