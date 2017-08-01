@@ -48,7 +48,6 @@
     components: {Swiper, GroupTitle, SwiperItem, XButton, Divider},
     beforeMount () {
       me = window.me
-      console.log(homeApi)
     },
     mounted () {
       // me.attachClick()
