@@ -50,19 +50,25 @@
           <li>品牌<i class="ico-arr-down"></i></li>
           <li>筛选<i class="ico-arr-down"></i></li>
         </ul>
-        <div class="filter-data" v-if="showFilter">
+        <div class="filter-data" v-if="showFilter" :class="showFilter?'show':''">
           <ul class="filter-tags">
-            <li class="active">全部</li>
-            <li>瓶装水</li>
-            <li>桶装水</li>
-            <li>牛奶</li>
-            <li>其它</li>
+            <li v-for="(data,idx) in currentFilter" :class="idx===0?'active':''" :data-key="data.key"
+                :data-value="data.value" @click="chooseFilter(idx,$event)">{{data.value}}
+            </li>
           </ul>
         </div>
       </div>
     </div>
     <!--商品列表-->
-    <div class="goods-list"></div>
+    <div class="goods-list">
+      <scroller lock-x height="200px" use-pulldown use-pullup @on-pulldown-loading="" @on-pullup-loading="" @on-scroll-bottom="onScrollBottom" ref="scrollerBottom"
+                :scroll-bottom-offst="200">
+        <div class="box2">
+          <p v-for="i in bottomCount">placeholder {{i}}</p>
+          <load-more tip="loading"></load-more>
+        </div>
+      </scroller>
+    </div>
   </div>
 </template>
 
@@ -70,7 +76,7 @@
   /* eslint-disable no-unused-vars,indent */
   var me
   var vm
-  import {Swiper, GroupTitle, SwiperItem, Grid, GridItem, Marquee, MarqueeItem} from 'vux'
+  import {Swiper, GroupTitle, SwiperItem, Grid, GridItem, Marquee, MarqueeItem,Scroller } from 'vux'
   import { homeApi } from '../store/home.js'
   export default {
     name: 'home',
@@ -102,55 +108,77 @@
               value: '其它'
             }
           ],
-          goods: [
+          brands: [
             {
               key: 0,
               value: '全部'
             },
             {
               key: 1,
-              value: '瓶装水'
+              value: '怡宝'
             },
             {
               key: 2,
-              value: '桶装水'
+              value: '康师傅'
             },
             {
               key: 3,
-              value: '牛奶'
+              value: '百岁山'
             },
             {
-              key: -1,
-              value: '其它'
+              key: 4,
+              value: '花果山'
+            },
+            {
+              key: 5,
+              value: '水老官'
+            },
+            {
+              key: 6,
+              value: '一方人'
+            },
+            {
+              key: 7,
+              value: '农夫山泉'
+            },
+            {
+              key: 8,
+              value: '八宝山'
+            },
+            {
+              key: 9,
+              value: '昆仑山'
             }
           ],
-          goods: [
+          specials: [
             {
               key: 0,
               value: '全部'
             },
             {
               key: 1,
-              value: '瓶装水'
+              value: '有优惠'
             },
             {
               key: 2,
-              value: '桶装水'
+              value: '有红包'
             },
             {
               key: 3,
-              value: '牛奶'
-            },
-            {
-              key: -1,
-              value: '其它'
+              value: '买二送一'
             }
           ]
         },
-        showFilter: 1
+        currentFilter: [],
+        filterData: {},
+        showFilter: 1,
+        showList1: true,
+        scrollTop: 0,
+        onFetching: false,
+        bottomCount: 20
       }
     },
-    components: {Swiper, GroupTitle, SwiperItem, Grid, GridItem, Marquee, MarqueeItem},
+    components: {Swiper, GroupTitle, SwiperItem, Grid, GridItem, Marquee, MarqueeItem, Scroller },
     beforeMount () {
       me = window.me
     },
@@ -161,6 +189,12 @@
       vm.getBanner()
       vm.getNotice()
       vm.getGoods()
+      this.$nextTick(() => {
+        this.$refs.scrollerEvent.reset({top: 0})
+      })
+      this.$nextTick(() => {
+        this.$refs.scrollerBottom.reset({top: 0})
+      })
     },
     computed: {},
     methods: {
@@ -197,18 +231,56 @@
           console.log(res.data, '首页GoodsList')
           vm.goods = res.data.itemList
         })
+      },
+      /* 商品筛选 */
+      showFilter (type) {
+         vm.curFilter = vm.filterData[type]
+         vm.showFilter = 1
+      },
+      chooseFilter (data) {
+         vm.curFilter = vm.filterData[type]
+         vm.showFilter = 1
+         vm.filterData={}
+         vm.getGoods(vm.filterData)
+      },
+    onScrollBottom () {
+      if (this.onFetching) {
+        // do nothing
+      } else {
+        this.onFetching = true
+        setTimeout(() => {
+          this.bottomCount += 10
+          this.$nextTick(() => {
+            this.$refs.scrollerBottom.reset()
+          })
+          this.onFetching = false
+        }, 2000)
       }
     },
-    /* 商品筛选 */
-    showFilter (type) {
-      switch (type) {
-        case 'goods':
-          vm.curFilter = vm.filterData[type]
-          vm.showFilter = 1
-          break
-      }
+    onScroll (pos) {
+      this.scrollTop = pos.top
+    },
+    onCellClick () {
+      window.alert('cell click')
+    },
+    onClickButton () {
+      window.alert('click')
+    },
+    changeList () {
+      this.showList1 = false
+      this.$nextTick(() => {
+        this.$refs.scroller.reset({
+          top: 0
+        })
+      })
+    }
     }
   }
+
+
+
+
+
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

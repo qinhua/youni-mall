@@ -59,6 +59,4 @@ export default (function () {
       {"id":20,"title":"a88888","cont":"99999"}
     ]
   })
-
-  return true
 })()
