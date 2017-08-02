@@ -1,9 +1,11 @@
 <template>
   <div class="home">
+    <!--定位组件-->
     <div class="location-chooser">
       <p><span>您的位置</span>：武汉市洪山区光谷软件园B7栋</p>
       <i class="right-arrow"></i>
     </div>
+    <!--banner-->
     <swiper auto class="swiper-home">
       <swiper-item class="black" v-for="(item, index) in slides" :key="index">
         <a :href="item.url">
@@ -12,6 +14,20 @@
         </a>
       </swiper-item>
     </swiper>
+    <!--中间入口-->
+    <div class="middle-entry">
+      <ul class="list">
+        <li>
+          <div></div>
+          <span>订水</span>
+        </li>
+      </ul>
+      <div class="top-news">
+        <div class="inner"><i></i>
+          <p></p>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -19,7 +35,7 @@
   /* eslint-disable no-unused-vars */
   var me
   var vm
-  import { Swiper, GroupTitle, SwiperItem, XButton, Divider } from 'vux'
+  import { Swiper, GroupTitle, SwiperItem } from 'vux'
   import {homeApi} from '../store/home.js'
   export default {
     name: 'home',
@@ -45,7 +61,7 @@
         }]
       }
     },
-    components: {Swiper, GroupTitle, SwiperItem, XButton, Divider},
+    components: {Swiper, GroupTitle, SwiperItem},
     beforeMount () {
       me = window.me
       console.log(homeApi)

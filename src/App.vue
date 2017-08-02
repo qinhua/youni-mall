@@ -52,7 +52,7 @@
     name: 'app',
     data () {
       return {
-        transitionName: 'slide-right', // 默认动态路由变化为slide-right
+        transitionName: 'fade', // 默认动态路由过渡
         selected: 1
       }
     },
@@ -68,30 +68,24 @@
         return this.$route.path.replace(/\//g, '_')
       }
     },
-    methods: {
-      finish (index) {
-        this.show = false
-        this.value = 'completed'
-        console.log('current index', index)
-      }
-    },
-    watch: {
+    methods: {}
+/*    watch: {
       '$route' (to, from) {
         const toDepth = to.path.split('/').length
         const fromDepth = from.path.split('/').length
         this.transitionName = toDepth < fromDepth ? 'slide-right' : 'slide-left'
       }
-//      '$route' (to, from) {
-//        let isBack = this.$router.isBack  //  监听路由变化时的状态为前进还是后退
-//        console.log(isBack)
-//        if (isBack) {
-//          this.transitionName = 'slide-right'
-//        } else {
-//          this.transitionName = 'slide-left'
-//        }
-//        this.$router.isBack = false
-//      }
-    }
+      '$route' (to, from) {
+        let isBack = this.$router.isBack  //  监听路由变化时的状态为前进还是后退
+        console.log(isBack)
+        if (isBack) {
+          this.transitionName = 'slide-right'
+        } else {
+          this.transitionName = 'slide-left'
+        }
+        this.$router.isBack = false
+      }
+    } */
   }
 </script>
 
@@ -99,27 +93,20 @@
   @import '../static/css/tools.less';
 
   .weui-bar__item_on {
-    .weui-tabbar__icon{
-      color: #0e9de2!important;
+    .weui-tabbar__icon {
+      color: #0e9de2 !important;
     }
-    .weui-tabbar__label{
-      color: #0e9de2!important;
+    .weui-tabbar__label {
+      color: #0e9de2 !important;
     }
   }
-
 
   .container {
     height: 100%;
     overflow: auto;
   }
 
-  .Router {
-    position: absolute;
-    width: 100%;
-    transition: all .8s ease;
-    top: 40px;
-  }
-
+  /*左右滑动*/
   .slide-left-enter,
   .slide-right-leave-active {
     opacity: 0;
@@ -134,32 +121,7 @@
     transform: translate3d(-100%, 0, 0);
   }
 
-  .outLeftInRight-transition,
-  .fadeOutLeft-transition,
-  .fadeInLeft-transition {
-    transition: transform .3s ease-in-out;
-  }
-
-  .outLeftInRight-transition,
-  .fadeOutLeft-transition,
-  .fadeInLeft-transition {
-    transition: transform .3s ease-in-out;
-  }
-
-  /* 进入时的状态，从右开始 */
-  .outLeftInRight-enter,
-  .fadeInLeft-enter,
-  .fadeInLeft-leave {
-    transform: translateX(100%);
-  }
-
-  /* 离开时的状态，向左移动 */
-  .outLeftInRight-leave,
-  .fadeOutLeft-enter,
-  .fadeOutLeft-leave {
-    transform: translateX(-100%);
-  }
-
+  /*渐入渐出*/
   .fade-enter-active,
   .fade-leave-active {
     -webkit-transition: opacity .3s;
