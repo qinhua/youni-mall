@@ -64,7 +64,6 @@
     components: {Swiper, GroupTitle, SwiperItem},
     beforeMount () {
       me = window.me
-      console.log(homeApi)
     },
     mounted () {
       // me.attachClick()
