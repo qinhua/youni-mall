@@ -34,29 +34,41 @@ export default new Router({
     {
       path: '/nearby',
       name: '附近',
-      component: NearBy
+      component: NearBy,
+      meta: {
+        keepAlive: false
+      }
     },
     {
       path: '/ticket',
       name: '水票',
-      component: Ticket
+      component: Ticket,
+      meta: {
+        keepAlive: false
+      }
     },
     {
       path: '/order',
       name: '订单',
-      component: Order
+      component: Order,
+      meta: {
+        keepAlive: false
+      }
     },
     {
       path: '/my',
       name: '我的',
-      component: My
+      component: My,
+      meta: {
+        keepAlive: false
+      }
     },
     {
       path: '*',
       name: '404',
       component: NoPage,
       meta: {
-        keepAlive: false
+        keepAlive: true
       }
     }
   ]

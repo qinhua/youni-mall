@@ -1,27 +1,27 @@
 <template>
   <div class="container">
     <tabbar>
-      <tabbar-item selected link="/home" on-item-click>
+      <tabbar-item :selected="curSelected===1?true:false" link="/home" @on-item-click>
         <img slot="icon" src="../static/img/ico_home.png">
         <img slot="icon-active" src="../static/img/ico_home_sel.png">
         <span slot="label">首页</span>
       </tabbar-item>
-      <tabbar-item show-dot link="/nearby">
+      <tabbar-item :selected="curSelected===2?true:false" show-dot link="/nearby">
         <img slot="icon" src="../static/img/ico_nearby.png">
         <img slot="icon-active" src="../static/img/ico_nearby_sel.png">
         <span slot="label">附近</span>
       </tabbar-item>
-      <tabbar-item link="/ticket">
+      <tabbar-item :selected="curSelected===3?true:false" link="/ticket">
         <img slot="icon" src="../static/img/ico_ticket.png">
         <img slot="icon-active" src="../static/img/ico_ticket_sel.png">
         <span slot="label">水票</span>
       </tabbar-item>
-      <tabbar-item badge="2" link="/order">
+      <tabbar-item :selected="curSelected===4?true:false" badge="2" link="/order">
         <img slot="icon" src="../static/img/ico_order.png">
         <img slot="icon-active" src="../static/img/ico_order_sel.png">
         <span slot="label">订单</span>
       </tabbar-item>
-      <tabbar-item badge="..." link="/my">
+      <tabbar-item :selected="curSelected===5?true:false" badge="..." link="/my">
         <img slot="icon" src="../static/img/ico_my.png">
         <img slot="icon-active" src="../static/img/ico_my_sel.png">
         <span slot="label">我的</span>
@@ -30,13 +30,13 @@
     <!--这里是被缓存的视图组件，比如 Home！-->
     <transition :name="transitionName">
       <keep-alive v-if="$route.meta.keepAlive">
-        <router-view></router-view>
+        <router-view v-on:listenPage="getPageStatus"></router-view>
       </keep-alive>
     </transition>
     <!-- 这里是不被缓存的视图组件，比如 Edit！ -->
     <transition :name="transitionName">
       <keep-alive v-if="!$route.meta.keepAlive">
-        <router-view></router-view>
+        <router-view v-on:listenPage="getPageStatus"></router-view>
       </keep-alive>
     </transition>
   </div>
@@ -53,7 +53,7 @@
     data () {
       return {
         transitionName: 'fade', // 默认动态路由过渡
-        selected: 1
+        curSelected: 1
       }
     },
     components: {Tabbar, TabbarItem},
@@ -68,24 +68,29 @@
         return this.$route.path.replace(/\//g, '_')
       }
     },
-    methods: {}
-/*    watch: {
-      '$route' (to, from) {
-        const toDepth = to.path.split('/').length
-        const fromDepth = from.path.split('/').length
-        this.transitionName = toDepth < fromDepth ? 'slide-right' : 'slide-left'
+    methods: {
+      // 从子组件获取数据
+      getPageStatus (data) {
+        this.curSelected = data
       }
-      '$route' (to, from) {
-        let isBack = this.$router.isBack  //  监听路由变化时的状态为前进还是后退
-        console.log(isBack)
-        if (isBack) {
-          this.transitionName = 'slide-right'
-        } else {
-          this.transitionName = 'slide-left'
-        }
-        this.$router.isBack = false
-      }
-    } */
+    }
+    /*    watch: {
+     '$route' (to, from) {
+     const toDepth = to.path.split('/').length
+     const fromDepth = from.path.split('/').length
+     this.transitionName = toDepth < fromDepth ? 'slide-right' : 'slide-left'
+     }
+     '$route' (to, from) {
+     let isBack = this.$router.isBack  //  监听路由变化时的状态为前进还是后退
+     console.log(isBack)
+     if (isBack) {
+     this.transitionName = 'slide-right'
+     } else {
+     this.transitionName = 'slide-left'
+     }
+     this.$router.isBack = false
+     }
+     } */
   }
 </script>
 

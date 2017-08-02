@@ -1,7 +1,7 @@
 <template>
   <div class="my">
     我的
-    <img class="wd-img" src="../../static/img/p01.jpg">
+    <img class="wd-img" src="../../static/img/banner/p01.jpg">
     <h3>{{current}}</h3>
   </div>
 </template>

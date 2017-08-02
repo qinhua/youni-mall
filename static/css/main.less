@@ -1,8 +1,8 @@
 /*base*/
 @import "tools";
 @import "swiper";
-//@import "mobiscroll";
 @import "animate";
+//@import "mobiscroll";
 
 body {
   color: #333;
@@ -19,10 +19,88 @@ body {
 //    .size(261, 71);
 //  }
 //}
-
+.container{
+  .bf5;
+}
 #app {
   .rel;
   width: 100%;
   height: 100%;
-  .bf5;
+}
+
+.left-arrow {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  top: 5px;
+  left: 5px;
+  &:before {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 1px solid #666;
+    border-width: 1px 0 0 1px;
+    -webkit-transform: rotate(-45deg);
+    transform: rotate(-45deg);
+    top: 8px;
+    left: 7px;
+  }
+}
+.right-arrow {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  top: 5px;
+  right: 5px;
+  &:before {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 1px solid #666;
+    border-width: 1px 0 0 1px;
+    -webkit-transform: rotate(135deg);
+    transform: rotate(135deg);
+    top: 8px;
+    left: 7px;
+  }
+}
+.top-arrow {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  top: 5px;
+  right: 5px;
+  &:before {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 1px solid #666;
+    border-width: 1px 0 0 1px;
+    -webkit-transform: rotate(45deg);
+    transform: rotate(45deg);
+    top: 8px;
+    left: 7px;
+  }
+}
+.bottom-arrow {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  top: 5px;
+  right: 5px;
+  &:before {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 1px solid #666;
+    border-width: 1px 0 0 1px;
+    -webkit-transform: rotate(-135deg);
+    transform: rotate(-135deg);
+    top: 8px;
+    left: 7px;
+  }
 }

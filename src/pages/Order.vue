@@ -1,7 +1,7 @@
 <template>
   <div class="order">
     订单
-    <img class="wd-img" src="../../static/img/p03.jpg">
+    <img class="wd-img" src="../../static/img/banner/p03.jpg">
     <h3>{{current}}</h3>
   </div>
 </template>

@@ -1,7 +1,7 @@
 <template>
   <div class="nearby">
     附近
-    <img class="wd-img" src="../../static/img/p02.jpg">
+    <img class="wd-img" src="../../static/img/banner/p02.jpg">
     <h3>{{current}}</h3>
   </div>
 </template>

@@ -17,6 +17,7 @@ html, body {
   -webkit-tap-highlight-color: transparent;
   .scroll-touch;
   .disable-sel;
+  .transi(.2s);
   &.isInApp {
     div[class*=header] {
       .none!important;
@@ -31,6 +32,12 @@ html, body {
 
 @media screen and (orientation: landscape) {
   /*横屏 css*/
+}
+
+@media screen and (min-width: 780px) {
+  html, body {
+    .ma-w(480px);
+  }
 }
 
 //滚动时候禁用鼠标事件，提高性能
@@ -832,6 +839,10 @@ input[type="radio"] {
   cursor: pointer;
 }
 
+.pointer {
+  cursor: pointer;
+}
+
 .fixedTip {
   z-index: 300;
   position: fixed;
@@ -993,9 +1004,19 @@ input[type="radio"] {
   height: @height / @rem;
 }
 
+.rsize(@width, @height) {
+  width: @width + 0px;
+  height: @height + 0px;
+}
+
 .bg-size(@b-width, @b-height) {
   -webkit-background-size: @b-width / @rem @b-height / @rem;
   background-size: @b-width / @rem @b-height / @rem;
+}
+
+.rbg-size(@b-width, @b-height) {
+  -webkit-background-size: @b-width + 0px @b-height + 0px;
+  background-size: @b-width + 0px @b-height + 0px;
 }
 
 .ma {

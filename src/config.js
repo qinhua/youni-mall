@@ -1,7 +1,8 @@
 /**
  * Created by Chin on 2017/7/29.
  */
-const config = {
-  host: 'http://192.168.0.91:591'
+export default {
+  // host: 'http://youni-mall.cn',
+  host: 'http://192.168.0.91:591',
+  needMock: false
 }
-export {config}

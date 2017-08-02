@@ -1,7 +1,7 @@
 <template>
   <div class="ticket">
     水票
-    <img class="wd-img" src="../../static/img/p04.jpg">
+    <img class="wd-img" src="../../static/img/banner/p04.jpg">
     <h3>{{current}}</h3>
   </div>
 </template>
