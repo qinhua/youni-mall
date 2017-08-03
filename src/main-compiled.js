@@ -1,44 +1,44 @@
 // The Vue build version to load with the `import` command
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 /* eslint-disable no-new,no-unused-vars */
-import Vue from 'vue'
-import Axios from 'axios'
-import Router from 'vue-router'
-import App from './App'
-import router from './router'
-import 'font-awesome/css/font-awesome.css'
-import 'ionicons/dist/css/ionicons.css'
-import $ from 'jquery'
-import '../static/js/fastclick.js'
-import 'myMixin'
-import VueScroller from 'vue-scroller'
+import Vue from 'vue';
+import Axios from 'axios';
+import Router from 'vue-router';
+import App from './App';
+import router from './router';
+import 'font-awesome/css/font-awesome.css';
+import 'ionicons/dist/css/ionicons.css';
+import $ from 'jquery';
+import '../static/js/fastclick.js';
+import 'myMixin';
+import VueScroller from 'vue-scroller';
 // import MintUI from 'mint-ui'
 // import 'mint-ui/lib/style.css'
 // Vue.use(MintUI)
 
-Vue.config.productionTip = false
+Vue.config.productionTip = false;
 
-Vue.use(VueScroller)
+Vue.use(VueScroller);
 /* 封装&扩展Vue */
-Vue.prototype.$axios = Axios
+Vue.prototype.$axios = Axios;
 Vue.prototype.loadData = function (url, params, type, sucCb, errCb) {
   Axios({
     method: type || 'get',
     url: url,
     responseType: 'JSON'
   }).then(function (response) {
-    sucCb ? sucCb(response) : console.log(response, '接口的res')
+    sucCb ? sucCb(response) : console.log(response, '接口的res');
   }).catch(function (error) {
-    errCb ? errCb(error) : console.log(error, 522)
-  })
-}
+    errCb ? errCb(error) : console.log(error, 522);
+  });
+};
 
 new Vue({
   el: '#app',
-  router,
+  router: router,
   template: '<App/>',
-  components: {App},
-  mounted () {
+  components: { App: App },
+  mounted: function mounted() {
     // console.log(XXX)
     // GET
     /* this.$axios.get('/user', {
@@ -72,4 +72,6 @@ new Vue({
      }));
      */
   }
-})
+});
+
+//# sourceMappingURL=main-compiled.js.map

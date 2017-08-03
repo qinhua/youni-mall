@@ -6,6 +6,7 @@ import NearBy from '@/pages/NearBy'
 import Ticket from '@/pages/Ticket'
 import Order from '@/pages/Order'
 import My from '@/pages/My'
+import MyAddress from '@/pages/my/MyAddress'
 import NoPage from '@/pages/NoPage'
 // Router.prototype.goBack = function () {
 //  this.isBack = true
@@ -40,7 +41,7 @@ export default new Router({
       }
     },
     {
-      path: '/ticket',
+      path: '/ticket/:type',
       name: '水票',
       component: Ticket,
       meta: {
@@ -61,7 +62,25 @@ export default new Router({
       component: My,
       meta: {
         keepAlive: false
+      },
+      children: [{
+        path: '/myaddress',
+        name: '我的地址',
+        component: MyAddress
+      }, {
+        path: '/myaddress',
+        name: '我的地址',
+        component: MyAddress
+      }, {
+        path: '/myaddress',
+        name: '我的地址',
+        component: MyAddress
+      }, {
+        path: '/myaddress',
+        name: '我的地址',
+        component: MyAddress
       }
+      ]
     },
     {
       path: '*',

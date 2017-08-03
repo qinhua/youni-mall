@@ -1,8 +1,26 @@
 <template>
   <div class="ticket">
-    水票
-    <!--<img class="wd-img" src="../../static/img/banner/p04.jpg">-->
-    <h3>{{current}}</h3>
+    <tab class="ticket-type">
+      <tab-item @on-item-click="onItemClick"><i class="fa fa-pencil-square-o"></i>&nbsp;购买水票</tab-item>
+      <tab-item selected @on-item-click="onItemClick"><i class="fa fa-user-circle-o" aria-hidden="true"></i>&nbsp;我的水票</tab-item>
+    </tab>
+    <tab class="ticket-tab" active-color="#FF9900">
+      <tab-item @on-item-click="onItemClick">全部</tab-item>
+      <tab-item selected @on-item-click="onItemClick">待支付</tab-item>
+      <tab-item @on-item-click="onItemClick">可使用</tab-item>
+      <tab-item @on-item-click="onItemClick">已完成</tab-item>
+      <tab-item @on-item-click="onItemClick">已关闭</tab-item>
+    </tab>
+    <scroller class="ticket-list" :on-refresh="refresh" :on-infinite="infinite" refreshText="下拉刷新" noDataText="没有更多数据" snapping>
+      <!-- content goes here -->
+      <p>lorem</p>
+      <p>lorem</p>
+      <p>lorem</p>
+      <p>lorem</p>
+      <p>lorem</p>
+      <p>lorem</p>
+      <p>lorem</p>
+    </scroller>
   </div>
 </template>
 
@@ -10,37 +28,31 @@
   /* eslint-disable no-unused-vars */
   var me
   var vm
-  import { Tabbar, TabbarItem, Group, Cell } from 'vux'
+  import { Tab, TabItem, Tabbar, TabbarItem, Group, Cell } from 'vux'
   export default {
     name: 'ticket',
     data () {
       return {
-        current: 0,
-        msg: 'Welcome to Your Vue.js App'
       }
     },
-    components: {Tabbar, TabbarItem, Group, Cell},
+    components: {Tab, TabItem, Tabbar, TabbarItem, Group, Cell},
     beforeMount () {
       me = window.me
     },
     mounted () {
-      // me.attachClick()
-//      this.$axios.get('/user', {
-//        params: {
-//          ID: 12345
-//        }
-//      }).then(function (response) {
-//        console.log(response)
-//      }).catch(function (error) {
-//        console.log(error)
-//      })
     },
     computed: {
-      'this.current': function () {
-        return 20
-      }
     },
     methods: {
+      refresh () {
+        console.log('下拉加载')
+      },
+      infinite () {
+        console.log('无限滚动')
+      },
+      onItemClick () {
+        console.log('点击tabs')
+      }
     }
   }
 </script>
@@ -48,31 +60,11 @@
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang='less'>
   @import '../../static/css/tools.less';
-
-  h1, h2 {
-    font-weight: normal;
+  .ticket-type,.ticket-tab{
+    z-index: 10;
   }
-
-  ul {
-    list-style-type: none;
-    padding: 0;
-  }
-
-  li {
-    display: inline-block;
-    margin: 0 10px;
-  }
-
-  a {
-    color: #42b983;
-  }
-
-  .weui-tabbar__item {
-    .icon1 {
-      .none;
-    }
-    &.weui-bar__item_on {
-
-    }
+  .ticket-list{
+    .borBox;
+    padding:88px 0 50px;
   }
 </style>

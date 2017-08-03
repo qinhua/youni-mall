@@ -2,7 +2,7 @@
   <div class="home">
     <!--定位组件-->
     <div class="location-chooser">
-      <p><span>您的位置</span>：武汉市洪山区光谷软件园B7栋</p>
+      <p><span><i class="fa fa-map-marker"></i>&nbsp;您的位置</span>：武汉市洪山区光谷软件园B7栋</p>
       <i class="right-arrow"></i>
     </div>
     <!--banner-->
@@ -348,7 +348,7 @@
         .abs-center-vertical;
         left: 20/@rem;
         .rsize(28, 28);
-        background: url(../../static/img/ico_toutiao.png) center;
+        /*background: url(../../static/img/ico_toutiao.png) center;*/
         .ele-base;
       }
       .vux-marquee {

@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <tabbar>
+    <tabbar v-if="$route.path=='/'||$route.path=='/home'||$route.path=='/home'||$route.path=='/nearby'||$route.path=='/ticket'||$route.path=='/order'||$route.path=='/my'">
       <tabbar-item :selected="curSelected===1?true:false" link="/home" @on-item-click>
         <img slot="icon" src="../static/img/ico_home.png">
         <img slot="icon-active" src="../static/img/ico_home_sel.png">
