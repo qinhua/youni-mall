@@ -7,37 +7,37 @@
     </div>
     <!--banner-->
     <swiper auto class="swiper-home" v-if="banner.length">
-      <swiper-item class="black" v-for="(item, index) in banner" :key="index" :data-id="item.id">
-        <a :href="item.linkUrl">
-          <img class="wd-img" :src="item.image">
-          <p>{{item.carName}}</p>
-        </a>
-      </swiper-item>
+    <swiper-item class="black" v-for="(item, index) in banner" :key="index" :data-id="item.id">
+    <a :href="item.linkUrl">
+    <img class="wd-img" :src="item.image">
+    <p>{{item.carName}}</p>
+    </a>
+    </swiper-item>
     </swiper>
     <!--中间入口-->
     <div class="middle-entry">
       <grid :rows="4">
-        <grid-item label="订水" link="/nearby" @on-item-click="setPageStatus(1)">
-          <img slot="icon" src="../../static/img/item_water.png">
-        </grid-item>
-        <grid-item label="订奶" @on-item-click="setPageStatus(2)">
-          <img slot="icon" src="../../static/img/item_milk.png">
-        </grid-item>
-        <grid-item label="购物车">
-          <img slot="icon" src="../../static/img/item_cart.png">
-        </grid-item>
-        <grid-item label="红包">
-          <img slot="icon" src="../../static/img/item_redpacket.png">
-        </grid-item>
+      <grid-item label="订水" link="/nearby" @on-item-click="setPageStatus(1)">
+      <img slot="icon" src="../../static/img/item_water.png">
+      </grid-item>
+      <grid-item label="订奶" @on-item-click="setPageStatus(2)">
+      <img slot="icon" src="../../static/img/item_milk.png">
+      </grid-item>
+      <grid-item label="购物车">
+      <img slot="icon" src="../../static/img/item_cart.png">
+      </grid-item>
+      <grid-item label="红包">
+      <img slot="icon" src="../../static/img/item_redpacket.png">
+      </grid-item>
       </grid>
       <div class="top-notice" v-if="notice.length">
         <div class="inner">
           <div class="ico ico-toutiao"></div>
           <marquee>
-            <marquee-item v-for="(news, i) in notice" :key="i" :data-id="news.noticeId"
-                          @click.native="toTopic(news.linkUrl)"
-                          class="align-middle">{{news.content}}
-            </marquee-item>
+          <marquee-item v-for="(news, i) in notice" :key="i" :data-id="news.noticeId"
+          @click.native="toTopic(news.linkUrl)"
+          class="align-middle">{{news.content}}
+          </marquee-item>
           </marquee>
         </div>
       </div>
@@ -50,7 +50,7 @@
           <li>品牌<i class="ico-arr-down"></i></li>
           <li>筛选<i class="ico-arr-down"></i></li>
         </ul>
-        <div class="filter-data" v-if="showFilter" :class="showFilter?'show':''">
+        <div class="filter-data" v-if="showFilterCon" :class="showFilterCon?'show':''">
           <ul class="filter-tags">
             <li v-for="(data,idx) in currentFilter" :class="idx===0?'active':''" :data-key="data.key"
                 :data-value="data.value" @click="chooseFilter(idx,$event)">{{data.value}}
@@ -61,7 +61,8 @@
     </div>
     <!--商品列表-->
     <div class="goods-list">
-      <scroller lock-x height="200px" use-pulldown use-pullup @on-pulldown-loading="" @on-pullup-loading="" @on-scroll-bottom="onScrollBottom" ref="scrollerBottom"
+      <scroller lock-x height="200px" use-pulldown use-pullup @on-pulldown-loading="" @on-pullup-loading=""
+                @on-scroll-bottom="onScrollBottom" ref="scrollerBottom"
                 :scroll-bottom-offst="200">
         <div class="box2">
           <p v-for="i in bottomCount">placeholder {{i}}</p>
@@ -76,7 +77,7 @@
   /* eslint-disable no-unused-vars,indent */
   var me
   var vm
-  import {Swiper, GroupTitle, SwiperItem, Grid, GridItem, Marquee, MarqueeItem,Scroller } from 'vux'
+  import {Swiper, GroupTitle, SwiperItem, Grid, GridItem, Marquee, MarqueeItem, LoadMore, Scroller} from 'vux'
   import { homeApi } from '../store/home.js'
   export default {
     name: 'home',
@@ -171,14 +172,14 @@
         },
         currentFilter: [],
         filterData: {},
-        showFilter: 1,
+        showFilterCon: 0,
         showList1: true,
         scrollTop: 0,
         onFetching: false,
         bottomCount: 20
       }
     },
-    components: {Swiper, GroupTitle, SwiperItem, Grid, GridItem, Marquee, MarqueeItem, Scroller },
+    components: {Swiper, GroupTitle, SwiperItem, Grid, GridItem, Marquee, MarqueeItem, LoadMore, Scroller},
     beforeMount () {
       me = window.me
     },
@@ -235,12 +236,10 @@
       /* 商品筛选 */
       showFilter (type) {
          vm.curFilter = vm.filterData[type]
-         vm.showFilter = 1
+         vm.showFilterCon = 1
       },
       chooseFilter (data) {
-         vm.curFilter = vm.filterData[type]
-         vm.showFilter = 1
-         vm.filterData={}
+         vm.filterData = {}
          vm.getGoods(vm.filterData)
       },
     onScrollBottom () {
@@ -276,10 +275,6 @@
     }
     }
   }
-
-
-
-
 
 </script>
 
