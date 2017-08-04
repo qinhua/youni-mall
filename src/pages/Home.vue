@@ -6,14 +6,16 @@
       <i class="right-arrow"></i>
     </div>
     <!--banner-->
-    <swiper auto class="swiper-home" v-if="banner.length">
-      <swiper-item class="black" v-for="(item, index) in banner" :key="index" :data-id="item.id">
-        <a :href="item.linkUrl">
-          <img class="wd-img" :src="item.image">
-          <p>{{item.carName}}</p>
-        </a>
-      </swiper-item>
-    </swiper>
+    <div class="swiper-container swiper-home" v-if="banner.length">
+      <div class="swiper-wrapper">
+        <div class="swiper-slide" v-for="(item, index) in banner" :key="index" :data-id="item.id">
+          <a :href="item.linkUrl" target="blank">
+            <img class="wd-img" :src="item.image" alt="">
+          </a>
+        </div>
+      </div>
+      <div class="swiper-pagination"></div>
+    </div>
     <!--中间入口-->
     <div class="middle-entry">
       <grid :rows="4">
@@ -43,12 +45,17 @@
       </div>
     </div>
     <!--过滤条-->
-    <div class="goods-filter">
+    <div class="goods-filter" ref="filters">
       <div class="v-filter-tabs">
         <ul class="v-f-tabs">
-          <li @click="showFilter('goods',$event)">商品类目<i class="ico-arr-down"></i></li>
-          <li @click="showFilter('brands',$event)">品牌<i class="ico-arr-down"></i></li>
-          <li @click="showFilter('specials',$event)">筛选<i class="ico-arr-down"></i></li>
+          <li :class="factive==='goods'?'active':''" @click="showFilter('goods',$event)">商品类目<i
+            class="ico-arr-down"></i>
+          </li>
+          <li :class="factive==='brands'?'active':''" @click="showFilter('brands',$event)">品牌<i
+            class="ico-arr-down"></i>
+          </li>
+          <li :class="factive==='specials'?'active':''" @click="showFilter('specials',$event)">筛选<i
+            class="ico-arr-down"></i></li>
         </ul>
         <div class="filter-data" v-if="showFilterCon" :class="showFilterCon?'show':''">
           <ul class="filter-tags" v-show="currentFilter">
@@ -61,15 +68,34 @@
     </div>
     <!--商品列表-->
     <div class="goods-list">
-      <scroller lock-x height="200px" use-pulldown use-pullup @on-pulldown-loading="onPullDown"
-                @on-scroll-bottom="onScrollBottom" ref="scrollerBottom" :scroll-bottom-offst="200" reset="2000">
-
-        <!--<panel :list="list"></panel>-->
-        <p v-for="i in bottomCount">placeholder {{i}}</p>
-        <div class="v-items">
-          <!--<img src="../static/">-->
-          <div class="infos"></div>
+      <scroller class="inner-scroller" lock-x height="500px" use-pulldown :pulldown-config="pulldownConfig"
+                @on-scroll="onScroll"
+                @on-pulldown-loading="onPullDown" @on-scroll-bottom="onScrollBottom" ref="scrollerBottom"
+                :scroll-bottom-offst="300">
+        <div class="box">
+          <!--<p v-for="i in bottomCount">placeholder {{i}}</p>-->
+          <!--<load-more tip="loading"></load-more>-->
+          <section class="v-items" v-for="(item, index) in goods" :data-id="item.id">
+            <section class="wrap">
+              <img :src="item.imgurl">
+              <section class="infos">
+                <h3>{{item.name}}</h3>
+                <section class="middle">
+                  <span class="price">￥{{item.price}}</span>
+                  <span class="hasSell">已售{{item.saleCount}}单</span>
+                </section>
+                <label>{{item.label}}</label>
+              </section>
+              <group class="buy-count">
+                <!--<x-number v-model="roundValue" button-style="round" :min="0" :max="5"-->
+                <x-number button-style="round" :min="0" :max="5"
+                          @on-change="change(index)"></x-number>
+              </group>
+            </section>
+          </section>
+          <load-more tip="loading"></load-more>
         </div>
+        <!--<div class="iconNoData" @click="beContinue(curNumber)"><i></i><p>暂无内容</p></div>-->
       </scroller>
     </div>
   </div>
@@ -79,12 +105,14 @@
   /* eslint-disable no-unused-vars,indent */
   var me
   var vm
-  import {Swiper, GroupTitle, SwiperItem, Grid, GridItem, Marquee, MarqueeItem, Panel, LoadMore, Scroller} from 'vux'
+  import Swiper from 'swiper'
+  import {Group, GroupTitle, Grid, GridItem, Marquee, MarqueeItem, XNumber, Scroller, LoadMore} from 'vux'
   import { homeApi } from '../store/home.js'
   export default {
     name: 'home',
     data () {
       return {
+        location: '',
         banner: [],
         notice: [],
         goods: [],
@@ -195,27 +223,72 @@
         currentFilter: null,
         filterData: [],
         showFilterCon: false,
+        factive: '',
         active: 0,
         showList: true,
         scrollTop: 0,
+        roundValue: 0,
         onFetching: false,
+        pulldownConfig: {
+          content: '下拉刷新',
+          height: 60,
+          autoRefresh: false,
+          downContent: '下拉刷新',
+          upContent: '松开以加载',
+          loadingContent: '加载中…',
+          clsPrefix: 'xs-plugin-pulldown-'
+        },
         bottomCount: 20
       }
     },
-    components: {Swiper, GroupTitle, SwiperItem, Grid, GridItem, Marquee, MarqueeItem, Panel, LoadMore, Scroller},
+    components: {
+      Group,
+      GroupTitle,
+      Grid,
+      GridItem,
+      Marquee,
+      MarqueeItem,
+      XNumber,
+      Scroller,
+      LoadMore
+    },
     beforeMount () {
       me = window.me
     },
     mounted () {
       vm = this
       // me.attachClick()
-      console.log(vm.$refs)
-      vm.getBanner()
+//      this.top = 1
+//      this.bottom = 20
+      var mySwiper = function () {
+        return new Swiper('.swiper-container.swiper-home', {
+          initialSlide: 0,
+          direction: 'horizontal',
+          autoplay: 2000,
+          preloadImages: true,
+          autoplayDisableOnInteraction: false,
+          observer: true,
+          observeParents: true,
+          // If we need pagination
+          pagination: '.swiper-pagination',
+          paginationClickable: true,
+          // Navigation arrows
+          // nextButton: '.swiper-button-next',
+          // prevButton: '.swiper-button-prev',
+          grabCursor: true,
+          onClick: function (swiper) {
+            var curIdx = swiper.activeIndex
+          },
+          onSlideChangeEnd: function () {
+          }
+        })
+      }
+      vm.getBanner(mySwiper)
       vm.getNotice()
       vm.getGoods()
-      vm.$nextTick(function () {
-        vm.$refs.scrollerBottom.reset({top: 0})
-      })
+//      this.$nextTick(function () {
+//        vm.$refs.scrollerBottom.reset({top: 0})
+//      })
     },
     computed: {},
     methods: {
@@ -227,10 +300,11 @@
         location.href = url
       },
       /* 页面数据 */
-      getBanner () {
+      getBanner (cb) {
         vm.loadData(homeApi.banner, null, 'POST', function (res) {
           console.log(res.data, '首页Banner')
           vm.banner = res.data.itemList
+          cb ? cb() : null
         })
       },
       getNotice () {
@@ -239,27 +313,35 @@
           vm.notice = res.data.itemList
         })
       },
-      getGoods (params) {
-        params = params || {
+      getGoods (isLoadMore) {
+        if (vm.onFetching) return false
+        var params = vm.filterData || {
             pagerSize: 10,
             pageNo: 1,
             goodsType: 'XXX',
-            goodsCategory: 'XXX',
-            brandId: 2,
+            goodsCategory: '',
+            brandId: '',
             filter: ''
           }
         vm.loadData(homeApi.goodsList, params, 'POST', function (res) {
           console.log(res.data, '首页GoodsList')
-          vm.goods = res.data.itemList
+          if (!isLoadMore) {
+            vm.goods = res.data.itemList
+          } else {
+            vm.goods.push(res.data.itemList)
+          }
           vm.onFetching = false
         }, function () {
           vm.onFetching = false
         })
       },
       /* 商品筛选 */
-      showFilter (type) {
+      showFilter (type, e) {
+        vm.factive = type
+        console.log(vm.active)
         if (vm.showFilterCon) {
           if (vm.curFilterType === type) {
+            vm.factive = ''
             vm.showFilterCon = false
           } else {
             vm.curFilterType = type
@@ -271,6 +353,7 @@
           vm.currentFilter = vm.filters[type]
           vm.showFilterCon = true
         }
+        // 默认选中已选择的筛选条件
       },
       chooseFilter (idx, key, value, e) {
         console.log(arguments)
@@ -293,50 +376,42 @@
             }
           }
         }
-        // vm.getGoods(vm.filterData)
+        vm.showFilterCon = false
         console.log(vm.filterData, '最后的筛选数据')
-      },
-      onPullUp () {
-        if (this.onFetching) {
-          console.log('底部还处于加载状态')
-        } else {
-          console.log('底部开始加载')
-          vm.onFetching = true
-          vm.getGoods(vm.filterData)
-          setTimeout(function () {
-            vm.bottomCount += 10
-            vm.$nextTick = function () {
-              vm.$refs.scrollerBottom.reset()
-            }
-          }, 2000)
+        var lastF = {
+          goodsType: 1,
+          goodsCategory: 'water',
+          brandId: 2,
+          filter: '有折扣，有满减'
         }
+        vm.getGoods(lastF)
       },
       onPullDown () {
-        if (this.onFetching) {
-          console.log('顶部还处于加载状态')
+        if (vm.onFetching) {
+          // do nothing
+          return false
         } else {
-          console.log('顶部开始加载')
-          vm.onFetching = true
-          vm.getGoods(vm.filterData)
+          this.onFetching = true
           setTimeout(function () {
-            vm.bottomCount += 10
-            vm.$nextTick = function () {
-              vm.$refs.scrollerBottom.reset()
-            }
+//            vm.bottomCount += 10
+            vm.getGoods()
+            console.log(vm.$refs.scrollerBottom)
+            vm.$nextTick(function () {
+              vm.$refs.scrollerBottom.donePulldown()
+            })
+            vm.onFetching = false
           }, 2000)
         }
       },
       onScrollBottom () {
-        if (this.onFetching) {
-          console.log('底部还处于加载状态')
+        if (vm.onFetching) {
           // do nothing
+          return false
         } else {
-          console.log('底部开始加载')
           vm.onFetching = true
-          vm.getGoods(vm.filterData)
           setTimeout(function () {
-            vm.bottomCount += 10
-            vm.scrollTop = 0
+//            vm.bottomCount += 10
+            vm.getGoods(true)
             vm.$nextTick(function () {
               vm.$refs.scrollerBottom.reset()
             })
@@ -345,19 +420,21 @@
         }
       },
       onScroll (pos) {
-        vm.scrollTop = pos.top
+        this.scrollTop = pos.top
+        vm.factive = ''
+        vm.showFilterCon ? vm.showFilterCon = false : null
       },
       changeList () {
         this.showList = false
-        this.$nextTick = function () {
-          this.$refs.scroller.reset({
-            top: 0
-          })
-        }
+        this.$nextTick(function () {
+          vm.$refs.scrollerEvent.reset({top: 0})
+        })
+      },
+      change (index, val) {
+        console.log(arguments)
       }
     }
   }
-
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
@@ -371,11 +448,11 @@
     .rel;
     .borBox;
     padding: 0 20/@rem;
-    height: 40px;
-    line-height: 40px;
+    height: 80/@rem;
+    line-height: 80/@rem;
     .bf5;
     p {
-      font-size: 14px;
+      .fz(24);
       .c6;
       span {
         .cdiy(#f34c18);
@@ -385,13 +462,16 @@
 
   .swiper-home {
     margin-bottom: 10/@rem;
-    .vux-swiper {
-      height: 190px !important;
-    }
-    p {
+    /*p {
       padding: 10/@rem 20/@rem;
       .b3;
       .cf;
+    }*/
+    .swiper-pagination {
+      bottom: 5px;
+    }
+    .swiper-pagination-bullet-active {
+      background: #eee;
     }
   }
 
@@ -402,8 +482,10 @@
     border-bottom: 1px solid #eee;
     .weui-grid__icon {
       display: block;
-      width: 40px !important;
-      height: 40px !important;
+      .size(80, 80);
+    }
+    .weui-grid__label {
+      .fz(24);
     }
     .weui-grids {
       &:before, &:after {
@@ -428,17 +510,17 @@
       }
       .ico-toutiao {
         .abs-center-vertical;
-        left: 5px;
-        .rsize(28, 28);
-        /*background: url(../../static/img/ico_toutiao.png) center;*/
+        left: 10/@rem;
+        .size(54, 54);
+        background: url(../../static/img/ico_toutiao.png) center;
         .ele-base;
       }
       .vux-marquee {
         .borBox;
-        padding-left: 56px;
+        padding-left: 120/@rem;
         &:before {
           .abs;
-          margin-left: -14px;
+          margin-left: -30/@rem;
           content: "";
           position: absolute;
           width: 1px;
@@ -453,24 +535,28 @@
   }
 
   .goods-filter {
+    .rel;
     margin-bottom: 10/@rem;
+    &.fix {
+      .fix;
+      top: 0;
+    }
     .v-filter-tabs {
-      .rel;
       width: 100%;
-      padding: 5px 0;
+      padding: 10/@rem 0;
       border-top: 1px solid #eee;
       border-bottom: 1px solid #eee;
       .bf;
       .v-f-tabs {
-        height: 38px;
+        height: 60/@rem;
         li {
           .pointer;
           .rel;
           .borBox;
           .fl;
           width: 33.3333%;
-          height: 38px;
-          line-height: 38px;
+          height: 60/@rem;
+          line-height: 60/@rem;
           .c3;
           .center;
           font-size: 14px;
@@ -478,8 +564,7 @@
             position: absolute;
             width: 30px;
             height: 30px;
-            top: 6px;
-            .transi(.2s);
+            top: 6/@rem;
             &:before {
               content: "";
               position: absolute;
@@ -491,6 +576,7 @@
               transform: rotate(-135deg);
               top: 8px;
               left: 7px;
+              .transi(.2s);
             }
           }
           &.active {
@@ -515,12 +601,13 @@
         .abs;
         z-index: 10;
         .borBox;
+        margin-top: 8/@rem;
         opacity: 0;
         height: 0;
         width: 100%;
         .bf;
         border-top: 1px solid #eee;
-        .bsd(0, 10px, 18px, 0, #999);
+        .bsd(0, 10px, 18px, 0, #ccc);
         .transi(.2s);
         &.show {
           opacity: 1;
@@ -542,6 +629,99 @@
             &.active {
               .cf;
               .bdiy(#f1582a);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .goods-list {
+    height: auto;
+    .inner-scroller {
+      .static;
+      .v-items {
+        padding: 20/@rem;
+        .bf;
+        &:not(:last-child) {
+          .bor-b;
+        }
+        .wrap {
+          .rel;
+          .h(150);
+        }
+        img {
+          .abs;
+          left: 0;
+          top: 0;
+          .size(150, 150);
+          background: #f5f5f5 url(../../static/img/noImg.png) no-repeat center;
+          -webkit-background-size: 30% auto;
+          background-size: 30% auto;
+        }
+        .infos {
+          .flex;
+          .flex-d-v;
+          .borBox;
+          width: 100%;
+          height: 100%;
+          padding-left: 170/@rem;
+          h3 {
+            .flex-r(1);
+            .fz(30);
+            .txt-normal;
+            .c3;
+            .ellipsis;
+          }
+          .middle {
+            .flex-r(1);
+            .price {
+            }
+            span {
+              &.price {
+                .c3;
+                .fz(24);
+                .txt-del;
+              }
+              &.hasSell {
+                padding-left: 30/@rem;
+                .c9;
+                .fz(22);
+              }
+            }
+          }
+          label {
+            .flex-r(1);
+            .cdiy(#f34c18);
+            .fz(22);
+          }
+        }
+      }
+      .buy-count {
+        .abs-center-vertical;
+        right: 0;
+        .weui-cells {
+          margin-top: 0;
+          .no-bg;
+          &:before, &:after {
+            .none;
+          }
+          .weui-cell {
+            padding: 0;
+          }
+          .vux-number-input {
+            width: 50/@rem !important;
+            height: 34/@rem !important;
+            .fz(24);
+          }
+          .vux-number-selector, .vux-number-selector-plus {
+            .size(34, 34);
+            font-size: 0;
+            line-height: 34/@rem;
+            /*border-color: #f34c18;*/
+            svg {
+              .size(30, 30);
+              /*fill: #f34c18;*/
             }
           }
         }

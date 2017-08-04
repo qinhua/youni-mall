@@ -31,7 +31,19 @@ import $ from 'jquery'
         myMixin.isPosting = false;
       }, 1000)
     },
-
+    al: function (txt) {
+      alert(txt);
+    },
+    lg: function (a, b, c) {
+      if (b && c) {
+        console.log(a, b, c);
+        return;
+      } else if (b) {
+        console.log(a, b);
+        return;
+      }
+      console.log(a);
+    },
     // 当前环境：无需手动修改
     envir: (window.location.href.indexOf('http://localhost') !== -1 || window.location.href.indexOf('http://192.168') !== -1 ) ? 'develop' : 'online',
     // api请求前缀：无需手动修改
@@ -75,6 +87,7 @@ import $ from 'jquery'
         loadMore: '<div class="loadMore">点击加载更多…</div>',
         slideMore: '<p class="slideMore">上滑显示更多 ▲</p>',
         noData: '<div class="noData">这里啥都没有-_-!</div>',
+        iconNoData: '<div class="iconNoData"><i></i><p>暂无内容</p></div>',
         noMoreData: '<div class="noMoreData">已无更多</div>'
       }
     },

@@ -13,24 +13,21 @@ import '../static/js/fastclick.js'
 import 'myMixin'
 import store from './store3/'
 import VueScroller from 'vue-scroller'
-// import MintUI from 'mint-ui'
-// import 'mint-ui/lib/style.css'
-// Vue.use(MintUI)
 
 Vue.config.productionTip = false
-
 Vue.use(VueScroller)
 /* 封装&扩展Vue */
 Vue.prototype.$axios = Axios
 Vue.prototype.loadData = function (url, params, type, sucCb, errCb) {
   Axios({
-    method: type || 'get',
+    method: type || 'POST',
     url: url,
+    data: params || {},
     responseType: 'JSON'
-  }).then(function (response) {
-    sucCb ? sucCb(response) : console.log(response, '接口的res')
+  }).then(function (res) {
+    sucCb ? sucCb(res) : console.log(res, '接口的res')
   }).catch(function (error) {
-    errCb ? errCb(error) : console.log(error, 522)
+    errCb ? errCb(error) : console.error(error, '错误信息')
   })
 }
 

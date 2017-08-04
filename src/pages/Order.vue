@@ -51,6 +51,10 @@
     computed: {
     },
     methods: {
+      // 向父组件传值
+      setPageStatus (data) {
+        this.$emit('listenPage', data)
+      },
       refresh () {
         console.log('下拉加载')
       },

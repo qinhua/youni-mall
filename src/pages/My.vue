@@ -28,24 +28,28 @@
         <label>待评价</label>
       </grid-item>
     </grid>
-      <group class="list-modal">
-        <cell title="我的红包" link="/pages/my/mypacket">
-          <i slot="icon" width="20" style="margin-right:5px;" class="fa fa-money"></i>
-          10
-        </cell>
-        <cell title="我的卡券" link="/pages/my/mycounpons">
-          <i slot="icon" width="20" style="margin-right:5px;" class="fa fa-credit-card"></i>
-          3
-        </cell>
-        <cell title="我的水票" link="/ticket/2">
-          <i slot="icon" width="20" style="margin-right:5px;" class="fa fa-ticket"></i>
-          1
-        </cell>
-        <cell title="收货地址" link="/my/myaddress"><i slot="icon" width="20" style="margin-right:5px;" class="fa fa-map-signs"></i></cell>
-        <cell title="我的收藏" link="/pages/my/mystar"><i slot="icon" width="20" style="margin-right:5px;" class="fa fa-star"></i></cell>
-        <cell title="使用帮助" link="/pages/my/help"><i slot="icon" width="20" style="margin-right:5px;" class="fa fa-question-circle"></i></cell>
-        <cell title="关于友你" link="/pages/my/aboutus"><i slot="icon" width="20" style="margin-right:5px;" class="fa fa-info-circle"></i></cell>
-      </group>
+    <group class="list-modal">
+      <cell title="我的红包" link="/pages/my/mypacket">
+        <i slot="icon" width="20" style="margin-right:5px;" class="fa fa-money"></i>
+        10
+      </cell>
+      <cell title="我的卡券" link="/pages/my/mycounpons">
+        <i slot="icon" width="20" style="margin-right:5px;" class="fa fa-credit-card"></i>
+        3
+      </cell>
+      <cell title="我的水票" link="/ticket/2">
+        <i slot="icon" width="20" style="margin-right:5px;" class="fa fa-ticket"></i>
+        1
+      </cell>
+      <cell title="收货地址" link="/my/myaddress"><i slot="icon" width="20" style="margin-right:5px;"
+                                                 class="fa fa-map-signs"></i></cell>
+      <cell title="我的收藏" link="/pages/my/mystar"><i slot="icon" width="20" style="margin-right:5px;"
+                                                    class="fa fa-star"></i></cell>
+      <cell title="使用帮助" link="/pages/my/help"><i slot="icon" width="20" style="margin-right:5px;"
+                                                  class="fa fa-question-circle"></i></cell>
+      <cell title="关于友你" link="/pages/my/aboutus"><i slot="icon" width="20" style="margin-right:5px;"
+                                                     class="fa fa-info-circle"></i></cell>
+    </group>
   </div>
 </template>
 
@@ -57,8 +61,7 @@
   export default {
     name: 'my',
     data () {
-      return {
-      }
+      return {}
     },
     components: {Grid, GridItem, Group, Cell},
     beforeMount () {
@@ -82,6 +85,13 @@
       }
     },
     methods: {
+      // 向父组件传值
+      setPageStatus (data) {
+        this.$emit('listenPage', data)
+      },
+      jumpTo (path, param) {
+        this.$router.push({path: path + (param ? '/' + param : '')})
+      }
     }
   }
 </script>
@@ -89,36 +99,37 @@
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang='less'>
   @import '../../static/css/tools.less';
-  .my{
-    padding-bottom: 60px;
-    .user-modal{
+
+  .my {
+    padding-bottom: 150/@rem;
+    .user-modal {
       .center;
-      background:#5c70ff url(../../static/img/bg_av.jpg);
+      background: #5c70ff url(../../static/img/bg_av.jpg);
       .bg100;
-      .user-inner{
-        padding:50/@rem 20/@rem 30/@rem;
-        >img{
+      .user-inner {
+        padding: 50/@rem 20/@rem 30/@rem;
+        > img {
           .block;
-          .size(130,130);
+          .size(130, 130);
           .ma-w(100);
           .ma-h(100);
           .ma;
-          .bor(3px,solid,#fff);
+          .bor(3px, solid, #fff);
           .borR(50%);
-          box-shadow:0 0 0 5px rgba(255,255,255,.4) ,0 0 0 11px rgba(255,255,255,.2)
+          box-shadow: 0 0 0 5px rgba(255, 255, 255, .4), 0 0 0 11px rgba(255, 255, 255, .2)
         }
-        p{
-          padding-top:40/@rem;
+        p {
+          padding-top: 40/@rem;
           .fz(24);
           .cf;
           letter-spacing: 1px;
-          i{
-            padding-left:10/@rem;
+          i {
+            padding-left: 10/@rem;
           }
         }
       }
     }
-    .order-model{
+    .order-model {
       .center;
       .bf;
       .weui-grids {
@@ -130,30 +141,30 @@
         .pointer;
         padding: 8px 10px;
         &:before {
-          top:20px;
-          bottom:20px;
+          top: 20px;
+          bottom: 20px;
         }
         &:after {
           .none;
         }
       }
-      label{
+      label {
         .fz(24);
         .c9;
       }
-      p{
-        .fz(48);
-        .c3;
+      p {
+        .fz(46);
+        .cdiy(#212225);
       }
     }
-    .list-modal{
-      .weui-cells{
-        margin-top:10/@rem;
+    .list-modal {
+      .weui-cells {
+        margin-top: 10/@rem;
         padding: 0;
       }
-      .weui-cell{
-        padding:20/@rem 30/@rem!important;
-        .rfz(14)!important;
+      .weui-cell {
+        padding: 24/@rem !important;
+        .fz(24) !important;
       }
     }
   }

@@ -8,10 +8,10 @@ import Order from '@/pages/Order'
 import My from '@/pages/My'
 import MyAddress from '@/pages/my/MyAddress'
 import NoPage from '@/pages/NoPage'
-// Router.prototype.goBack = function () {
-//  this.isBack = true
-//  window.history.go(-1)
-// }
+Router.prototype.goBack = function () {
+  this.isBack = true
+  window.history.go(-1)
+}
 Vue.use(Router)
 
 export default new Router({
@@ -36,6 +36,14 @@ export default new Router({
       path: '/nearby',
       name: '附近',
       component: NearBy,
+      meta: {
+        keepAlive: false
+      }
+    },
+    {
+      path: '/ticket',
+      name: '水票',
+      component: Ticket,
       meta: {
         keepAlive: false
       }
@@ -67,20 +75,7 @@ export default new Router({
         path: '/myaddress',
         name: '我的地址',
         component: MyAddress
-      }, {
-        path: '/myaddress',
-        name: '我的地址',
-        component: MyAddress
-      }, {
-        path: '/myaddress',
-        name: '我的地址',
-        component: MyAddress
-      }, {
-        path: '/myaddress',
-        name: '我的地址',
-        component: MyAddress
-      }
-      ]
+      }]
     },
     {
       path: '*',
