@@ -7,8 +7,11 @@ import Router from 'vue-router'
 import App from './App'
 import router from './router'
 import $ from 'jquery'
+import 'font-awesome/css/font-awesome.css'
+import 'ionicons/dist/css/ionicons.css'
 import '../static/js/fastclick.js'
 import 'myMixin'
+import store from './store3/'
 // import MintUI from 'mint-ui'
 // import 'mint-ui/lib/style.css'
 // Vue.use(MintUI)
@@ -29,6 +32,30 @@ Vue.prototype.loadData = function (url, params, type, sucCb, errCb) {
   })
 }
 
+// main.js
+const history = window.sessionStorage
+history.clear()
+let historyCount = history.getItem('count') * 1 || 0
+history.setItem('/', 0)
+router.beforeEach(function (to, from, next) {
+  const toIndex = history.getItem(to.path)
+  const fromIndex = history.getItem(from.path)
+  if (toIndex) {
+    if (!fromIndex || parseInt(toIndex, 10) > parseInt(fromIndex, 10) || (toIndex === '0' && fromIndex === '0')) {
+      store.commit('UPDATE_DIRECTION', {direction: 'forward'})
+    } else {
+      store.commit('UPDATE_DIRECTION', {direction: 'reverse'})
+    }
+  } else {
+    ++historyCount
+    history.setItem('count', historyCount)
+    to.path !== '/' && history.setItem(to.path, historyCount)
+    store.commit('UPDATE_DIRECTION', {direction: 'forward'})
+  }
+  next()
+})
+
+// main.js
 new Vue({
   el: '#app',
   router,
@@ -57,15 +84,15 @@ new Vue({
      })
      // 多个
      function getUserAccount() {
-     return axios.get('/user/12345');
+     return axios.get('/user/12345')
      }
      function getUserPermissions() {
-     return axios.get('/user/12345/permissions');
+     return axios.get('/user/12345/permissions')
      }
      axios.all([getUserAccount(), getUserPermissions()])
      .then(axios.spread(function (acct, perms) {
      // Both requests are now complete
-     }));
+     }))
      */
   }
 })

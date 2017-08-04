@@ -566,6 +566,9 @@ input[type="radio"] {
   font-weight: normal;
   font-style: normal;
 }
+.ca {
+  color: #aaa;
+}
 .cb {
   color: #bbb;
 }
@@ -616,6 +619,9 @@ input[type="radio"] {
 }
 .bf {
   background-color: #fff;
+}
+.bf1 {
+  background-color: #f1f1f1;
 }
 .bf2 {
   background-color: #f2f2f2;

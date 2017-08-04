@@ -2,42 +2,42 @@
   <div class="home">
     <!--定位组件-->
     <div class="location-chooser">
-      <p><span>您的位置</span>：武汉市洪山区光谷软件园B7栋</p>
+      <p><span><i class="fa fa-map-marker"></i>&nbsp;您的位置</span>：武汉市洪山区光谷软件园B7栋</p>
       <i class="right-arrow"></i>
     </div>
     <!--banner-->
     <swiper auto class="swiper-home" v-if="banner.length">
-    <swiper-item class="black" v-for="(item, index) in banner" :key="index" :data-id="item.id">
-    <a :href="item.linkUrl">
-    <img class="wd-img" :src="item.image">
-    <p>{{item.carName}}</p>
-    </a>
-    </swiper-item>
+      <swiper-item class="black" v-for="(item, index) in banner" :key="index" :data-id="item.id">
+        <a :href="item.linkUrl">
+          <img class="wd-img" :src="item.image">
+          <p>{{item.carName}}</p>
+        </a>
+      </swiper-item>
     </swiper>
     <!--中间入口-->
     <div class="middle-entry">
       <grid :rows="4">
-      <grid-item label="订水" link="/nearby" @on-item-click="setPageStatus(1)">
-      <img slot="icon" src="../../static/img/item_water.png">
-      </grid-item>
-      <grid-item label="订奶" @on-item-click="setPageStatus(2)">
-      <img slot="icon" src="../../static/img/item_milk.png">
-      </grid-item>
-      <grid-item label="购物车">
-      <img slot="icon" src="../../static/img/item_cart.png">
-      </grid-item>
-      <grid-item label="红包">
-      <img slot="icon" src="../../static/img/item_redpacket.png">
-      </grid-item>
+        <grid-item label="订水" link="/nearby" @on-item-click="setPageStatus(1)">
+          <img slot="icon" src="../../static/img/item_water.png">
+        </grid-item>
+        <grid-item label="订奶" @on-item-click="setPageStatus(2)">
+          <img slot="icon" src="../../static/img/item_milk.png">
+        </grid-item>
+        <grid-item label="购物车">
+          <img slot="icon" src="../../static/img/item_cart.png">
+        </grid-item>
+        <grid-item label="红包">
+          <img slot="icon" src="../../static/img/item_redpacket.png">
+        </grid-item>
       </grid>
       <div class="top-notice" v-if="notice.length">
         <div class="inner">
           <div class="ico ico-toutiao"></div>
           <marquee>
-          <marquee-item v-for="(news, i) in notice" :key="i" :data-id="news.noticeId"
-          @click.native="toTopic(news.linkUrl)"
-          class="align-middle">{{news.content}}
-          </marquee-item>
+            <marquee-item v-for="(news, i) in notice" :key="i" :data-id="news.noticeId"
+                          @click.native="toTopic(news.linkUrl)"
+                          class="align-middle">{{news.content}}
+            </marquee-item>
           </marquee>
         </div>
       </div>
@@ -46,14 +46,14 @@
     <div class="goods-filter">
       <div class="v-filter-tabs">
         <ul class="v-f-tabs">
-          <li>商品类目<i class="ico-arr-down"></i></li>
-          <li>品牌<i class="ico-arr-down"></i></li>
-          <li>筛选<i class="ico-arr-down"></i></li>
+          <li @click="showFilter('goods',$event)">商品类目<i class="ico-arr-down"></i></li>
+          <li @click="showFilter('brands',$event)">品牌<i class="ico-arr-down"></i></li>
+          <li @click="showFilter('specials',$event)">筛选<i class="ico-arr-down"></i></li>
         </ul>
         <div class="filter-data" v-if="showFilterCon" :class="showFilterCon?'show':''">
-          <ul class="filter-tags">
-            <li v-for="(data,idx) in currentFilter" :class="idx===0?'active':''" :data-key="data.key"
-                :data-value="data.value" @click="chooseFilter(idx,$event)">{{data.value}}
+          <ul class="filter-tags" v-show="currentFilter">
+            <li v-for="(data,idx) in currentFilter" :class="{active:active==idx}" :data-key="data.key"
+                :data-value="data.value" @click="chooseFilter(idx,data.key,data.value,$event)">{{data.value}}
             </li>
           </ul>
         </div>
@@ -61,12 +61,14 @@
     </div>
     <!--商品列表-->
     <div class="goods-list">
-      <scroller lock-x height="200px" use-pulldown use-pullup @on-pulldown-loading="" @on-pullup-loading=""
-                @on-scroll-bottom="onScrollBottom" ref="scrollerBottom"
-                :scroll-bottom-offst="200">
-        <div class="box2">
-          <p v-for="i in bottomCount">placeholder {{i}}</p>
-          <load-more tip="loading"></load-more>
+      <scroller lock-x height="200px" use-pulldown use-pullup @on-pulldown-loading="onPullDown"
+                @on-scroll-bottom="onScrollBottom" ref="scrollerBottom" :scroll-bottom-offst="200" reset="2000">
+
+        <!--<panel :list="list"></panel>-->
+        <p v-for="i in bottomCount">placeholder {{i}}</p>
+        <div class="v-items">
+          <!--<img src="../static/">-->
+          <div class="infos"></div>
         </div>
       </scroller>
     </div>
@@ -77,7 +79,7 @@
   /* eslint-disable no-unused-vars,indent */
   var me
   var vm
-  import {Swiper, GroupTitle, SwiperItem, Grid, GridItem, Marquee, MarqueeItem, LoadMore, Scroller} from 'vux'
+  import {Swiper, GroupTitle, SwiperItem, Grid, GridItem, Marquee, MarqueeItem, Panel, LoadMore, Scroller} from 'vux'
   import { homeApi } from '../store/home.js'
   export default {
     name: 'home',
@@ -86,6 +88,25 @@
         banner: [],
         notice: [],
         goods: [],
+        list: [{
+          src: 'http://placeholder.qiniudn.com/60x60/3cc51f/ffffff',
+          title: '标题一',
+          desc: '由各种物质组成的巨型球状天体，叫做星球。星球有一定的形状，有自己的运行轨道。',
+          url: '/component/cell'
+        }, {
+          src: 'http://placeholder.qiniudn.com/60x60/3cc51f/ffffff',
+          title: '标题二',
+          desc: '由各种物质组成的巨型球状天体，叫做星球。星球有一定的形状，有自己的运行轨道。',
+          url: {
+            path: '/component/radio',
+            replace: false
+          },
+          meta: {
+            source: '来源信息',
+            date: '时间',
+            other: '其他信息'
+          }
+        }],
         filters: {
           goods: [
             {
@@ -170,31 +191,30 @@
             }
           ]
         },
-        currentFilter: [],
-        filterData: {},
-        showFilterCon: 0,
-        showList1: true,
+        curFilterType: '',
+        currentFilter: null,
+        filterData: [],
+        showFilterCon: false,
+        active: 0,
+        showList: true,
         scrollTop: 0,
         onFetching: false,
         bottomCount: 20
       }
     },
-    components: {Swiper, GroupTitle, SwiperItem, Grid, GridItem, Marquee, MarqueeItem, LoadMore, Scroller},
+    components: {Swiper, GroupTitle, SwiperItem, Grid, GridItem, Marquee, MarqueeItem, Panel, LoadMore, Scroller},
     beforeMount () {
       me = window.me
     },
     mounted () {
       vm = this
       // me.attachClick()
-      // console.log(data)
+      console.log(vm.$refs)
       vm.getBanner()
       vm.getNotice()
       vm.getGoods()
-      this.$nextTick(() => {
-        this.$refs.scrollerEvent.reset({top: 0})
-      })
-      this.$nextTick(() => {
-        this.$refs.scrollerBottom.reset({top: 0})
+      vm.$nextTick(function () {
+        vm.$refs.scrollerBottom.reset({top: 0})
       })
     },
     computed: {},
@@ -231,48 +251,110 @@
         vm.loadData(homeApi.goodsList, params, 'POST', function (res) {
           console.log(res.data, '首页GoodsList')
           vm.goods = res.data.itemList
+          vm.onFetching = false
+        }, function () {
+          vm.onFetching = false
         })
       },
       /* 商品筛选 */
       showFilter (type) {
-         vm.curFilter = vm.filterData[type]
-         vm.showFilterCon = 1
+        if (vm.showFilterCon) {
+          if (vm.curFilterType === type) {
+            vm.showFilterCon = false
+          } else {
+            vm.curFilterType = type
+            vm.currentFilter = vm.filters[type]
+            vm.showFilterCon = true
+          }
+        } else {
+          vm.curFilterType = type
+          vm.currentFilter = vm.filters[type]
+          vm.showFilterCon = true
+        }
       },
-      chooseFilter (data) {
-         vm.filterData = {}
-         vm.getGoods(vm.filterData)
-      },
-    onScrollBottom () {
-      if (this.onFetching) {
-        // do nothing
-      } else {
-        this.onFetching = true
-        setTimeout(() => {
-          this.bottomCount += 10
-          this.$nextTick(() => {
-            this.$refs.scrollerBottom.reset()
+      chooseFilter (idx, key, value, e) {
+        console.log(arguments)
+        console.log(JSON.stringify(vm.filterData), vm.curFilterType)
+        if (JSON.stringify(vm.filterData).indexOf(vm.curFilterType) === -1) {
+          vm.filterData.push({
+            type: vm.curFilterType,
+            filterId: key,
+            filterName: value !== '全部' ? value : ''
           })
-          this.onFetching = false
-        }, 2000)
+        } else {
+          for (var i = 0; i < vm.filterData.length; i++) {
+            console.log(vm.filterData[i].filterName, value)
+            if (vm.filterData[i].filterName !== value) {
+              vm.filterData[i] = {
+                type: vm.curFilterType,
+                filterId: key,
+                filterName: value !== '全部' ? value : ''
+              }
+            }
+          }
+        }
+        // vm.getGoods(vm.filterData)
+        console.log(vm.filterData, '最后的筛选数据')
+      },
+      onPullUp () {
+        if (this.onFetching) {
+          console.log('底部还处于加载状态')
+        } else {
+          console.log('底部开始加载')
+          vm.onFetching = true
+          vm.getGoods(vm.filterData)
+          setTimeout(function () {
+            vm.bottomCount += 10
+            vm.$nextTick = function () {
+              vm.$refs.scrollerBottom.reset()
+            }
+          }, 2000)
+        }
+      },
+      onPullDown () {
+        if (this.onFetching) {
+          console.log('顶部还处于加载状态')
+        } else {
+          console.log('顶部开始加载')
+          vm.onFetching = true
+          vm.getGoods(vm.filterData)
+          setTimeout(function () {
+            vm.bottomCount += 10
+            vm.$nextTick = function () {
+              vm.$refs.scrollerBottom.reset()
+            }
+          }, 2000)
+        }
+      },
+      onScrollBottom () {
+        if (this.onFetching) {
+          console.log('底部还处于加载状态')
+          // do nothing
+        } else {
+          console.log('底部开始加载')
+          vm.onFetching = true
+          vm.getGoods(vm.filterData)
+          setTimeout(function () {
+            vm.bottomCount += 10
+            vm.scrollTop = 0
+            vm.$nextTick(function () {
+              vm.$refs.scrollerBottom.reset()
+            })
+            vm.onFetching = false
+          }, 2000)
+        }
+      },
+      onScroll (pos) {
+        vm.scrollTop = pos.top
+      },
+      changeList () {
+        this.showList = false
+        this.$nextTick = function () {
+          this.$refs.scroller.reset({
+            top: 0
+          })
+        }
       }
-    },
-    onScroll (pos) {
-      this.scrollTop = pos.top
-    },
-    onCellClick () {
-      window.alert('cell click')
-    },
-    onClickButton () {
-      window.alert('click')
-    },
-    changeList () {
-      this.showList1 = false
-      this.$nextTick(() => {
-        this.$refs.scroller.reset({
-          top: 0
-        })
-      })
-    }
     }
   }
 
@@ -296,7 +378,7 @@
       font-size: 14px;
       .c6;
       span {
-        .cdiy(#e4582d);
+        .cdiy(#f34c18);
       }
     }
   }
@@ -346,14 +428,14 @@
       }
       .ico-toutiao {
         .abs-center-vertical;
-        left: 20/@rem;
+        left: 5px;
         .rsize(28, 28);
         background: url(../../static/img/ico_toutiao.png) center;
         .ele-base;
       }
       .vux-marquee {
         .borBox;
-        padding-left: 64px;
+        padding-left: 56px;
         &:before {
           .abs;
           margin-left: -14px;
@@ -438,11 +520,12 @@
         width: 100%;
         .bf;
         border-top: 1px solid #eee;
+        .bsd(0, 10px, 18px, 0, #999);
         .transi(.2s);
         &.show {
           opacity: 1;
           height: auto;
-          padding: 18/@rem;
+          padding: 30/@rem 18/@rem;
         }
         .filter-tags {
           overflow: hidden;
@@ -450,11 +533,11 @@
             .pointer;
             .fl;
             padding: 3px 10px;
-            margin: 6/@rem 10/@rem;
+            margin: 10/@rem;
             line-height: 1;
-            font-size: 10px;
+            font-size: 12px;
             .c6;
-            .bf5;
+            .bf1;
             .borR(10px);
             &.active {
               .cf;

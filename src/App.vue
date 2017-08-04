@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container">{{direction}}
     <tabbar>
       <tabbar-item :selected="curSelected===1?true:false" link="/home" @on-item-click>
         <img slot="icon" src="../static/img/ico_home.png">
@@ -28,13 +28,13 @@
       </tabbar-item>
     </tabbar>
     <!--这里是被缓存的视图组件，比如 Home！-->
-    <transition :name="transitionName">
+    <transition :name="'vux-pop-' + (direction === 'forward' ? 'in' : 'out')">
       <keep-alive v-if="$route.meta.keepAlive">
         <router-view v-on:listenPage="getPageStatus"></router-view>
       </keep-alive>
     </transition>
     <!-- 这里是不被缓存的视图组件，比如 Edit！ -->
-    <transition :name="transitionName">
+    <transition :name="'vux-pop-' + (direction === 'forward' ? 'in' : 'out')">
       <keep-alive v-if="!$route.meta.keepAlive">
         <router-view v-on:listenPage="getPageStatus"></router-view>
       </keep-alive>
@@ -47,7 +47,8 @@
   // import $ from 'jquery'
   // import myMixin from 'myMixin'
   import Home from './pages/Home'
-  import { Tabbar, TabbarItem } from 'vux'
+  import {Tabbar, TabbarItem} from 'vux'
+  import {mapState, mapActions} from 'vuex'
   export default {
     name: 'app',
     data () {
@@ -62,8 +63,19 @@
     },
     mounted () {
       // me.attachClick()
+      // console.log(mapState)
     },
     computed: {
+      'direction' () {
+        /* ...mapState({
+         direction: state => state.mutations.direction,
+         }) */
+        return mapState({
+          direction: function direction (state) {
+            return state.mutations.direction
+          }
+        })
+      },
       'key' () {
         return this.$route.path.replace(/\//g, '_')
       }
