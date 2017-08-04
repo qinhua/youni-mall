@@ -430,7 +430,7 @@
         .abs-center-vertical;
         left: 5px;
         .rsize(28, 28);
-        background: url(../../static/img/ico_toutiao.png) center;
+        /*background: url(../../static/img/ico_toutiao.png) center;*/
         .ele-base;
       }
       .vux-marquee {

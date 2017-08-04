@@ -6,18 +6,22 @@ import Axios from 'axios'
 import Router from 'vue-router'
 import App from './App'
 import router from './router'
+import 'font-awesome/css/font-awesome.css'
+import 'ionicons/dist/css/ionicons.css'
 import $ from 'jquery'
 import 'font-awesome/css/font-awesome.css'
 import 'ionicons/dist/css/ionicons.css'
 import '../static/js/fastclick.js'
 import 'myMixin'
 import store from './store3/'
+import VueScroller from 'vue-scroller'
 // import MintUI from 'mint-ui'
 // import 'mint-ui/lib/style.css'
 // Vue.use(MintUI)
 
 Vue.config.productionTip = false
 
+Vue.use(VueScroller)
 /* 封装&扩展Vue */
 Vue.prototype.$axios = Axios
 Vue.prototype.loadData = function (url, params, type, sucCb, errCb) {
@@ -26,7 +30,7 @@ Vue.prototype.loadData = function (url, params, type, sucCb, errCb) {
     url: url,
     responseType: 'JSON'
   }).then(function (response) {
-    sucCb ? sucCb(response) : console.log(response, '首页bannerXXXX')
+    sucCb ? sucCb(response) : console.log(response, '接口的res')
   }).catch(function (error) {
     errCb ? errCb(error) : console.log(error, 522)
   })
