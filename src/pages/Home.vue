@@ -1,9 +1,11 @@
 <template>
   <div class="home">
+
+    <div id="mapContainer"></div>
     <!--定位组件-->
     <div class="location-chooser">
-      <p><span><i class="fa fa-map-marker"></i>&nbsp;您的位置</span>：武汉市洪山区光谷软件园B7栋</p>
-      <i class="right-arrow"></i>
+      <p><span><i class="fa fa-map-marker"></i>&nbsp;您的位置：</span>{{location}}</p>
+      <a href="#/map"><i class="right-arrow"></i></a>
     </div>
     <!--banner-->
     <div class="swiper-container swiper-home" v-if="banner.length">
@@ -89,7 +91,7 @@
               <group class="buy-count">
                 <!--<x-number v-model="roundValue" button-style="round" :min="0" :max="5"-->
                 <x-number button-style="round" :min="0" :max="5"
-                          @on-change="change(index)"></x-number>
+                          @on-change="changeCount()"></x-number>
               </group>
             </section>
           </section>
@@ -101,8 +103,9 @@
   </div>
 </template>
 
+<!--/* eslint-disable no-unused-vars,indent */-->
 <script>
-  /* eslint-disable no-unused-vars,indent */
+  /* eslint-disable */
   var me
   var vm
   import Swiper from 'swiper'
@@ -116,25 +119,6 @@
         banner: [],
         notice: [],
         goods: [],
-        list: [{
-          src: 'http://placeholder.qiniudn.com/60x60/3cc51f/ffffff',
-          title: '标题一',
-          desc: '由各种物质组成的巨型球状天体，叫做星球。星球有一定的形状，有自己的运行轨道。',
-          url: '/component/cell'
-        }, {
-          src: 'http://placeholder.qiniudn.com/60x60/3cc51f/ffffff',
-          title: '标题二',
-          desc: '由各种物质组成的巨型球状天体，叫做星球。星球有一定的形状，有自己的运行轨道。',
-          url: {
-            path: '/component/radio',
-            replace: false
-          },
-          meta: {
-            source: '来源信息',
-            date: '时间',
-            other: '其他信息'
-          }
-        }],
         filters: {
           goods: [
             {
@@ -256,10 +240,55 @@
       me = window.me
     },
     mounted () {
+      me = window.me
       vm = this
+      // me.back2Top()
       // me.attachClick()
 //      this.top = 1
 //      this.bottom = 20
+      try{
+        var gerLocation=function(){
+          var map, geolocation;
+          // 加载地图，调用浏览器定位服务
+          map = new AMap.Map('mapContainer', {
+            resizeEnable: true
+          });
+          map.plugin('AMap.Geolocation', function() {
+            geolocation = new AMap.Geolocation({
+              enableHighAccuracy: true,//是否使用高精度定位，默认:true
+              timeout: 10000,          //超过10秒后停止定位，默认：无穷大
+              buttonOffset: new AMap.Pixel(10, 20),//定位按钮与设置的停靠位置的偏移量，默认：Pixel(10, 20)
+              zoomToAccuracy: true,  //定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
+              buttonPosition:'RB'
+            });
+            map.addControl(geolocation);
+            geolocation.getCurrentPosition();
+            AMap.event.addListener(geolocation, 'complete', onComplete);//返回定位信息
+            AMap.event.addListener(geolocation, 'error', onError);      //返回定位出错信息
+          });
+          // 解析定位结果
+          function onComplete(data) {
+            vm.location = data.formattedAddress
+            var str=['定位成功'];
+            str.push('经度：' + data.position.getLng());
+            str.push('纬度：' + data.position.getLat());
+            if(data.accuracy){
+              str.push('精度：' + data.accuracy + ' 米');
+            }
+            // 如为IP精确定位结果则没有精度信息
+            str.push('是否经过偏移：' + (data.isConverted ? '是' : '否'));
+            // document.getElementById('tip').innerHTML = str.join('<br>');
+          }
+          // 解析定位错误信息
+          function onError(data) {
+            // document.getElementById('tip').innerHTML = '定位失败';
+          }
+        }
+        var lp = me.locals.get('cur5656Position')
+        vm.location = lp ? JSON.parse(lp).name : gerLocation()
+      }catch(e){
+        console.log(e)
+      }
       var mySwiper = function () {
         return new Swiper('.swiper-container.swiper-home', {
           initialSlide: 0,
@@ -291,6 +320,8 @@
 //      })
     },
     computed: {},
+    watch: {
+    },
     methods: {
       // 向父组件传值
       setPageStatus (data) {
@@ -356,7 +387,6 @@
         // 默认选中已选择的筛选条件
       },
       chooseFilter (idx, key, value, e) {
-        console.log(arguments)
         console.log(JSON.stringify(vm.filterData), vm.curFilterType)
         if (JSON.stringify(vm.filterData).indexOf(vm.curFilterType) === -1) {
           vm.filterData.push({
@@ -376,6 +406,7 @@
             }
           }
         }
+        vm.factive = ''
         vm.showFilterCon = false
         console.log(vm.filterData, '最后的筛选数据')
         var lastF = {
@@ -391,15 +422,14 @@
           // do nothing
           return false
         } else {
-          this.onFetching = true
+          // this.onFetching = true
           setTimeout(function () {
-//            vm.bottomCount += 10
+            // vm.bottomCount += 10
             vm.getGoods()
-            console.log(vm.$refs.scrollerBottom)
             vm.$nextTick(function () {
               vm.$refs.scrollerBottom.donePulldown()
+              vm.onFetching = false
             })
-            vm.onFetching = false
           }, 2000)
         }
       },
@@ -408,14 +438,14 @@
           // do nothing
           return false
         } else {
-          vm.onFetching = true
+          // vm.onFetching = true
           setTimeout(function () {
-//            vm.bottomCount += 10
+            // vm.bottomCount += 10
             vm.getGoods(true)
             vm.$nextTick(function () {
               vm.$refs.scrollerBottom.reset()
+              vm.onFetching = false
             })
-            vm.onFetching = false
           }, 2000)
         }
       },
@@ -430,7 +460,7 @@
           vm.$refs.scrollerEvent.reset({top: 0})
         })
       },
-      change (index, val) {
+      changeCount (index, val) {
         console.log(arguments)
       }
     }
@@ -447,13 +477,14 @@
   .location-chooser {
     .rel;
     .borBox;
-    padding: 0 20/@rem;
+    padding: 0 40/@rem 0 20/@rem;
     height: 80/@rem;
     line-height: 80/@rem;
     .bf5;
     p {
       .fz(24);
       .c6;
+      .ellipsis;
       span {
         .cdiy(#f34c18);
       }
@@ -713,9 +744,11 @@
             width: 50/@rem !important;
             height: 34/@rem !important;
             .fz(24);
+            ime-mode:disabled;
           }
           .vux-number-selector, .vux-number-selector-plus {
-            .size(34, 34);
+            .size(30, 30);
+            padding:2px;
             font-size: 0;
             line-height: 34/@rem;
             /*border-color: #f34c18;*/

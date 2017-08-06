@@ -1,0 +1,1 @@
+{"version":3,"sources":["config.js"],"names":[],"mappings":"AAAA;;;AAGA,eAAe;AACb,QAAM,uCADO;AAEb;AACA,YAAU;AAHG,CAAf","file":"config-compiled.js","sourcesContent":["/**\r\n * Created by Chin on 2017/7/29.\r\n */\r\nexport default {\r\n  host: 'http://wanjunjun.ngrok.wendal.cn/sail',\r\n  // host: 'http://192.168.0.91:591',\r\n  needMock: false\r\n}\r\n"]}

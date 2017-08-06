@@ -68,7 +68,6 @@
     mounted () {
       // me.attachClick()
       vm = this
-      // console.log(mapState)
     },
     computed: {
       'showTabbar' () {
@@ -104,7 +103,7 @@
             vm.curSelected = 5
             break
         }
-        console.log(to, from)
+//        console.log(to, from)
         const toDepth = to.path.split('/').length
         const fromDepth = from.path.split('/').length
         vm.direction = toDepth < fromDepth ? 'forward' : 'reverse'

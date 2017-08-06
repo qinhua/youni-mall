@@ -5,6 +5,7 @@ import Home from '@/pages/Home'
 import NearBy from '@/pages/NearBy'
 import Ticket from '@/pages/Ticket'
 import Order from '@/pages/Order'
+import Map from '@/pages/Map'
 import My from '@/pages/My'
 import MyAddress from '@/pages/my/MyAddress'
 import NoPage from '@/pages/NoPage'
@@ -41,7 +42,7 @@ export default new Router({
       }
     },
     {
-      path: '/ticket',
+      path: '/ticket/:type',
       name: '水票',
       component: Ticket,
       meta: {
@@ -49,7 +50,7 @@ export default new Router({
       }
     },
     {
-      path: '/ticket/:type',
+      path: '/ticket',
       name: '水票',
       component: Ticket,
       meta: {
@@ -76,6 +77,14 @@ export default new Router({
         name: '我的地址',
         component: MyAddress
       }]
+    },
+    {
+      path: '/map',
+      name: '地图',
+      component: Map,
+      meta: {
+        keepAlive: false
+      }
     },
     {
       path: '*',
