@@ -4,7 +4,7 @@
     <!--定位组件-->
     <div class="location-chooser">
       <p><span><i class="fa fa-map-marker"></i>&nbsp;您的位置：</span>{{location}}</p>
-      <a href="#/map"><i class="right-arrow"></i></a>
+      <a @click="toMap"><i class="right-arrow"></i></a>
     </div>
     <!--banner-->
     <div class="swiper-container swiper-home" v-if="banner.length">
@@ -23,13 +23,13 @@
         <grid-item label="订水" link="/nearby" @on-item-click="setPageStatus(1)">
           <img slot="icon" src="../../static/img/item_water.png">
         </grid-item>
-        <grid-item label="订奶" @on-item-click="setPageStatus(2)">
+        <grid-item label="订奶" link="/nearby" @on-item-click="setPageStatus(2)">
           <img slot="icon" src="../../static/img/item_milk.png">
         </grid-item>
-        <grid-item label="购物车">
+        <grid-item label="购物车" link="/cart">
           <img slot="icon" src="../../static/img/item_cart.png">
         </grid-item>
-        <grid-item label="红包">
+        <grid-item label="红包" link="/coupons">
           <img slot="icon" src="../../static/img/item_redpacket.png">
         </grid-item>
       </grid>
@@ -69,14 +69,12 @@
     </div>
     <!--店铺列表-->
     <div class="shops-list">
-      <scroller class="inner-scroller" lock-x height="auto" use-pulldown :pulldown-config="pulldownConfig"
+      <scroller class="inner-scroller" lock-x use-pulldown :pulldown-config="pulldownConfig"
                 @on-scroll="onScroll"
                 @on-pulldown-loading="onPullDown" @on-scroll-bottom="onScrollBottom" ref="scrollerBottom"
                 :scroll-bottom-offst="300">
         <div class="box">
-          <!--<p v-for="i in bottomCount">placeholder {{i}}</p>-->
-          <!--<load-more tip="loading"></load-more>-->
-          <section class="v-items" v-for="(item, index) in shops" :data-id="item.id">
+          <section class="v-items" v-for="(item, index) in shops" :data-id="item.id" @click.prevent="toDetail(item.id)">
             <section class="wrap">
               <img :src="item.imgurl">
               <section class="infos">
@@ -94,6 +92,14 @@
               <div class="bottom">
                 <label class="note" v-if="item.note"><i class="ico-hui"></i>{{item.note}}</label>
                 <span class="dispatchTime">平均{{item.dispatchTime}}分钟送达</span>
+              </div>
+            </section>
+            <section class="sleep-tips" v-if="item.sleep">
+              <div class="wrap">
+                <h3>商家已打烊（09:00~22:00）<br><span>非营业时间仍可预定</span>
+                  <button type="button" class="btn btn-reserve"><i class="fa fa-clock-o" aria-hidden="true"></i>&nbsp;预定
+                  </button>
+                </h3>
               </div>
             </section>
           </section>
@@ -203,6 +209,7 @@
         bottomCount: 20
       }
     },
+    // props: ['location'],
     components: {
       Group,
       GroupTitle,
@@ -222,46 +229,7 @@
       // me.attachClick()
 //      this.top = 1
 //      this.bottom = 20
-      var gerLocation=function(){
-        var map, geolocation;
-        // 加载地图，调用浏览器定位服务
-        map = new AMap.Map('mapContainer', {
-          resizeEnable: true
-        });
-        map.plugin('AMap.Geolocation', function() {
-          geolocation = new AMap.Geolocation({
-            enableHighAccuracy: true,//是否使用高精度定位，默认:true
-            timeout: 10000,          //超过10秒后停止定位，默认：无穷大
-            buttonOffset: new AMap.Pixel(10, 20),//定位按钮与设置的停靠位置的偏移量，默认：Pixel(10, 20)
-            zoomToAccuracy: true,  //定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
-            buttonPosition:'RB'
-          });
-          map.addControl(geolocation);
-          geolocation.getCurrentPosition();
-          AMap.event.addListener(geolocation, 'complete', onComplete);//返回定位信息
-          AMap.event.addListener(geolocation, 'error', onError);      //返回定位出错信息
-        });
-        //解析定位结果
-        function onComplete(data) {
-          vm.location = data.formattedAddress
-          var str=['定位成功'];
-          str.push('经度：' + data.position.getLng());
-          str.push('纬度：' + data.position.getLat());
-          if(data.accuracy){
-            str.push('精度：' + data.accuracy + ' 米');
-          }
-          // 如为IP精确定位结果则没有精度信息
-          str.push('是否经过偏移：' + (data.isConverted ? '是' : '否'));
-          // document.getElementById('tip').innerHTML = str.join('<br>');
-        }
-        // 解析定位错误信息
-        function onError(data) {
-          // document.getElementById('tip').innerHTML = '定位失败';
-        }
-      }
-      var lp = me.locals.get('cur5656Position')
-      console.log(lp)
-      vm.location = lp ? JSON.parse(lp).name : gerLocation()
+      vm.getPos()
       var mySwiper = function () {
         return new Swiper('.swiper-container.swiper-home', {
           initialSlide: 0,
@@ -294,14 +262,73 @@
     },
     computed: {},
     watch: {
-    },
+      'key' () {
+        return this.$route.path.replace(/\//g, '_')
+      }},
     methods: {
+      // 全局定位
+      getPos () {
+        var lp = me.locals.get('cur5656Position')
+        if (lp) {
+          vm.location = JSON.parse(lp).name
+          console.log(vm.location)
+        } else {
+          try {
+            var map, geolocation;
+            // 加载地图，调用浏览器定位服务
+            map = new AMap.Map('mapContainer', {
+              resizeEnable: true
+            });
+            map.plugin('AMap.Geolocation', function () {
+              geolocation = new AMap.Geolocation({
+                enableHighAccuracy: true,//是否使用高精度定位，默认:true
+                timeout: 10000,          //超过10秒后停止定位，默认：无穷大
+                buttonOffset: new AMap.Pixel(10, 20),//定位按钮与设置的停靠位置的偏移量，默认：Pixel(10, 20)
+                zoomToAccuracy: true,  //定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
+                buttonPosition: 'RB'
+              });
+              map.addControl(geolocation);
+              geolocation.getCurrentPosition();
+              AMap.event.addListener(geolocation, 'complete', onComplete);//返回定位信息
+              AMap.event.addListener(geolocation, 'error', onError);      //返回定位出错信息
+            });
+            // 解析定位结果
+            function onComplete(data) {
+              vm.location = data.formattedAddress
+              var str = ['定位成功'];
+              str.push('经度：' + data.position.getLng());
+              str.push('纬度：' + data.position.getLat());
+              if (data.accuracy) {
+                str.push('精度：' + data.accuracy + ' 米');
+              }
+              // 如为IP精确定位结果则没有精度信息
+              str.push('是否经过偏移：' + (data.isConverted ? '是' : '否'));
+              // document.getElementById('tip').innerHTML = str.join('<br>');
+            }
+
+            // 解析定位错误信息
+            function onError(data) {
+              vm.location = '定位失败'
+              // document.getElementById('tip').innerHTML = '定位失败';
+            }
+          } catch (e) {
+            console.log(e)
+          }
+        }
+      },
       // 向父组件传值
       setPageStatus (data) {
         this.$emit('listenPage', data)
       },
+      toMap (url) {
+        // vm.$router.push({path: '/map/' + this.$route.path.replace(/\//g, '_')})
+        vm.$router.push({path: '/map'})
+      },
       toTopic (url) {
         location.href = url
+      },
+      toDetail (id) {
+        vm.$router.push({path: '/detail/' + id})
       },
       /* 页面数据 */
       getBanner (cb) {
@@ -320,13 +347,13 @@
       getShops (isLoadMore) {
         if (vm.onFetching) return false
         var params = vm.filterData || {
-          pagerSize: 10,
-          pageNo: 1,
-          goodsType: 'XXX',
-          goodsCategory: '',
-          brandId: '',
-          filter: ''
-        }
+            pagerSize: 10,
+            pageNo: 1,
+            goodsType: 'XXX',
+            goodsCategory: '',
+            brandId: '',
+            filter: ''
+          }
         vm.loadData(nearbyApi.shopsList, params, 'POST', function (res) {
           console.log(res.data, '首页shopsList')
           if (!isLoadMore) {
@@ -360,6 +387,7 @@
         // 默认选中已选择的筛选条件
       },
       chooseFilter (idx, key, value, e) {
+        vm.shops = []
         console.log(JSON.stringify(vm.filterData), vm.curFilterType)
         if (JSON.stringify(vm.filterData).indexOf(vm.curFilterType) === -1) {
           vm.filterData.push({
@@ -400,7 +428,7 @@
             // vm.bottomCount += 10
             vm.getShops()
             vm.$nextTick(function () {
-              vm.$refs.scrollerBottom.donePulldown()
+              // vm.$refs.scrollerBottom.donePulldown()
               vm.onFetching = false
             })
           }, 2000)
@@ -441,7 +469,7 @@
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style lang='less' scoped>
+<style lang='less'>
   @import '../../static/css/tools.less';
 
   .nearby {
@@ -540,6 +568,7 @@
 
   .shops-filter {
     .rel;
+    z-index: 10;
     margin-bottom: 10/@rem;
     &.fix {
       .fix;
@@ -643,12 +672,48 @@
   .shops-list {
     height: auto;
     .inner-scroller {
+      .borBox;
       .static;
       .v-items {
+        .rel;
         padding: 20/@rem;
         .bf;
         &:not(:last-child) {
           .bor-b;
+        }
+        .sleep-tips {
+          .abs;
+          width: 100%;
+          height: 100%;
+          left: 0;
+          top: 0;
+          .cf;
+          .fz(30);
+          .bdiy(rgba(0, 0, 0, .6));
+          .wrap {
+            .borBox;
+            padding: 0 30/@rem;
+            .abs-center-vertical;
+            width: 100%;
+          }
+          h3 {
+            .rel;
+            width: 100%;
+            .txt-normal;
+            span {
+              .fz(20)
+            }
+          }
+          .btn-reserve {
+            .abs-center-vertical;
+            right: 0;
+            .size(120, 60);
+            line-height: 60/@rem;
+            .fz(24);
+            .cf;
+            .borR(4px);
+            .bdiy(rgba(45, 199, 108, 0.5))
+          }
         }
         .wrap {
           .rel;
@@ -689,15 +754,15 @@
               &.hasSell {
                 .c9;
                 .fz(22);
-                i{
-                  padding-right:30/@rem;
+                i {
+                  padding-right: 30/@rem;
                   .txt-normal;
                   .cdiy(#ff9900);
                 }
               }
             }
-            .star{
-              li{
+            .star {
+              li {
                 .fl;
                 margin-right: 10/@rem;
                 .cdiy(#ff9900);
@@ -707,57 +772,57 @@
           }
           ul {
             .flex-r(1);
-            li{
+            li {
               .fl;
               margin-right: 10/@rem;
-              padding:1px 8px;
-              line-height:1.8;
+              padding: 1px 8px;
+              line-height: 1.8;
               .cf;
               .fz(16);
               .borR(4px);
-              &.c1{
+              &.c1 {
                 .bdiy(#fd5900);
               }
-              &.c2{
+              &.c2 {
                 .bdiy(#78c725);
               }
-              &.c3{
+              &.c3 {
                 .bdiy(#c77e25);
               }
             }
           }
-          .distance{
+          .distance {
             .abs;
-            right:0;
+            right: 0;
             top: 0;
             .c9;
             .fz(20);
           }
         }
-        .bottom{
+        .bottom {
           overflow: hidden;
         }
-        .note{
+        .note {
           .fl;
           .rel;
-          padding:10/@rem 0 0 30/@rem;
+          padding: 10/@rem 0 0 30/@rem;
           .c6;
           .block;
           .fz(20);
-          &:before{
+          &:before {
             .abs;
             .block;
             left: 0;
-            top:12/@rem;
-            content:'';
+            top: 12/@rem;
+            content: '';
             .size(26, 26);
             background: url(../../static/img/ico_hui.png) center;
             .ele-base;
           }
         }
-        .dispatchTime{
+        .dispatchTime {
           .fr;
-          padding-top:10/@rem;
+          padding-top: 10/@rem;
           .c9;
           .block;
           .fz(20);

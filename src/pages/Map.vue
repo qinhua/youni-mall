@@ -21,29 +21,29 @@
     <!-- loading -->
     <div id="loader"></div>
     <!--<div id='right'>-->
-      <!--<div>-->
-        <!--<div class='title'>选择模式</div>-->
-        <!--<input type='radio' name='mode' value='dragMap' checked>拖拽地图模式</input>-->
-        <!--</br>-->
-        <!--<input type='radio' name='mode' value='dragMarker'>拖拽Marker模式</input>-->
-      <!--</div>-->
-      <!--<div>-->
-        <!--<button id='start'>开始选点</button>-->
-        <!--<button id='stop'>关闭选点</button>-->
-      <!--</div>-->
-      <!--<div>-->
-        <!--<div class='title'>选址结果</div>-->
-        <!--<div class='c'>经纬度:</div>-->
-        <!--<div id='lnglat'></div>-->
-        <!--<div class='c'>地址:</div>-->
-        <!--<div id='address'></div>-->
-        <!--<div class='c'>最近的路口:</div>-->
-        <!--<div id='nearestJunction'></div>-->
-        <!--<div class='c'>最近的路:</div>-->
-        <!--<div id='nearestRoad'></div>-->
-        <!--<div class='c'>最近的POI:</div>-->
-        <!--<div id='nearestPOI'></div>-->
-      <!--</div>-->
+    <!--<div>-->
+    <!--<div class='title'>选择模式</div>-->
+    <!--<input type='radio' name='mode' value='dragMap' checked>拖拽地图模式</input>-->
+    <!--</br>-->
+    <!--<input type='radio' name='mode' value='dragMarker'>拖拽Marker模式</input>-->
+    <!--</div>-->
+    <!--<div>-->
+    <!--<button id='start'>开始选点</button>-->
+    <!--<button id='stop'>关闭选点</button>-->
+    <!--</div>-->
+    <!--<div>-->
+    <!--<div class='title'>选址结果</div>-->
+    <!--<div class='c'>经纬度:</div>-->
+    <!--<div id='lnglat'></div>-->
+    <!--<div class='c'>地址:</div>-->
+    <!--<div id='address'></div>-->
+    <!--<div class='c'>最近的路口:</div>-->
+    <!--<div id='nearestJunction'></div>-->
+    <!--<div class='c'>最近的路:</div>-->
+    <!--<div id='nearestRoad'></div>-->
+    <!--<div class='c'>最近的POI:</div>-->
+    <!--<div id='nearestPOI'></div>-->
+    <!--</div>-->
     <!--</div>-->
 
   </div>
@@ -58,7 +58,9 @@
   export default {
     name: 'map',
     data () {
-      return {}
+      return {
+        lastPage: ''
+      }
     },
     components: {},
     beforeMount () {
@@ -67,6 +69,8 @@
     mounted () {
       vm = this
       // me.attachClick()
+      // vm.lastPage = vm.$route.params.path ? vm.$route.params.path.replace(/\_/g, '') : ''
+      // console.log(vm.lastPage)
       AMapUI.loadUI(['misc/PositionPicker'], function (PositionPicker) {
         // 创建地图
         var map = new AMap.Map('container', {
@@ -88,7 +92,7 @@
           }
         })
 
-        function ready () {
+        function ready() {
           // 搜索框支持自动完成提示
           var auto = new AMap.Autocomplete({
             input: 'tipinput'
@@ -120,9 +124,10 @@
             $(document.body).addClass('searching')
           })
           // 检查结果列表是否为空， 为空时显示必要的提示，即#emptyTip
-          function checkPoiList () {
+          function checkPoiList() {
             $('#panel').toggleClass('empty', !($.trim($('#poiList').html())))
           }
+
           checkPoiList()
           // 监听搜索列表的渲染完成事件
           AMap.event.addListener(placeSearch, 'renderComplete', function () {
@@ -132,9 +137,11 @@
           AMap.event.addListener(placeSearch, 'selectChanged', function (results) {
             // 获取当前选中的结果数据
             console.log(results.selected.data)
-            console.log(results.selected.data)
-            me.locals.set('cur5656Position', JSON.stringify(results.selected.data))
-            vm.$router.go(-1)
+            // me.locals.set('cur5656Position', JSON.stringify(results.selected.data))
+            // vm.$emit('listenLocation', results.selected.data.name);
+            // vm.$router.push({path: '/' + vm.lastPage})
+            vm.$router.push({path: '/nearby'})
+            // vm.$router.back()
           })
           // -----------------------------------------------
 //          var positionPicker = new PositionPicker({
@@ -197,6 +204,12 @@
       })
     },
     computed: {},
+    watch: {
+      '$route' (to, from) {
+        console.log(from)
+        vm.lastPage = this.$route.path
+      }
+    },
     methods: {
       // 向父组件传值
       setPageStatus (data) {
@@ -291,23 +304,24 @@
     }
   }
 
-  #right{
+  #right {
     .abs;
-    top:0;
+    top: 0;
     .borBox;
-    padding:100/@rem 50/@rem;
+    padding: 100/@rem 50/@rem;
     pointer-events: none;
   }
 
-  #page{
+  #page {
     .rel;
   }
-  #panel{
+
+  #panel {
     width: 100%;
     .abs;
-    bottom:0;
-    &.hidden{
-      top:auto;
+    bottom: 0;
+    &.hidden {
+      top: auto;
     }
   }
 </style>

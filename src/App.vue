@@ -1,7 +1,8 @@
 <template>
   <div class="container">
+    <div id="mapContainer"></div>
     <tabbar v-if="showTabbar" style="position:fixed">
-      <tabbar-item :selected="curSelected===1?true:false" link="/home" @on-item-click>
+      <tabbar-item :selected="(curSelected===1||$route.path=='/home')?true:false" link="/home" @on-item-click>
         <img slot="icon" src="../static/img/ico_home.png">
         <img slot="icon-active" src="../static/img/ico_home_sel.png">
         <span slot="label">首页</span>
@@ -21,7 +22,7 @@
         <img slot="icon-active" src="../static/img/ico_order_sel.png">
         <span slot="label">订单</span>
       </tabbar-item>
-      <tabbar-item :selected="(curSelected===5||$route.path=='/my')?true:false" badge="..." link="/my">
+      <tabbar-item :selected="(curSelected===5||$route.path=='/my')?true:false" show-dot link="/my">
         <img slot="icon" src="../static/img/ico_my.png">
         <img slot="icon-active" src="../static/img/ico_my_sel.png">
         <span slot="label">我的</span>
@@ -45,7 +46,7 @@
 </template>
 
 <script>
-  /* eslint-disable no-unused-vars */
+  /* eslint-disable */
   // import $ from 'jquery'
   // import myMixin from 'myMixin'
   var vm
@@ -71,8 +72,9 @@
     },
     computed: {
       'showTabbar' () {
+        // console.log(this.$route.path)
         var path = this.$route.path
-        return path === '/' || path === '/home' || path === '/home' || path === '/nearby' || path.indexOf('/ticket') > -1 || path === '/order' || path === '/my'
+        return path.indexOf('/home') > -1 || path.indexOf('/nearby') > -1 || path.indexOf('/ticket') > -1 || path.indexOf('/order') > -1 || path.indexOf('/my') > -1
       },
       'key' () {
         return this.$route.path.replace(/\//g, '_')

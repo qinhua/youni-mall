@@ -1,6 +1,6 @@
 <template>
   <div class="noPage">
-    <a class="btn btn-home" href='#/home'>返回首页</a>
+    <a class="btn btn-home" href="javascript:;" @click="goBack">返回</a>
   </div>
 </template>
 
@@ -8,7 +8,11 @@
   export default {
     name: 'noPage',
     data () {
-      return {
+      return {}
+    },
+    methods: {
+      goBack () {
+        this.$router.back()
       }
     }
   }

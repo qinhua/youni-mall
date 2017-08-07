@@ -18,10 +18,24 @@ Vue.use(VueScroller)
 /* 封装&扩展Vue */
 Vue.prototype.$axios = Axios
 Vue.prototype.loadData = function (url, params, type, sucCb, errCb) {
+  /* $.post(url, {'requestapp': params ? JSON.stringify(params) : '{}'},
+   function (res) {
+   if (res.success) {
+   sucCb ? sucCb(res) : console.log(res, '接口的res')
+   } else {
+   errCb ? errCb(res) : console.error('请求失败！')
+   }
+   }
+   ) */
+  /* Axios.post(url, {'requestapp': '{}'}).then(function (res) {
+   sucCb ? sucCb(res) : console.log(res, '接口的res')
+   }).catch(function (error) {
+   errCb ? errCb(error) : console.error(error, '错误信息')
+   }) */
   Axios({
     method: type || 'POST',
     url: url,
-    data: params || {},
+    data: {'requestapp': params ? JSON.stringify(params) : '{}'},
     responseType: 'JSON'
   }).then(function (res) {
     sucCb ? sucCb(res) : console.log(res, '接口的res')

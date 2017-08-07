@@ -1,89 +1,85 @@
 <template>
   <div class="ticket">
     <tab class="ticket-type" bar-active-color="transparent">
-      <tab-item :selected="!type?true:false" @on-item-click="onItemClick"><i class="fa fa-pencil-square-o"></i>&nbsp;购买水票
+      <tab-item :selected="!params.type?true:false" @on-item-click="onItemClick"><i class="fa fa-shopping-basket"></i>&nbsp;购买水票
       </tab-item>
-      <tab-item :selected="type?true:false" @on-item-click="onItemClick(1)"><i class="fa fa-user-circle-o"></i>&nbsp;我的水票
+      <tab-item :selected="params.type?true:false" @on-item-click="onItemClick(1)"><i class="fa fa-user-circle-o"></i>&nbsp;我的水票
       </tab-item>
     </tab>
-    <tab class="ticket-tab"  bar-active-color="transparent" v-show="type">
-      <tab-item selected  @on-item-click="filterTicket(0,true)">全部</tab-item>
+    <tab class="ticket-tab" bar-active-color="transparent" v-show="params.type">
+      <tab-item selected @on-item-click="filterTicket(0,true)">全部</tab-item>
       <tab-item @on-item-click="filterTicket(1,true)">买5送1</tab-item>
       <tab-item @on-item-click="filterTicket(2,true)">买10送2</tab-item>
       <tab-item @on-item-click="filterTicket(3,true)">已失效</tab-item>
     </tab>
-    <tab class="ticket-tab" bar-active-color="transparent" v-show="!type">
-      <tab-item selected  @on-item-click="filterTicket(0)">全部</tab-item>
+    <tab class="ticket-tab" bar-active-color="transparent" v-show="!params.type">
+      <tab-item selected @on-item-click="filterTicket(0)">全部</tab-item>
       <tab-item @on-item-click="filterTicket(1)">买5送1</tab-item>
       <tab-item @on-item-click="filterTicket(2)">买10送2</tab-item>
     </tab>
-    <scroller class="ticket-list" :on-refresh="refresh" :on-infinite="infinite" refreshText="下拉刷新" noDataText="没有更多数据"
+    <scroller class="ticket-list" height="100%" :on-refresh="refresh" :on-infinite="infinite" refreshText="下拉刷新"
+              noDataText="没有更多数据"
               snapping>
       <!-- content goes here -->
       <section class="v-items" v-for="(item, index) in tickets" :data-id="item.id">
         <section class="wrap">
           <img :src="item.imgurl">
           <section class="infos">
-            <h3>{{item.name}}</h3>
+            <h3>{{item.name}}<span class="count">数量：<i>{{item.count}}桶</i></span></h3>
             <section class="middle">
               <span class="price">￥{{item.price}}</span>
-              <span class="hasSell">已售{{item.saleCount}}单</span>
+              <span class="retail-price">零售价<i>￥{{item.retailPrice}}</i></span>
+              <button type="button" class="btn btn-buy" @click="buy(item.id)">购买</button>
             </section>
-            <label>{{item.label}}</label>
+            <label>{{item.note}}</label>
           </section>
         </section>
       </section>
     </scroller>
   </div>
 </template>
+
 <script>
   /* eslint-disable no-unused-vars */
   var me
   var vm
-  import {Tab, TabItem, Tabbar, TabbarItem, XNumber, Group, Cell} from 'vux'
+  import {Tab, TabItem} from 'vux'
   import {ticketApi} from '../store/home.js'
   export default {
     name: 'ticket',
     data () {
       return {
-        type: 0,
         curTicketFilter: '',
         tickets: [],
-        onFetching: false
+        params: {
+          type: 0,
+          pagerSize: 10,
+          pageNo: 1,
+          goodsType: 'XXX',
+          goodsCategory: '',
+          brandId: '',
+          filter: '',
+          onFetching: false
+        }
       }
     },
-    components: {Tab, TabItem, Tabbar, TabbarItem, XNumber, Group, Cell},
+    components: {Tab, TabItem},
     beforeMount () {
       me = window.me
     },
     mounted () {
       vm = this
-      vm.type = this.$route.params.type || ''
-      // vm.getTickets()
-      for (let i = 1; i <= 20; i++) {
-        this.items.push(i + ' - keep walking, be 2 with you.')
-      }
-      setTimeout(() => {
-        let start = this.top - 1
-        for (let i = start; i > start - 10; i--) {
-          this.items.splice(0, 0, i + ' - keep walking, be 2 with you.')
-        }
-        this.top = this.top - 10
-        // done()
-      }, 1500)
-      this.top = 1
-      this.bottom = 20
+      vm.params.type = this.$route.params.type || 0
     },
     computed: {
-      'type' () {
-        vm.type = this.$route.params.type
+      'params.type' () {
         return this.$route.params.type
       }
     },
     watch: {
       '$route' (to, from) {
-        console.log(to, from)
-        vm.getTickets(true)
+        vm.params.type = vm.$route.params.type
+        vm.getTickets()
       }
     },
     methods: {
@@ -91,61 +87,40 @@
       setPageStatus (data) {
         this.$emit('listenPage', data)
       },
+      buy (id) {
+        vm.$router.push({path: '/detail/' + id})
+      },
       refresh (done) {
         console.log('下拉加载')
-        // vm.getTickets()
-        console.log(this.top)
-        setTimeout(() => {
-          let start = this.top - 1
-          for (let i = start; i > start - 10; i--) {
-            this.items.splice(0, 0, i + ' - keep walking, be 2 with you.')
-          }
-          this.top = this.top - 10
-          // done()
-        }, 1500)
-        /* setTimeout(function () {
-          // vm.scroller.options.finishPullToRefresh()
-        }, 2000) */
+        setTimeout(function () {
+          vm.getTickets()
+          // this.finishInfinite(true)
+        }, 1000)
       },
       infinite (done) {
         console.log('无限滚动')
-        // vm.getTickets()
-        setTimeout(() => {
-          let start = this.bottom + 1
-
-          for (let i = start; i < start + 10; i++) {
-            this.items.push(i + ' - keep walking, be 2 with you.')
-          }
-          this.bottom = this.bottom + 10
-          done()
+        setTimeout(function () {
+          vm.getTickets(true)
         }, 1500)
       },
       onItemClick (type) {
         if (type) {
-          vm.type = 2
-          vm.getTickets(true)
+          vm.params.type = 2
         } else {
-          vm.type = 0
+          vm.params.type = 0
           this.$router.push({path: '/ticket'})
-          vm.getTickets()
         }
+        vm.getTickets()
       },
       filterTicket (type, isMine) {
         vm.curTicketFilter = type
-        vm.getTickets(isMine)
+        vm.getTickets()
       },
-      getTickets (isMine, isLoadMore) {
+      getTickets (isLoadMore) {
         if (vm.onFetching) return false
         // 根据isMine判断不同的水票类型
-        var params = vm.filterData || {
-          pagerSize: 10,
-          pageNo: 1,
-          goodsType: 'XXX',
-          goodsCategory: '',
-          brandId: '',
-          filter: ''
-        }
-        vm.loadData(ticketApi.tickets, params, 'POST', function (res) {
+        vm.onFetching = true
+        vm.loadData(ticketApi.tickets, vm.params, 'POST', function (res) {
           if (!isLoadMore) {
             vm.tickets = res.data.itemList
           } else {
@@ -165,20 +140,21 @@
 <style scoped lang='less'>
   @import '../../static/css/tools.less';
 
-  .ticket-type, .ticket-tab {
-    z-index: 10;
-  }
-  .ticket-tab {
-    &.vux-tab-selected {
-      .cdiy(#5cc5d0)!important;
-    }
-   }
-
   .ticket-type {
+    z-index: 10;
     .vux-tab-item {
       &.vux-tab-selected {
         .cf!important;
-        background: #5cc5d0!important;
+        background: #5cc5d0 !important;
+      }
+    }
+  }
+
+  .ticket-tab {
+    z-index: 10;
+    .vux-tab-item {
+      &.vux-tab-selected {
+        .cdiy(#5cc5d0) !important;
       }
     }
   }
@@ -219,27 +195,51 @@
           .c3;
           .ellipsis;
         }
+        .count {
+          .abs;
+          right: 0;
+          .fz(20);
+          .c3;
+          i {
+            .txt-normal;
+            .c9;
+          }
+        }
         .middle {
           .flex-r(1);
+          padding: 10/@rem 0;
           .price {
           }
           span {
             &.price {
               .c3;
-              .fz(24);
-              .txt-del;
+              .fz(26);
             }
-            &.hasSell {
+            &.retail-price {
               padding-left: 30/@rem;
               .c9;
               .fz(22);
+              .txt-del;
+              i {
+                .txt-normal;
+              }
             }
+          }
+          .btn-buy {
+            .fr;
+            padding: 2px 20/@rem;
+            .fz(24);
+            .cf;
+            /*.bdiy(#f16b41);*/
+            .bdiy(#5cc5d0);
+            .borR(4px);
           }
         }
         label {
           .flex-r(1);
           .cdiy(#f34c18);
           .fz(22);
+          .ellipsis;
         }
       }
     }

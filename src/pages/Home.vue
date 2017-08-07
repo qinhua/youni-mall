@@ -1,7 +1,5 @@
 <template>
   <div class="home">
-
-    <div id="mapContainer"></div>
     <!--定位组件-->
     <div class="location-chooser">
       <p><span><i class="fa fa-map-marker"></i>&nbsp;您的位置：</span>{{location}}</p>
@@ -24,13 +22,13 @@
         <grid-item label="订水" link="/nearby" @on-item-click="setPageStatus(1)">
           <img slot="icon" src="../../static/img/item_water.png">
         </grid-item>
-        <grid-item label="订奶" @on-item-click="setPageStatus(2)">
+        <grid-item label="订奶" link="/nearby" @on-item-click="setPageStatus(2)">
           <img slot="icon" src="../../static/img/item_milk.png">
         </grid-item>
-        <grid-item label="购物车">
+        <grid-item label="购物车" link="/cart">
           <img slot="icon" src="../../static/img/item_cart.png">
         </grid-item>
-        <grid-item label="红包">
+        <grid-item label="红包" link="/coupons">
           <img slot="icon" src="../../static/img/item_redpacket.png">
         </grid-item>
       </grid>
@@ -70,14 +68,14 @@
     </div>
     <!--商品列表-->
     <div class="goods-list">
-      <scroller class="inner-scroller" lock-x height="500px" use-pulldown :pulldown-config="pulldownConfig"
+      <scroller class="inner-scroller" lock-x use-pulldown :pulldown-config="pulldownConfig"
                 @on-scroll="onScroll"
                 @on-pulldown-loading="onPullDown" @on-scroll-bottom="onScrollBottom" ref="scrollerBottom"
                 :scroll-bottom-offst="300">
         <div class="box">
           <!--<p v-for="i in bottomCount">placeholder {{i}}</p>-->
           <!--<load-more tip="loading"></load-more>-->
-          <section class="v-items" v-for="(item, index) in goods" :data-id="item.id">
+          <section class="v-items" v-for="(item, index) in goods" :data-id="item.id" @click.prevent="toDetail(item.id)">
             <section class="wrap">
               <img :src="item.imgurl">
               <section class="infos">
@@ -89,9 +87,7 @@
                 <label>{{item.label}}</label>
               </section>
               <group class="buy-count">
-                <!--<x-number v-model="roundValue" button-style="round" :min="0" :max="5"-->
-                <x-number button-style="round" :min="0" :max="5"
-                          @on-change="changeCount()"></x-number>
+                <x-number button-style="round" :min="0" :max="50" @on-change.stop="changeCount()"></x-number>
               </group>
             </section>
           </section>
@@ -225,6 +221,7 @@
         bottomCount: 20
       }
     },
+    // props: ['location'],
     components: {
       Group,
       GroupTitle,
@@ -245,50 +242,8 @@
       // me.back2Top()
       // me.attachClick()
 //      this.top = 1
-//      this.bottom = 20
-      try{
-        var gerLocation=function(){
-          var map, geolocation;
-          // 加载地图，调用浏览器定位服务
-          map = new AMap.Map('mapContainer', {
-            resizeEnable: true
-          });
-          map.plugin('AMap.Geolocation', function() {
-            geolocation = new AMap.Geolocation({
-              enableHighAccuracy: true,//是否使用高精度定位，默认:true
-              timeout: 10000,          //超过10秒后停止定位，默认：无穷大
-              buttonOffset: new AMap.Pixel(10, 20),//定位按钮与设置的停靠位置的偏移量，默认：Pixel(10, 20)
-              zoomToAccuracy: true,  //定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
-              buttonPosition:'RB'
-            });
-            map.addControl(geolocation);
-            geolocation.getCurrentPosition();
-            AMap.event.addListener(geolocation, 'complete', onComplete);//返回定位信息
-            AMap.event.addListener(geolocation, 'error', onError);      //返回定位出错信息
-          });
-          // 解析定位结果
-          function onComplete(data) {
-            vm.location = data.formattedAddress
-            var str=['定位成功'];
-            str.push('经度：' + data.position.getLng());
-            str.push('纬度：' + data.position.getLat());
-            if(data.accuracy){
-              str.push('精度：' + data.accuracy + ' 米');
-            }
-            // 如为IP精确定位结果则没有精度信息
-            str.push('是否经过偏移：' + (data.isConverted ? '是' : '否'));
-            // document.getElementById('tip').innerHTML = str.join('<br>');
-          }
-          // 解析定位错误信息
-          function onError(data) {
-            // document.getElementById('tip').innerHTML = '定位失败';
-          }
-        }
-        var lp = me.locals.get('cur5656Position')
-        vm.location = lp ? JSON.parse(lp).name : gerLocation()
-      }catch(e){
-        console.log(e)
-      }
+//      this.bottom = 20vm.getPos()
+      vm.getPos()
       var mySwiper = function () {
         return new Swiper('.swiper-container.swiper-home', {
           initialSlide: 0,
@@ -320,15 +275,70 @@
 //      })
     },
     computed: {},
-    watch: {
-    },
+    watch: {},
     methods: {
+      // 全局定位
+      getPos () {
+        var lp = me.locals.get('cur5656Position')
+        if (lp) {
+          vm.location = JSON.parse(lp).name
+          console.log(vm.location)
+        } else {
+          try {
+            var map, geolocation;
+            // 加载地图，调用浏览器定位服务
+            map = new AMap.Map('mapContainer', {
+              resizeEnable: true
+            });
+            map.plugin('AMap.Geolocation', function () {
+              geolocation = new AMap.Geolocation({
+                enableHighAccuracy: true,//是否使用高精度定位，默认:true
+                timeout: 10000,          //超过10秒后停止定位，默认：无穷大
+                buttonOffset: new AMap.Pixel(10, 20),//定位按钮与设置的停靠位置的偏移量，默认：Pixel(10, 20)
+                zoomToAccuracy: true,  //定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
+                buttonPosition: 'RB'
+              });
+              map.addControl(geolocation);
+              geolocation.getCurrentPosition();
+              AMap.event.addListener(geolocation, 'complete', onComplete);//返回定位信息
+              AMap.event.addListener(geolocation, 'error', onError);      //返回定位出错信息
+            });
+            // 解析定位结果
+            function onComplete(data) {
+              vm.location = data.formattedAddress
+              var str = ['定位成功'];
+              str.push('经度：' + data.position.getLng());
+              str.push('纬度：' + data.position.getLat());
+              if (data.accuracy) {
+                str.push('精度：' + data.accuracy + ' 米');
+              }
+              // 如为IP精确定位结果则没有精度信息
+              str.push('是否经过偏移：' + (data.isConverted ? '是' : '否'));
+              // document.getElementById('tip').innerHTML = str.join('<br>');
+            }
+
+            // 解析定位错误信息
+            function onError(data) {
+              vm.location = '定位失败'
+              // document.getElementById('tip').innerHTML = '定位失败';
+            }
+          } catch (e) {
+            console.log(e)
+          }
+        }
+      },
       // 向父组件传值
       setPageStatus (data) {
         this.$emit('listenPage', data)
       },
+      onScroll () {
+        console.log(arguments)
+      },
       toTopic (url) {
         location.href = url
+      },
+      toDetail (id) {
+        vm.$router.push({path: '/detail/' + id})
       },
       /* 页面数据 */
       getBanner (cb) {
@@ -387,6 +397,7 @@
         // 默认选中已选择的筛选条件
       },
       chooseFilter (idx, key, value, e) {
+        vm.goods = []
         console.log(JSON.stringify(vm.filterData), vm.curFilterType)
         if (JSON.stringify(vm.filterData).indexOf(vm.curFilterType) === -1) {
           vm.filterData.push({
@@ -438,6 +449,9 @@
           // do nothing
           return false
         } else {
+          /* if(vm.$refs.scrollerBottom.top<500){
+           return
+           } */
           // vm.onFetching = true
           setTimeout(function () {
             // vm.bottomCount += 10
@@ -567,6 +581,7 @@
 
   .goods-filter {
     .rel;
+    z-index: 10;
     margin-bottom: 10/@rem;
     &.fix {
       .fix;
@@ -670,6 +685,7 @@
   .goods-list {
     height: auto;
     .inner-scroller {
+      .borBox;
       .static;
       .v-items {
         padding: 20/@rem;
@@ -706,6 +722,7 @@
           }
           .middle {
             .flex-r(1);
+            padding: 10/@rem 0;
             .price {
             }
             span {
@@ -744,11 +761,11 @@
             width: 50/@rem !important;
             height: 34/@rem !important;
             .fz(24);
-            ime-mode:disabled;
+            ime-mode: disabled;
           }
           .vux-number-selector, .vux-number-selector-plus {
             .size(30, 30);
-            padding:2px;
+            padding: 2px;
             font-size: 0;
             line-height: 34/@rem;
             /*border-color: #f34c18;*/

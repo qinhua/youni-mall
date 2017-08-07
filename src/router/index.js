@@ -7,7 +7,12 @@ import Ticket from '@/pages/Ticket'
 import Order from '@/pages/Order'
 import Map from '@/pages/Map'
 import My from '@/pages/My'
-import MyAddress from '@/pages/my/MyAddress'
+import MyCoupons from '@/pages/my/Coupons'
+import MyGuarantee from '@/pages/my/Guarantee'
+import MyAddress from '@/pages/my/Address'
+import MyFavorite from '@/pages/my/Favorite'
+import Help from '@/pages/my/Help'
+import About from '@/pages/my/About'
 import NoPage from '@/pages/NoPage'
 Router.prototype.goBack = function () {
   this.isBack = true
@@ -20,9 +25,10 @@ export default new Router({
     {
       path: '/',
       name: '首页',
+      redirect: '/home',
       component: Home,
       meta: {
-        keepAlive: true // 是否需要缓存
+        keepAlive: false // 是否需要缓存
       }
     },
     {
@@ -30,7 +36,7 @@ export default new Router({
       name: '首页',
       component: Home,
       meta: {
-        keepAlive: true
+        keepAlive: false
       }
     },
     {
@@ -42,7 +48,7 @@ export default new Router({
       }
     },
     {
-      path: '/ticket/:type',
+      path: '/ticket',
       name: '水票',
       component: Ticket,
       meta: {
@@ -50,7 +56,7 @@ export default new Router({
       }
     },
     {
-      path: '/ticket',
+      path: '/ticket/:type',
       name: '水票',
       component: Ticket,
       meta: {
@@ -66,17 +72,73 @@ export default new Router({
       }
     },
     {
+      path: '/order/:type',
+      name: '订单',
+      component: Order,
+      meta: {
+        keepAlive: false
+      }
+    },
+    {
       path: '/my',
       name: '我的',
       component: My,
       meta: {
         keepAlive: false
-      },
-      children: [{
+      }
+      /* children: [{
         path: '/myaddress',
         name: '我的地址',
         component: MyAddress
-      }]
+      }] */
+    },
+    {
+      path: '/mycoupons',
+      name: '我的卡券',
+      component: MyCoupons,
+      meta: {
+        keepAlive: false
+      }
+    },
+    {
+      path: '/myguarantee',
+      name: '我的押金',
+      component: MyGuarantee,
+      meta: {
+        keepAlive: false
+      }
+    },
+    {
+      path: '/myaddress',
+      name: '我的地址',
+      component: MyAddress,
+      meta: {
+        keepAlive: false
+      }
+    },
+    {
+      path: '/myfavor',
+      name: '我的收藏',
+      component: MyFavorite,
+      meta: {
+        keepAlive: false
+      }
+    },
+    {
+      path: '/help',
+      name: '使用帮助',
+      component: Help,
+      meta: {
+        keepAlive: false
+      }
+    },
+    {
+      path: '/aboutus',
+      name: '关于友你',
+      component: About,
+      meta: {
+        keepAlive: false
+      }
     },
     {
       path: '/map',
@@ -86,6 +148,14 @@ export default new Router({
         keepAlive: false
       }
     },
+    /* {
+      path: '/map/:path',
+      name: '地图',
+      component: Map,
+      meta: {
+        keepAlive: false
+      }
+    }, */
     {
       path: '*',
       name: '404',
