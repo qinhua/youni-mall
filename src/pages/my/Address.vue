@@ -1,6 +1,6 @@
 <template>
   <div class="my-address">
-      <div class="add-address"><span><i class="fa fa-plus"></i>添加新地址</span></div>
+      <div class="add-address"><i class="fa fa-plus"></i>&nbsp;添加新地址</div>
       <group class="address-list">
         <cell title="家庭地址" link="/pages/my/RedPocket">
           <i slot="icon" width="20" style="margin-right:5px;" class="fa fa-pencil-square-o"></i>
@@ -41,21 +41,17 @@
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style lang='less'>
+<style scoped  lang='less'>
   @import '../../../static/css/tools.less';
   .my-address{
     padding-bottom: 60px;
     .add-address{
       .borBox;
-      padding:30/@rem;
+      padding:24/@rem;
       .center;
-      .bf;
-      /*background:#5c70ff url(../../../static/img/bg_av.jpg);
-      .bg100;*/
-      span{
-        .fz(26);
-        .c3;
-      }
+      .cf;
+      .fz(28);
+      .bdiy(@c2);
     }
     .address-list{
       .weui-cells{

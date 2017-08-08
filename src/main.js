@@ -12,10 +12,14 @@ import '../static/js/fastclick.js'
 import 'myMixin'
 import store from './store3/'
 import VueScroller from 'vue-scroller'
-
+import {AlertPlugin, ConfirmPlugin, ToastPlugin, LoadingPlugin} from 'vux'
+Vue.use(ConfirmPlugin)
+Vue.use(AlertPlugin)
+Vue.use(ToastPlugin)
+Vue.use(LoadingPlugin)
 Vue.config.productionTip = false
 Vue.use(VueScroller)
-/* 封装&扩展Vue */
+/* 封装ajax请求 */
 Vue.prototype.$axios = Axios
 Vue.prototype.loadData = function (url, params, type, sucCb, errCb) {
   /* $.post(url, {'requestapp': params ? JSON.stringify(params) : '{}'},
@@ -43,8 +47,68 @@ Vue.prototype.loadData = function (url, params, type, sucCb, errCb) {
     errCb ? errCb(error) : console.error(error, '错误信息')
   })
 }
+/* 封装alert */
+Vue.prototype.alert = function (title, content, showCb, hideCb) {
+  const _this = this
+  _this.$vux.alert.show({
+    title: title || '',
+    content: content || '',
+    onShow () {
+      showCb ? showCb() : null
+    },
+    onHide () {
+      hideCb ? hideCb() : null
+    }
+  })
+}
+/* 封装confirm */
+Vue.prototype.confirm = function (title, content, confirmCb, cancelCb) {
+  const _this = this
+  _this.$vux.confirm.show({
+    theme: 'ios',
+    title: title || '',
+    content: content || '',
+    onCancel () {
+      cancelCb ? cancelCb() : null
+    },
+    onConfirm () {
+      confirmCb ? confirmCb() : null
+    },
+    onShow () {
+    },
+    onHide () {
+    }
+  })
+}
+/* 封装toast */
+Vue.prototype.toast = function (content, position, cb) {
+  const _this = this
+  _this.$vux.toast.show({
+    text: content || 'something',
+    time: 2000,
+    position: position || 'top'
+  })
+  cb ? cb() : null
+  // _this.$vux.toast.text('hello', 'top')
+}
+/* 封装loading */
+Vue.prototype.loading = function (content, isClose, cb, timeCb) {
+  const _this = this
+  if (isClose) {
+    _this.$vux.loading.hide()
+    return false
+  } else {
+    _this.$vux.loading.show({
+      text: content || '努力中…'
+    })
+    cb ? cb() : null
+    setTimeout(function () {
+      _this.$vux.loading.hide()
+      timeCb ? timeCb() : null
+    }, 2000)
+  }
+}
 
-// main.js
 const history = window.sessionStorage
 history.clear()
 let historyCount = history.getItem('count') * 1 || 0

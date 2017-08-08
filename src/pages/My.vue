@@ -11,7 +11,7 @@
     <div class="order-model">
       <div class="arc"></div>
       <grid :rows="5">
-        <grid-item @on-item-click="goOrder(0)">
+        <grid-item @on-item-click="goOrder(1)">
           <p>2</p>
           <label>待支付</label>
         </grid-item>
@@ -19,15 +19,15 @@
           <p>0</p>
           <label>待接单</label>
         </grid-item>
-        <grid-item @on-item-click="goOrder(1)">
+        <grid-item @on-item-click="goOrder(2)">
           <p>0</p>
           <label>待派送</label>
         </grid-item>
-        <grid-item @on-item-click="goOrder(3)">
+        <grid-item @on-item-click="goOrder()">
           <p>1</p>
           <label>派送中</label>
         </grid-item>
-        <grid-item @on-item-click="goOrder(2)">
+        <grid-item @on-item-click="goOrder(3)">
           <p>2</p>
           <label>待评价</label>
         </grid-item>

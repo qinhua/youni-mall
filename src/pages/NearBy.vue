@@ -221,7 +221,6 @@
     },
     beforeMount () {
       me = window.me
-      console.log(5)
     },
     mounted () {
       vm = this
@@ -365,7 +364,7 @@
       /* 商品筛选 */
       showFilter (type, e) {
         vm.factive = type
-        console.log(vm.active)
+        // console.log(vm.active)
         if (vm.showFilterCon) {
           if (vm.curFilterType === type) {
             vm.factive = ''

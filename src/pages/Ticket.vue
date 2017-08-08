@@ -69,7 +69,7 @@
     },
     mounted () {
       vm = this
-      vm.params.type = this.$route.params.type || 0
+      vm.getTickets()
     },
     /* computed: {
       'params.type' () {
@@ -78,7 +78,6 @@
     }, */
     watch: {
       '$route' (to, from) {
-        vm.params.type = vm.$route.params.type
         vm.getTickets()
       }
     },
@@ -95,13 +94,13 @@
         setTimeout(function () {
           vm.getTickets()
           // this.finishInfinite(true)
-        }, 1000)
+        }, 1200)
       },
       infinite (done) {
         console.log('无限滚动')
         setTimeout(function () {
           vm.getTickets(true)
-        }, 1500)
+        }, 2000)
       },
       onItemClick (type) {
         if (type) {
@@ -117,6 +116,7 @@
         vm.getTickets()
       },
       getTickets (isLoadMore) {
+        vm.params.type = this.$route.params.type || 0
         if (vm.onFetching) return false
         // 根据isMine判断不同的水票类型
         vm.onFetching = true

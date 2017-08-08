@@ -1,11 +1,11 @@
 <template>
   <div class="order">
     <tab class="order-tab" active-color="#f34c18">
-      <tab-item :selected="!params.type?true:false" @on-item-click="onItemClick">全部</tab-item>
-      <tab-item :selected="params.type===0?true:false" selected @on-item-click="onItemClick(0)">待支付</tab-item>
-      <tab-item :selected="params.type===1?true:false" @on-item-click="onItemClick(1)">待派送</tab-item>
-      <tab-item :selected="params.type===2?true:false" @on-item-click="onItemClick(2)">待评价</tab-item>
-      <tab-item :selected="params.type===3?true:false" @on-item-click="onItemClick(3)">已完成</tab-item>
+      <tab-item :selected="params.type==0?true:false" @on-item-click="onItemClick">全部</tab-item>
+      <tab-item :selected="params.type==1?true:false" @on-item-click="onItemClick(1)">待支付</tab-item>
+      <tab-item :selected="params.type==2?true:false" @on-item-click="onItemClick(2)">待派送</tab-item>
+      <tab-item :selected="params.type==3?true:false" @on-item-click="onItemClick(3)">待评价</tab-item>
+      <tab-item :selected="params.type==4?true:false" @on-item-click="onItemClick(4)">已完成</tab-item>
     </tab>
     <scroller class="order-list" :on-refresh="refresh" :on-infinite="infinite" refreshText="下拉刷新" noDataText="没有更多数据"
               snapping>
@@ -32,11 +32,11 @@
         </section>
         <section class="item-bottom">
           <div class="extra-info">
-            <p v-for="(ext, idx) in item.extras">{{ext.name}}<span>￥{{ext.type?'-':''}}{{ext.value}}.00</span></p>
+            <p v-for="(ext, idx) in item.extras">{{ext.name}}<span>￥{{ext.type ? '-' : ''}}{{ext.value}}.00</span></p>
           </div>
           <div class="total-price">共{{item.buyCount}}件商品&nbsp;合计：<span>￥{{item.total}}</span>.00（含上楼费）</div>
           <div class="btns" v-if="item.status===-1">
-            <a class="btn btn-del">删除订单</a>
+            <a class="btn btn-del" @click.prevent="delOrder(item.orderId||2)">删除订单</a>
           </div>
           <div class="btns" v-if="item.status===0">
             <a class="btn btn-pay">支付</a>
@@ -61,21 +61,23 @@
     </scroller>
   </div>
 </template>
-
+<!--/* eslint-disable no-unused-vars */-->
 <script>
-  /* eslint-disable no-unused-vars */
+  /* eslint-disable */
   var me
   var vm
   import {Tab, TabItem} from 'vux'
   import {orderApi} from '../store/home.js'
+
   export default {
     name: 'order',
     data () {
       return {
+        show: false,
         curOrderFilter: '',
         orders: [],
         params: {
-          type: '',
+          type: 0,
           pagerSize: 10,
           pageNo: 1,
           goodsType: 'XXX',
@@ -87,23 +89,17 @@
       }
     },
     components: {Tab, TabItem},
-    beforeMount () {
+    beforeMount() {
       me = window.me
     },
     mounted () {
       vm = this
       vm.getOrders()
-      console.log(vm.$route.params.type)
     },
     computed: {
-      'params.type' () {
-        return this.$route.params.type
-      }
     },
     watch: {
       '$route' (to, from) {
-        console.log(vm.params.type)
-        vm.params.type = vm.$route.params.type
         vm.getOrders()
       }
     },
@@ -122,7 +118,7 @@
         console.log('无限滚动')
         setTimeout(function () {
           vm.getOrders(true)
-        }, 1200)
+        }, 2000)
       },
       onItemClick (type) {
         if (type === 'undefined') {
@@ -137,7 +133,10 @@
         vm.getOrders()
       },
       getOrders (isLoadMore) {
+        vm.params.type = vm.$route.params.type
+        console.log(vm.params.type)
         if (vm.onFetching) return false
+        vm.loading()
         vm.onFetching = true
         vm.loadData(orderApi.orders, vm.params, 'POST', function (res) {
           var resD = res.data.itemList
@@ -170,8 +169,33 @@
           }
           console.log(vm.orders)
           vm.onFetching = false
+          vm.loading(0,1)
         }, function () {
           vm.onFetching = false
+          vm.loading(0,1)
+        })
+      },
+      delOrder (id) {
+        vm.confirm('确认删除？', '订单删除后不可恢复！', function () {
+          vm.loadData(orderApi.delOrder + '?id=' + id, vm.params, 'POST', function (res) {
+            vm.isPosting = true
+            vm.isPosting = false
+          }, function () {
+            vm.isPosting = false
+          })
+        }, function(){
+        })
+      },
+      cancelOrder (id) {
+        if (vm.isPosting) return false
+        vm.confirm('确认删除？', '订单删除后不可恢复！', function () {
+          vm.loadData(orderApi.delOrder, vm.params, 'POST', function (res) {
+            vm.isPosting = false
+          }, function () {
+            vm.isPosting = false
+          })
+        }, function(){
+          // console.log('no')
         })
       }
     }
