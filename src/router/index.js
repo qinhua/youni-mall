@@ -80,17 +80,17 @@ export default new Router({
       }
     },
     {
-      path: '/my',
+      path: '/user',
       name: '我的',
       component: My,
       meta: {
         keepAlive: false
       }
       /* children: [{
-        path: '/myaddress',
-        name: '我的地址',
-        component: MyAddress
-      }] */
+       path: '/myaddress',
+       name: '我的地址',
+       component: MyAddress
+       }] */
     },
     {
       path: '/mycoupons',
@@ -148,14 +148,14 @@ export default new Router({
         keepAlive: false
       }
     },
-    /* {
+    {
       path: '/map/:path',
       name: '地图',
       component: Map,
       meta: {
         keepAlive: false
       }
-    }, */
+    },
     {
       path: '*',
       name: '404',

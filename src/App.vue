@@ -22,7 +22,7 @@
         <img slot="icon-active" src="../static/img/ico_order_sel.png">
         <span slot="label">订单</span>
       </tabbar-item>
-      <tabbar-item :selected="(curSelected===5||$route.path=='/my')?true:false" show-dot link="/my">
+      <tabbar-item :selected="(curSelected===5||$route.path=='/user')?true:false" show-dot link="/user">
         <img slot="icon" src="../static/img/ico_my.png">
         <img slot="icon-active" src="../static/img/ico_my_sel.png">
         <span slot="label">我的</span>
@@ -74,7 +74,7 @@
       'showTabbar' () {
         // console.log(this.$route.path)
         var path = this.$route.path
-        return path.indexOf('/home') > -1 || path.indexOf('/nearby') > -1 || path.indexOf('/ticket') > -1 || path.indexOf('/order') > -1 || path.indexOf('/my') > -1
+        return path.indexOf('/home') > -1 || path.indexOf('/nearby') > -1 || path.indexOf('/ticket') > -1 || path.indexOf('/order') > -1 || path.indexOf('/user') > -1
       },
       'key' () {
         return this.$route.path.replace(/\//g, '_')

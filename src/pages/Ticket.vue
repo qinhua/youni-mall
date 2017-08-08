@@ -71,11 +71,11 @@
       vm = this
       vm.params.type = this.$route.params.type || 0
     },
-    computed: {
+    /* computed: {
       'params.type' () {
         return this.$route.params.type
       }
-    },
+    }, */
     watch: {
       '$route' (to, from) {
         vm.params.type = vm.$route.params.type

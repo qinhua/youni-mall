@@ -69,81 +69,92 @@
     mounted () {
       vm = this
       // me.attachClick()
-      // vm.lastPage = vm.$route.params.path ? vm.$route.params.path.replace(/\_/g, '') : ''
-      // console.log(vm.lastPage)
-      AMapUI.loadUI(['misc/PositionPicker'], function (PositionPicker) {
-        // 创建地图
-        var map = new AMap.Map('container', {
-          zoom: 9
-          // center: [116.868549, 34.918187]
-        })
-
-        var positionPicker = new PositionPicker({
-          mode: 'dragMap',
-          map: map
-        })
-
-        // 加载PlaceSearch和Autocomplete插件
-        AMap.service(['AMap.PlaceSearch', 'AMap.Autocomplete'], function () {
-          try {
-            ready()
-          } catch (e) {
-            console.error(e)
-          }
-        })
-
-        function ready() {
-          // 搜索框支持自动完成提示
-          var auto = new AMap.Autocomplete({
-            input: 'tipinput'
-          })
-
-          // 构造地点查询类
-          var placeSearch = new AMap.PlaceSearch({
-            pageSize: 5,
-            pageIndex: 1,
-            map: map,
-            panel: 'poiList'
-          })
-
-          // 监听搜索框的提示选中事件
-          AMap.event.addListener(auto, 'select', function (e) {
-            // 设置搜索的城市
-            placeSearch.setCity(e.poi.adcode)
-            // 开始搜索对应的poi名称
-            placeSearch.search(e.poi.name, function (status, results) {
-              if (results.pois && results.pois.length > 0) {
-                $('#panel').toggleClass('empty')
-              }
-              // 显示结果列表
-              $('#panel').removeClass('hidden')
-              // 隐藏loading状态
-              $(document.body).removeClass('searching')
+      me.locals.remove('cur5656Position')
+      vm.showMap()
+    },
+    computed: {
+    },
+    watch: {
+      '$route' (to, from) {
+        vm.showMap()
+      }
+    },
+    methods: {
+      showMap () {
+        vm.lastPage = vm.$route.params.path ? vm.$route.params.path.replace(/\_/g, '/') : ''
+        console.log('上一页：' + vm.lastPage)
+        try {
+          AMapUI.loadUI(['misc/PositionPicker'], function (PositionPicker) {
+            // 创建地图
+            var map = new AMap.Map('container', {
+              zoom: 9
+              // center: [116.868549, 34.918187]
             })
-            // 显示loading状态
-            $(document.body).addClass('searching')
-          })
-          // 检查结果列表是否为空， 为空时显示必要的提示，即#emptyTip
-          function checkPoiList() {
-            $('#panel').toggleClass('empty', !($.trim($('#poiList').html())))
-          }
 
-          checkPoiList()
-          // 监听搜索列表的渲染完成事件
-          AMap.event.addListener(placeSearch, 'renderComplete', function () {
-            checkPoiList()
-          })
-          // 监听marker/列表的选中事件
-          AMap.event.addListener(placeSearch, 'selectChanged', function (results) {
-            // 获取当前选中的结果数据
-            console.log(results.selected.data)
-            // me.locals.set('cur5656Position', JSON.stringify(results.selected.data))
-            // vm.$emit('listenLocation', results.selected.data.name);
-            // vm.$router.push({path: '/' + vm.lastPage})
-            vm.$router.push({path: '/nearby'})
-            // vm.$router.back()
-          })
-          // -----------------------------------------------
+            var positionPicker = new PositionPicker({
+              mode: 'dragMap',
+              map: map
+            })
+
+            // 加载PlaceSearch和Autocomplete插件
+            AMap.service(['AMap.PlaceSearch', 'AMap.Autocomplete'], function () {
+              try {
+                ready()
+              } catch (e) {
+                console.error(e)
+              }
+            })
+
+            function ready() {
+              // 搜索框支持自动完成提示
+              var auto = new AMap.Autocomplete({
+                input: 'tipinput'
+              })
+
+              // 构造地点查询类
+              var placeSearch = new AMap.PlaceSearch({
+                pageSize: 5,
+                pageIndex: 1,
+                map: map,
+                panel: 'poiList'
+              })
+
+              // 监听搜索框的提示选中事件
+              AMap.event.addListener(auto, 'select', function (e) {
+                // 设置搜索的城市
+                placeSearch.setCity(e.poi.adcode)
+                // 开始搜索对应的poi名称
+                placeSearch.search(e.poi.name, function (status, results) {
+                  if (results.pois && results.pois.length > 0) {
+                    $('#panel').toggleClass('empty')
+                  }
+                  // 显示结果列表
+                  $('#panel').removeClass('hidden')
+                  // 隐藏loading状态
+                  $(document.body).removeClass('searching')
+                })
+                // 显示loading状态
+                $(document.body).addClass('searching')
+              })
+              // 检查结果列表是否为空， 为空时显示必要的提示，即#emptyTip
+              function checkPoiList() {
+                $('#panel').toggleClass('empty', !($.trim($('#poiList').html())))
+              }
+
+              checkPoiList()
+              // 监听搜索列表的渲染完成事件
+              AMap.event.addListener(placeSearch, 'renderComplete', function () {
+                checkPoiList()
+              })
+              // 监听marker/列表的选中事件
+              AMap.event.addListener(placeSearch, 'selectChanged', function (results) {
+                // 获取当前选中的结果数据
+                console.log(results.selected.data)
+                me.locals.set('cur5656Position', JSON.stringify(results.selected.data))
+                vm.lastPage ? vm.$router.push({path: vm.lastPage}) : vm.$router.back()
+                // vm.$emit('listenLocation', results.selected.data.name);
+              })
+              // -----------------------------------------------
 //          var positionPicker = new PositionPicker({
 //            mode: 'dragMap',
 //            map: map
@@ -187,30 +198,26 @@
 //          map.addControl(new AMap.ToolBar({
 //            liteStyle: true
 //          }))
-          // --------------------------
-          $('#showHideBtn').click(function () {
-            $('#panel').toggleClass('hidden')
-          })
-          $('#clearSearchBtn').click(function () {
-            // 清除搜索框内容
-            $('#tipinput').val('')
+              // --------------------------
+              $('#showHideBtn').click(function () {
+                $('#panel').toggleClass('hidden')
+              })
+              $('#clearSearchBtn').click(function () {
+                // 清除搜索框内容
+                $('#tipinput').val('')
 
-            // 清除结果列表
-            placeSearch.clear()
-            $('#panel').addClass('hidden')
-            checkPoiList()
+                // 清除结果列表
+                placeSearch.clear()
+                $('#panel').addClass('hidden')
+                checkPoiList()
+              })
+            }
           })
+        } catch (e) {
+          vm.lastPage ? vm.$router.push({path: vm.lastPage}) : vm.$router.back()
+          console.log(e)
         }
-      })
-    },
-    computed: {},
-    watch: {
-      '$route' (to, from) {
-        console.log(from)
-        vm.lastPage = this.$route.path
-      }
-    },
-    methods: {
+      },
       // 向父组件传值
       setPageStatus (data) {
         this.$emit('listenPage', data)

@@ -93,8 +93,7 @@
       var lines = ['rgba(0,222,255, 0.2)',
         'rgba(157,192,249, 0.2)',
         'rgba(0,168,255, 0.2)']
-
-      function loop () {
+      var loop = function () {
         ctx.clearRect(0, 0, canvas.width, canvas.height)
         step++
         // 画3个不同颜色的矩形
@@ -115,7 +114,6 @@
         }
         window.requestAnimFrame(loop)
       }
-
       loop()
     },
     computed: {},
@@ -146,6 +144,8 @@
       background: #5c70ff url(../../static/img/bg_user.jpg);
       .bg100;
       .user-inner {
+        .rel;
+        z-index: 2;
         padding: 50/@rem 20/@rem 90/@rem;
         > img {
           .block;

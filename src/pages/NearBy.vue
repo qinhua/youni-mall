@@ -1,10 +1,9 @@
 <template>
   <div class="nearby">
-    <div id="mapContainer"></div>
     <!--定位组件-->
     <div class="location-chooser">
       <p><span><i class="fa fa-map-marker"></i>&nbsp;您的位置：</span>{{location}}</p>
-      <a @click="toMap"><i class="right-arrow"></i></a>
+      <a @click.prevent="toMap"><i class="right-arrow"></i></a>
     </div>
     <!--banner-->
     <div class="swiper-container swiper-home" v-if="banner.length">
@@ -209,7 +208,6 @@
         bottomCount: 20
       }
     },
-    // props: ['location'],
     components: {
       Group,
       GroupTitle,
@@ -223,12 +221,11 @@
     },
     beforeMount () {
       me = window.me
+      console.log(5)
     },
     mounted () {
       vm = this
       // me.attachClick()
-//      this.top = 1
-//      this.bottom = 20
       vm.getPos()
       var mySwiper = function () {
         return new Swiper('.swiper-container.swiper-home', {
@@ -262,16 +259,16 @@
     },
     computed: {},
     watch: {
-      'key' () {
-        return this.$route.path.replace(/\//g, '_')
-      }},
+      '$route' (to, from) {
+        vm.getPos()
+      }
+    },
     methods: {
       // 全局定位
       getPos () {
         var lp = me.locals.get('cur5656Position')
         if (lp) {
           vm.location = JSON.parse(lp).name
-          console.log(vm.location)
         } else {
           try {
             var map, geolocation;
@@ -320,9 +317,8 @@
       setPageStatus (data) {
         this.$emit('listenPage', data)
       },
-      toMap (url) {
-        // vm.$router.push({path: '/map/' + this.$route.path.replace(/\//g, '_')})
-        vm.$router.push({path: '/map'})
+      toMap () {
+        vm.$router.push({path: '/map/' + vm.$route.path.replace(/\//g, '_')})
       },
       toTopic (url) {
         location.href = url

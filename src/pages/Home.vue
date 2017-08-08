@@ -3,7 +3,7 @@
     <!--定位组件-->
     <div class="location-chooser">
       <p><span><i class="fa fa-map-marker"></i>&nbsp;您的位置：</span>{{location}}</p>
-      <a href="#/map"><i class="right-arrow"></i></a>
+      <a @click.prevent="toMap"><i class="right-arrow"></i></a>
     </div>
     <!--banner-->
     <div class="swiper-container swiper-home" v-if="banner.length">
@@ -221,7 +221,6 @@
         bottomCount: 20
       }
     },
-    // props: ['location'],
     components: {
       Group,
       GroupTitle,
@@ -237,12 +236,8 @@
       me = window.me
     },
     mounted () {
-      me = window.me
       vm = this
-      // me.back2Top()
       // me.attachClick()
-//      this.top = 1
-//      this.bottom = 20vm.getPos()
       vm.getPos()
       var mySwiper = function () {
         return new Swiper('.swiper-container.swiper-home', {
@@ -275,7 +270,11 @@
 //      })
     },
     computed: {},
-    watch: {},
+    watch: {
+      '$route' (to, from) {
+        vm.getPos()
+      }
+    },
     methods: {
       // 全局定位
       getPos () {
@@ -333,6 +332,9 @@
       },
       onScroll () {
         console.log(arguments)
+      },
+      toMap () {
+        vm.$router.push({path: '/map/' + vm.$route.path.replace(/\//g,'_')})
       },
       toTopic (url) {
         location.href = url
