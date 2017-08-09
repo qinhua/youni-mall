@@ -196,6 +196,7 @@
         scrollTop: 0,
         roundValue: 0,
         onFetching: false,
+        isPosting: false,
         pulldownConfig: {
           content: '下拉刷新',
           height: 60,
@@ -270,6 +271,7 @@
           vm.location = JSON.parse(lp).name
         } else {
           try {
+            vm.location = '定位中…'
             var map, geolocation;
             // 加载地图，调用浏览器定位服务
             map = new AMap.Map('mapContainer', {
@@ -423,7 +425,7 @@
             // vm.bottomCount += 10
             vm.getShops()
             vm.$nextTick(function () {
-              // vm.$refs.scrollerBottom.donePulldown()
+              vm.$refs.scrollerBottom.donePulldown()
               vm.onFetching = false
             })
           }, 2000)

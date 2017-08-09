@@ -238,6 +238,7 @@
     mounted () {
       vm = this
       // me.attachClick()
+      vm.getPos()
       var mySwiper = function () {
         return new Swiper('.swiper-container.swiper-home', {
           initialSlide: 0,
@@ -264,7 +265,6 @@
       vm.getBanner(mySwiper)
       vm.getNotice()
       vm.getGoods()
-      vm.getPos()
 //      this.$nextTick(function () {
 //        vm.$refs.scrollerBottom.reset({top: 0})
 //      })
@@ -284,6 +284,7 @@
             vm.location = JSON.parse(lp).name||''
           } else {
             try {
+              vm.location = '定位中…'
               var map, geolocation;
               // 加载地图，调用浏览器定位服务
               map = new AMap.Map('mapContainer', {

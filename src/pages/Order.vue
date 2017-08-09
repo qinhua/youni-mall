@@ -11,7 +11,7 @@
               snapping>
       <!-- content goes here -->
       <section class="v-items" v-for="(item, index) in orders" :data-id="item.id">
-        <h4 class="item-top"><i class="fa fa-shopping-bag"></i>&nbsp;{{item.sellerName}}&nbsp;&nbsp;<i
+        <h4 class="item-top"><i class="ico-store"></i>&nbsp;{{item.sellerName}}&nbsp;&nbsp;<i
           class="fa fa-angle-right cc"></i><span>{{item.statusName}}</span></h4>
         <section class="item-middle">
           <div class="img-con">
@@ -83,9 +83,10 @@
           goodsType: 'XXX',
           goodsCategory: '',
           brandId: '',
-          filter: '',
-          onFetching: false
-        }
+          filter: ''
+        },
+        isPosting: false,
+        onFetching: false
       }
     },
     components: {Tab, TabItem},
@@ -134,7 +135,6 @@
       },
       getOrders (isLoadMore) {
         vm.params.type = vm.$route.params.type
-        console.log(vm.params.type)
         if (vm.onFetching) return false
         vm.loading()
         vm.onFetching = true
@@ -232,6 +232,15 @@
         .c3;
         .fz(24);
         .bor-b;
+        .ico-store{
+          .fl;
+          display: inline-block;
+          margin-top: 2/@rem;
+          font-size: inherit;
+          .size(30,30);
+          background: url(../../static/img/ico_store.png);
+          .ele-base;
+        }
         span {
           .fr;
           .fz(22);

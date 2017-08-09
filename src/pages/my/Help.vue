@@ -1,14 +1,39 @@
 <template>
-  <div class="help">
-    使用帮助
+  <div class="help-me">
+    <ul class="ques-list">
+      <li>
+        <div class="title"><i>Q：</i>
+          <p>我在微信中要如何订水？</p></div>
+        <div class="answer">
+          <i>A：</i>
+          <p>您现在可以直接在友你梦想公众号里订水订奶，优惠多多哦。</p>
+        </div>
+      </li>
+      <li>
+        <div class="title"><i>Q：</i>
+          <p>不想订水了，押金怎么退？</p></div>
+        <div class="answer">
+          <i>A：</i>
+          <p>目前押金支持用户主动申请退还，您可以在“我的-我的押金”中看到所有押金，点击“退还押金”即可发起退款申请，待后台审核完成即可。</p>
+        </div>
+      </li>
+      <li>
+        <div class="title"><i>Q：</i>
+          <p>换手机号之后如何重新绑定？</p></div>
+        <div class="answer">
+          <i>A：</i>
+          <p>这个很简单，只需要在微信里面重新使用新手机号绑定就可以了。</p>
+        </div>
+      </li>
+    </ul>
+    <div class="bottom">
+      <a href="tel:027-5858548">欢迎致电咨询：<span>027-5858548</span></a>
+    </div>
   </div>
 </template>
 
 <script>
   /* eslint-disable no-unused-vars */
-  var me
-  var vm
-  import {Grid, GridItem, Group, Cell} from 'vux'
   export default {
     name: 'help',
     data () {
@@ -16,45 +41,81 @@
         address: null
       }
     },
-    components: {Grid, GridItem, Group, Cell},
     beforeMount () {
-      me = window.me
+      // me = window.me
     },
     mounted () {
       // me.attachClick()
     },
-    computed: {
-    },
-    methods: {
-    }
+    methods: {}
   }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style lang='less'>
+<style scoped lang='less'>
   @import '../../../static/css/tools.less';
-  .my-address{
-    padding-bottom: 60px;
-    .add-address{
+
+  .help-me {
+    .rel;
+    min-height: 100%;
+    .ques-list {
       .borBox;
-      padding:30/@rem;
-      .center;
+      padding: 30/@rem;
       .bf;
-      /*background:#5c70ff url(../../../static/img/bg_av.jpg);
-      .bg100;*/
-      span{
+      span {
         .fz(26);
         .c3;
       }
-    }
-    .address-list{
-      .weui-cells{
-        margin-top:10/@rem;
-        padding: 0;
+      li {
+        margin-bottom: 10/@rem;
+        padding: 20/@rem 0;
+        &:not(:last-child) {
+          border-bottom: 1px dashed #ddd;
+        }
+        i {
+          .fl;
+          .fz(28);
+          .fw(600);
+          .cdiy(@c2);
+        }
+        .title {
+          overflow: hidden;
+          i {
+            .cdiy(@c2);
+          }
+
+          p {
+            overflow: hidden;
+            margin-left: 44/@rem;
+            .c3;
+          }
+        }
+        .answer {
+          padding-top: 20/@rem;
+          overflow: hidden;
+          i {
+            .cdiy(@b1);
+          }
+          p {
+            overflow: hidden;
+            margin-left: 44/@rem;
+            .c9;
+          }
+        }
+
       }
-      .weui-cell{
-        padding:20/@rem 30/@rem!important;
-        .rfz(14)!important;
+    }
+    .bottom {
+      .abs-center-horizontal;
+      bottom: 0;
+      padding: 20/@rem 0;
+      .center;
+      a {
+        .fz(22);
+        .c9;
+        span {
+          .cdiy(#2877f3);
+        }
       }
     }
   }

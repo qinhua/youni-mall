@@ -38,7 +38,7 @@
         <i slot="icon" width="20" style="margin-right:5px;" class="fa fa-credit-card"></i>
         3
       </cell>
-      <cell title="我的水票" @click.native="jumpTo('/ticket',2)">
+      <cell title="我的水票" link="/ticket/2">
         <i slot="icon" width="20" style="margin-right:5px;" class="fa fa-ticket"></i>
         1
       </cell>

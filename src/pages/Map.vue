@@ -69,11 +69,9 @@
     mounted () {
       vm = this
       // me.attachClick()
-      me.locals.remove('cur5656Position')
       vm.showMap()
     },
-    computed: {
-    },
+    computed: {},
     watch: {
       '$route' (to, from) {
         vm.showMap()
@@ -87,15 +85,13 @@
           AMapUI.loadUI(['misc/PositionPicker'], function (PositionPicker) {
             // 创建地图
             var map = new AMap.Map('container', {
-              zoom: 9
+              zoom: 10
               // center: [116.868549, 34.918187]
             })
-
             var positionPicker = new PositionPicker({
               mode: 'dragMap',
               map: map
             })
-
             // 加载PlaceSearch和Autocomplete插件
             AMap.service(['AMap.PlaceSearch', 'AMap.Autocomplete'], function () {
               try {
@@ -104,13 +100,19 @@
                 console.error(e)
               }
             })
-
+            map.plugin(["AMap.ToolBar"], function () {
+              map.addControl(new AMap.ToolBar());
+            });
+            if (location.href.indexOf('&guide=1') !== -1) {
+              map.setStatus({scrollWheel: false})
+            }
             function ready() {
+              $('#tipinput').val('')
+              $('#panel').addClass('hidden')
               // 搜索框支持自动完成提示
               var auto = new AMap.Autocomplete({
                 input: 'tipinput'
               })
-
               // 构造地点查询类
               var placeSearch = new AMap.PlaceSearch({
                 pageSize: 5,

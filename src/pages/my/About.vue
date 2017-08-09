@@ -1,60 +1,112 @@
 <template>
   <div class="aboutus">
-      关于连你
+    <div class="top">
+      <img src="../../../static/img/logo.png" alt="友你梦想">
+      <h2>- 友你梦想 -</h2>
+      <p class="intro">
+        友你梦想是一家集食品研发、销售、技术转让为一身的新型公司。业务范围涵盖水果、蔬菜、预包装食品兼散装食品、乳制品（不含婴幼儿配方乳粉）的批零兼营；日用百货的销售与网上销售；厂房场地租赁；信息系统集成服务；计算机软件开发；互联网信息服务；计算机网络技术服务；会议会展服务；广告设计、制作、安装、代理及发布；餐饮管理；企业管理咨询；企业营销策划。</p>
+      <ul class="contact">
+        <li><i class="wx"></i>
+          <p>官方微信：友你梦想</p></li>
+        <li><i class="wb"></i>
+          <p>官方微博：友你梦想</p></li>
+      </ul>
+    </div>
+    <div class="bottom">
+      <div class="terms">
+        <a href="">《隐私协议》</a>&nbsp;|&nbsp;<a href="">《服务条款》</a>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
   /* eslint-disable no-unused-vars */
-  var me
-  var vm
-  import {Grid, GridItem, Group, Cell} from 'vux'
   export default {
     name: 'aboutus',
     data () {
-      return {
-        address: null
-      }
+      return {}
     },
-    components: {Grid, GridItem, Group, Cell},
     beforeMount () {
-      me = window.me
+      // me = window.me
     },
     mounted () {
       // me.attachClick()
     },
-    computed: {
-    },
-    methods: {
-    }
+    methods: {}
   }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style lang='less'>
+<style scoped lang='less'>
   @import '../../../static/css/tools.less';
-  .my-address{
-    padding-bottom: 60px;
-    .add-address{
-      .borBox;
-      padding:30/@rem;
-      .center;
+
+  .aboutus {
+    .rel;
+    min-height: 100%;
+    .top {
+      padding: 50/@rem 30/@rem 10/@rem;
       .bf;
-      /*background:#5c70ff url(../../../static/img/bg_av.jpg);
-      .bg100;*/
-      span{
-        .fz(26);
-        .c3;
+      > img {
+        .block;
+        .size(150, 150);
+        .ma;
+      }
+      h2 {
+        padding: 20/@rem 0;
+        .center;
+        .fz(36);
+        span {
+          .c3;
+        }
+      }
+      .intro {
+        padding: 0 20/@rem 40/@rem;
+        line-height: 1.5;
+        .fz(24);
+        .c6;
+        .indent;
+      }
+      .contact {
+        margin-top: 30/@rem;
+        .bor-t;
+        li {
+          i {
+            .fl;
+            .size(30, 30);
+            margin: 18/@rem 10/@rem 0 0;
+            &.wx {
+              background: url(../../../static/img/ico_wx.png);
+              .ele-base;
+            }
+            &.wb {
+              background: url(../../../static/img/ico_wb.png);
+              .ele-base;
+            }
+          }
+          p {
+            height: 66/@rem;
+            line-height: 66/@rem;
+            margin-left: 16/@rem;
+            overflow: hidden;
+            .c3;
+            .fz(24);
+          }
+        }
       }
     }
-    .address-list{
-      .weui-cells{
-        margin-top:10/@rem;
-        padding: 0;
-      }
-      .weui-cell{
-        padding:20/@rem 30/@rem!important;
-        .rfz(14)!important;
+    .bottom {
+      .abs-center-horizontal;
+      bottom: 0;
+      .terms {
+        padding: 20/@rem 0;
+        .center;
+        .cdiy(#f3834b);
+        a {
+          .iblock;
+          .fz(22);
+          .cdiy(#f3834b);
+        }
       }
     }
   }

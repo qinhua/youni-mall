@@ -1,7 +1,7 @@
 <template>
   <div class="ticket">
     <tab class="ticket-type" bar-active-color="transparent">
-      <tab-item :selected="!params.type?true:false" @on-item-click="onItemClick"><i class="fa fa-shopping-basket"></i>&nbsp;购买水票
+      <tab-item :selected="!params.type?true:false" @on-item-click="onItemClick"><i class="fa fa-ticket"></i>&nbsp;购买水票
       </tab-item>
       <tab-item :selected="params.type?true:false" @on-item-click="onItemClick(1)"><i class="fa fa-user-circle-o"></i>&nbsp;我的水票
       </tab-item>
@@ -58,9 +58,10 @@
           goodsType: 'XXX',
           goodsCategory: '',
           brandId: '',
-          filter: '',
-          onFetching: false
-        }
+          filter: ''
+        },
+        onFetching: false,
+        isPosting: false
       }
     },
     components: {Tab, TabItem},
@@ -72,10 +73,10 @@
       vm.getTickets()
     },
     /* computed: {
-      'params.type' () {
-        return this.$route.params.type
-      }
-    }, */
+     'params.type' () {
+     return this.$route.params.type
+     }
+     }, */
     watch: {
       '$route' (to, from) {
         vm.getTickets()
