@@ -30,10 +30,10 @@
 
 <script>
   /* eslint-disable no-unused-vars */
-  var me
-  var vm
+  let me
+  let vm
   import {Grid, GridItem, Group, Cell} from 'vux'
-  import {userApi} from '../../store/home.js'
+  import {userApi} from '../../store/main.js'
   export default {
     name: 'my-address',
     data () {
@@ -56,28 +56,28 @@
       getAddress () {
         if (vm.isPosting) return false
         vm.isPosting = true
-        vm.loading()
+        vm.processing()
         vm.loadData(userApi.orders, vm.params, 'POST', function (res) {
           vm.address = res.data.itemList
           console.log(vm.address, '地址数据')
           vm.isPosting = false
-          vm.loading(0, 1)
+          vm.processing(0, 1)
         }, function () {
           vm.isPosting = false
-          vm.loading(0, 1)
+          vm.processing(0, 1)
         })
       },
       addAddress () {
         if (vm.isPosting) return false
         vm.isPosting = true
-        vm.loading()
+        vm.processing()
         vm.loadData(userApi.orders, vm.params, 'POST', function (res) {
           console.log(res.data)
           vm.isPosting = false
-          vm.loading(0, 1)
+          vm.processing(0, 1)
         }, function () {
           vm.isPosting = false
-          vm.loading(0, 1)
+          vm.processing(0, 1)
         })
       },
       updateAddress (id) {

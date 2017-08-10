@@ -34,10 +34,10 @@
 
 <script>
   /* eslint-disable no-unused-vars */
-  var me
-  var vm
+  let me
+  let vm
   import {Grid, GridItem, Group, Cell, XTable, LoadMore} from 'vux'
-  import {userApi} from '../../store/home.js'
+  import {userApi} from '../../store/main.js'
   export default {
     name: 'my-guarantee',
     data () {

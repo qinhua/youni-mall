@@ -4,7 +4,7 @@
     <div class="user-modal">
       <div class="user-inner">
         <img src="../../static/img/av.jpg">
-        <p class="user-name">撕破天<i class="fa fa-pencil-square-o"></i></p>
+        <p class="user-name" @click="jumpTo('/edit_user', userId||255)">{{nickName}}<i class="fa fa-pencil-square-o"></i></p>
       </div>
       <canvas id="canvas" style="position:absolute;bottom:0px;left:0px;z-index:1;"></canvas>
     </div>
@@ -59,14 +59,16 @@
 
 <script>
   /* eslint-disable no-unused-vars */
-  var me
-  var vm
+  let me
+  let vm
   import {Grid, GridItem, Group, Cell} from 'vux'
 
   export default {
     name: 'my',
     data () {
-      return {}
+      return {
+        nickName: '七灵'
+      }
     },
     components: {Grid, GridItem, Group, Cell},
     beforeMount () {
@@ -74,6 +76,7 @@
     },
     mounted () {
       // me.attachClick()
+      this.nickName = this.$store.state.global.nickName
       var canvas = document.getElementById('canvas')
       var ctx = canvas.getContext('2d')
       canvas.width = canvas.parentNode.offsetWidth
@@ -141,7 +144,7 @@
     .user-modal {
       .rel;
       .center;
-      background: #5c70ff url(../../static/img/bg_user.jpg);
+      background: #3077d2 url(../../static/img/bg_user.jpg);
       .bg100;
       .user-inner {
         .rel;
@@ -166,6 +169,9 @@
             padding-left: 10/@rem;
           }
         }
+      }
+      canvas{
+        opacity: .25;
       }
     }
     .order-model {

@@ -7,19 +7,69 @@ import App from './App'
 import router from './router'
 import 'font-awesome/css/font-awesome.css'
 import 'ionicons/dist/css/ionicons.css'
-import $ from 'jquery'
+// import $ from 'jquery'
 import '../static/js/fastclick.js'
 import 'myMixin'
-import store from './store3/'
+import store from './vuex-store'
 import VueScroller from 'vue-scroller'
 import {AlertPlugin, ConfirmPlugin, ToastPlugin, LoadingPlugin} from 'vux'
+Vue.use(require('vue-wechat-title'))
 Vue.use(ConfirmPlugin)
 Vue.use(AlertPlugin)
 Vue.use(ToastPlugin)
 Vue.use(LoadingPlugin)
-Vue.config.productionTip = false
 Vue.use(VueScroller)
-/* 封装ajax请求 */
+
+Vue.config.productionTip = false
+let me = window.me
+
+// 在路由路由跳转前判断一些东西
+router.beforeEach((to, from, next) => {
+  /* 判断页面的方向 */
+  /* const history = window.sessionStorage
+  history.clear()
+  let historyCount = history.getItem('count') * 1 || 0
+  history.setItem('/', 0)
+  const toIndex = history.getItem(to.path)
+  const fromIndex = history.getItem(from.path)
+  if (toIndex) {
+    if (!fromIndex || parseInt(toIndex, 10) > parseInt(fromIndex, 10) || (toIndex === '0' && fromIndex === '0')) {
+      store.commit('UPDATE_DIRECTION', {direction: 'forward'})
+    } else {
+      store.commit('UPDATE_DIRECTION', {direction: 'reverse'})
+    }
+  } else {
+    ++historyCount
+    history.setItem('count', historyCount)
+    to.path !== '/' && history.setItem(to.path, historyCount)
+    store.commit('UPDATE_DIRECTION', {direction: 'forward'})
+  } */
+  /* 判断是否已经授权过 */
+  console.log(store.state, '当前vuex中的data')
+  if (to.path === '/author') {
+    console.profile('in auth page')
+    if (!store.state.global.userInfo.id && !me.locals.get('ynWxUser')) {
+      console.profile('in auth page and (no id)')
+      next()
+    } else {
+      console.profile('in auth page and (id)')
+      return next('/home')
+    }
+  } else {
+    console.profile('not in auth page')
+    if (!store.state.global.userInfo.id && !me.locals.get('ynWxUser')) {
+      console.profile('not in auth page and (no id)')
+      me.locals.set('beforeLoginUrl', to.fullPath) // 保存用户进入的url
+      return next('/author')
+    } else {
+      console.profile('not in auth page and (id)')
+      next()
+    }
+  }
+})
+
+/* ----- 封装一些方法 -------- */
+/* ajax请求 */
 Vue.prototype.$axios = Axios
 Vue.prototype.loadData = function (url, params, type, sucCb, errCb) {
   /* $.post(url, {'requestapp': params ? JSON.stringify(params) : '{}'},
@@ -47,7 +97,7 @@ Vue.prototype.loadData = function (url, params, type, sucCb, errCb) {
     errCb ? errCb(error) : console.error(error, '错误信息')
   })
 }
-/* 封装alert */
+/* alert */
 Vue.prototype.alert = function (title, content, showCb, hideCb) {
   const _this = this
   _this.$vux.alert.show({
@@ -61,7 +111,7 @@ Vue.prototype.alert = function (title, content, showCb, hideCb) {
     }
   })
 }
-/* 封装confirm */
+/* confirm */
 Vue.prototype.confirm = function (title, content, confirmCb, cancelCb) {
   const _this = this
   _this.$vux.confirm.show({
@@ -80,20 +130,20 @@ Vue.prototype.confirm = function (title, content, confirmCb, cancelCb) {
     }
   })
 }
-/* 封装toast */
+/* toast */
 Vue.prototype.toast = function (content, position, cb) {
   const _this = this
   _this.$vux.toast.show({
     text: content || 'something',
     time: 2000,
-    position: position || 'top'
+    position: position || 'center'
   })
   cb ? cb() : null
   // _this.$vux.toast.text('hello', 'top')
 }
-/* 封装loading */
-Vue.prototype.loading = function (content, isClose, cb, timeCb) {
-  const _this = this
+/* loading */
+Vue.prototype.processing = function (content, isClose, cb, timeCb) {
+  let _this = this
   if (isClose) {
     _this.$vux.loading.hide()
     return false
@@ -108,33 +158,17 @@ Vue.prototype.loading = function (content, isClose, cb, timeCb) {
     }, 2000)
   }
 }
-
-const history = window.sessionStorage
-history.clear()
-let historyCount = history.getItem('count') * 1 || 0
-history.setItem('/', 0)
-router.beforeEach(function (to, from, next) {
-  const toIndex = history.getItem(to.path)
-  const fromIndex = history.getItem(from.path)
-  if (toIndex) {
-    if (!fromIndex || parseInt(toIndex, 10) > parseInt(fromIndex, 10) || (toIndex === '0' && fromIndex === '0')) {
-      store.commit('UPDATE_DIRECTION', {direction: 'forward'})
-    } else {
-      store.commit('UPDATE_DIRECTION', {direction: 'reverse'})
-    }
-  } else {
-    ++historyCount
-    history.setItem('count', historyCount)
-    to.path !== '/' && history.setItem(to.path, historyCount)
-    store.commit('UPDATE_DIRECTION', {direction: 'forward'})
+/* ----- 封装一些指令 -------- */
+Vue.directive('title', {
+  inserted: function (el, binding) {
+    document.title = binding.value
   }
-  next()
 })
-
 // main.js
 new Vue({
   el: '#app',
   router,
+  store,
   template: '<App/>',
   components: {App},
   mounted () {

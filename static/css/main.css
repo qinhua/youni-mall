@@ -3652,8 +3652,8 @@ body {
 .vux-pop-out-leave-active,
 .vux-pop-in-enter-active,
 .vux-pop-in-leave-active {
-  will-change: transform;
-  transition: all 250ms;
+  will-change: opacity,transform;
+  transition: transform .2s;
   height: 100%;
   top: 0;
   position: absolute;

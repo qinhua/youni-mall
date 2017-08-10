@@ -61,7 +61,7 @@
     },
     mounted () {
 //      console.log('vue中的myMixin：', window.me)
-      var me = window.me
+      let me = window.me
       // initial swiper
       var mySlider = new Swiper('.swiper-container.sliders-con', {
         initialSlide: 0,

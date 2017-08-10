@@ -68,10 +68,10 @@
 <!--/* eslint-disable no-unused-vars */-->
 <script>
   /* eslint-disable */
-  var me
-  var vm
+  let me
+  let vm
   import {Tab, TabItem} from 'vux'
-  import {orderApi, userApi} from '../../store/home.js'
+  import {orderApi, userApi} from '../../store/main.js'
 
   export default {
     name: 'my-coupons',
@@ -139,7 +139,7 @@
       getOrders (isLoadMore) {
         vm.params.type = vm.$route.params.type
         if (vm.onFetching) return false
-        vm.loading()
+        vm.processing()
         vm.onFetching = true
         vm.loadData(orderApi.orders, vm.params, 'POST', function (res) {
           var resD = res.data.itemList
@@ -172,10 +172,10 @@
           }
           console.log(vm.orders)
           vm.onFetching = false
-          vm.loading(0, 1)
+          vm.processing(0, 1)
         }, function () {
           vm.onFetching = false
-          vm.loading(0, 1)
+          vm.processing(0, 1)
         })
       },
       delOrder (id) {

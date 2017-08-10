@@ -6,7 +6,7 @@
       <a @click.prevent="toMap"><i class="right-arrow"></i></a>
     </div>
     <!--banner-->
-    <div class="swiper-container swiper-home" v-if="banner.length">
+    <div class="swiper-container swiper-home" v-show="banner.length">
       <div class="swiper-wrapper">
         <div class="swiper-slide" v-for="(item, index) in banner" :key="index" :data-id="item.id">
           <a :href="item.linkUrl" target="blank">
@@ -113,11 +113,11 @@
 <!--/* eslint-disable no-unused-vars,indent */-->
 <script>
   /* eslint-disable */
-  var me
-  var vm
+  let me
+  let vm
   import Swiper from 'swiper'
   import {Group, GroupTitle, Grid, GridItem, Marquee, MarqueeItem, XNumber, Scroller, LoadMore} from 'vux'
-  import { homeApi, nearbyApi } from '../store/home.js'
+  import { homeApi, nearbyApi } from '../store/main.js'
   export default {
     name: 'nearby',
     data () {
@@ -227,7 +227,7 @@
       vm = this
       // me.attachClick()
       vm.getPos()
-      var mySwiper = function () {
+      let mySwiper = function () {
         return new Swiper('.swiper-container.swiper-home', {
           initialSlide: 0,
           direction: 'horizontal',
@@ -243,19 +243,19 @@
           // nextButton: '.swiper-button-next',
           // prevButton: '.swiper-button-prev',
           grabCursor: true,
-          onClick: function (swiper) {
-            var curIdx = swiper.activeIndex
-          },
-          onSlideChangeEnd: function () {
-          }
+          // onClick: function (swiper) {
+          // var curIdx = swiper.activeIndex
+          // },
+          // onSlideChangeEnd: function () {
+          // }
         })
       }
       vm.getBanner(mySwiper)
       vm.getNotice()
       vm.getShops()
-//      this.$nextTick(function () {
-//        vm.$refs.scrollerBottom.reset({top: 0})
-//      })
+      this.$nextTick(function () {
+        vm.$refs.scrollerBottom.reset({top: 0})
+      })
     },
     computed: {},
     watch: {

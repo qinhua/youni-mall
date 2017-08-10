@@ -41,10 +41,10 @@
 
 <script>
   /* eslint-disable no-unused-vars */
-  var me
-  var vm
+  let me
+  let vm
   import {Tab, TabItem} from 'vux'
-  import {ticketApi} from '../store/home.js'
+  import {ticketApi} from '../store/main.js'
   export default {
     name: 'ticket',
     data () {

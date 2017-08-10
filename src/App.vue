@@ -32,14 +32,14 @@
     <!--<transition :name="'vux-pop-' + (direction === 'forward' ? 'in' : 'out')">-->
     <transition>
       <keep-alive v-if="$route.meta.keepAlive">
-        <router-view v-on:listenPage="getPageStatus"></router-view>
+        <router-view v-wechat-title="$route.meta.title" v-on:listenPage="getPageStatus"></router-view>
       </keep-alive>
     </transition>
     <!-- 这里是不被缓存的视图组件，比如 Edit！ -->
     <!--<transition :name="'vux-pop-' + (direction === 'forward' ? 'in' : 'out')">-->
     <transition>
       <keep-alive v-if="!$route.meta.keepAlive">
-        <router-view v-on:listenPage="getPageStatus"></router-view>
+        <router-view v-wechat-title="$route.meta.title" v-on:listenPage="getPageStatus"></router-view>
       </keep-alive>
     </transition>
   </div>
@@ -49,7 +49,7 @@
   /* eslint-disable */
   // import $ from 'jquery'
   // import myMixin from 'myMixin'
-  var vm
+  let vm
   import Home from './pages/Home'
   import {Tabbar, TabbarItem} from 'vux'
   import {mapState, mapActions} from 'vuex'
@@ -88,6 +88,18 @@
     },
     watch: {
       '$route' (to, from) {
+        // console.log(to, from)
+        /* let isBack = this.$router.isBack //  监听路由变化时的状态为前进还是后退
+        console.log(isBack)
+        if (isBack) {
+          vm.direction = 'reverse'
+        } else {
+          vm.direction = 'forward'
+        }
+        this.$router.isBack = false
+        const toDepth = to.path.split('/').length
+        const fromDepth = from.path.split('/').length
+        vm.direction = toDepth < fromDepth ? 'forward' : 'reverse' */
         switch (to.name) {
           case '首页':
             vm.curSelected = 1
@@ -105,21 +117,7 @@
             vm.curSelected = 5
             break
         }
-//        console.log(to, from)
-        const toDepth = to.path.split('/').length
-        const fromDepth = from.path.split('/').length
-        vm.direction = toDepth < fromDepth ? 'forward' : 'reverse'
       }
-//      '$route' (to, from) {
-//        let isBack = this.$router.isBack  //  监听路由变化时的状态为前进还是后退
-//        console.log(isBack)
-//        if (isBack) {
-//          vm.direction = 'reverse'
-//        } else {
-//          vm.direction = 'forward'
-//        }
-//        this.$router.isBack = false
-//      }
     }
   }
 </script>

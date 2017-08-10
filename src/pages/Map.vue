@@ -52,8 +52,8 @@
 <!--/* eslint-disable no-unused-vars */-->
 <script>
   /* eslint-disable */
-  var me
-  var vm
+  let me
+  let vm
   import $ from 'zeptojs'
   export default {
     name: 'map',

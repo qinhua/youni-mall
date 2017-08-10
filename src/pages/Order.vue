@@ -7,8 +7,7 @@
       <tab-item :selected="params.type==3?true:false" @on-item-click="onItemClick(3)">待评价</tab-item>
       <tab-item :selected="params.type==4?true:false" @on-item-click="onItemClick(4)">已完成</tab-item>
     </tab>
-    <scroller class="order-list" :on-refresh="refresh" :on-infinite="infinite" refreshText="下拉刷新" noDataText="没有更多数据"
-              snapping>
+    <scroller class="order-list" :on-refresh="refresh" :on-infinite="infinite" refreshText="下拉刷新" noDataText="没有更多数据" snapping>
       <!-- content goes here -->
       <section class="v-items" v-for="(item, index) in orders" :data-id="item.id">
         <h4 class="item-top"><i class="ico-store"></i>&nbsp;{{item.sellerName}}&nbsp;&nbsp;<i
@@ -36,7 +35,7 @@
           </div>
           <div class="total-price">共{{item.buyCount}}件商品&nbsp;合计：<span>￥{{item.total}}</span>.00（含上楼费）</div>
           <div class="btns" v-if="item.status===-1">
-            <a class="btn btn-del" @click.prevent="delOrder(item.orderId||2)">删除订单</a>
+            <a class="btn btn-del" @click="delOrder(item.orderId||2)">删除订单</a>
           </div>
           <div class="btns" v-if="item.status===0">
             <a class="btn btn-pay">支付</a>
@@ -64,10 +63,10 @@
 <!--/* eslint-disable no-unused-vars */-->
 <script>
   /* eslint-disable */
-  var me
-  var vm
+  let me
+  let vm
   import {Tab, TabItem} from 'vux'
-  import {orderApi} from '../store/home.js'
+  import {orderApi} from '../store/main.js'
 
   export default {
     name: 'order',
@@ -136,7 +135,7 @@
       getOrders (isLoadMore) {
         vm.params.type = vm.$route.params.type
         if (vm.onFetching) return false
-        vm.loading()
+//        vm.processing()
         vm.onFetching = true
         vm.loadData(orderApi.orders, vm.params, 'POST', function (res) {
           var resD = res.data.itemList
@@ -169,10 +168,10 @@
           }
           console.log(vm.orders)
           vm.onFetching = false
-          vm.loading(0,1)
+          vm.processing(0,1)
         }, function () {
           vm.onFetching = false
-          vm.loading(0,1)
+          vm.processing(0,1)
         })
       },
       delOrder (id) {

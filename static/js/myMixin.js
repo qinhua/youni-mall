@@ -277,6 +277,13 @@ import $ from 'jquery'
       }, 50)
     },
     /**
+     * 设置标题
+     * @param str
+     */
+    setTitle: function (str) {
+      document.title = str
+    },
+    /**
      * 设置分享
      * @param param 分享配置obj
      */
@@ -817,7 +824,7 @@ import $ from 'jquery'
         });
       },
       shuffle: function (arr) {
-        for (var j, x, i = arr.length; i; j = parseInt(Math.random() * i), x = arr[--i], arr[i] = arr[j], arr[j] = x);
+        for (var j, x, i = arr.length; i; j = parseInt(Math.random() * i), x = arr[--i], arr[i] = arr[j], arr[j] = x) ;
         return arr;
       },
       //03.随机从数组中取出一项
@@ -828,6 +835,7 @@ import $ from 'jquery'
       uniqueArr: function (arr) {
         //排序数组，形成队列
         arr.sort(this.sortNumAray);
+
         //排序后，队尾向前对比，如果相同，删除队尾，依次类推
         function loop(Index) {
           if (Index >= 1) {
@@ -1222,7 +1230,7 @@ import $ from 'jquery'
           if (name && lc.indexOf("v2xss") === -1) {
             c_start = lc.indexOf(name + "=");
             if (c_start != -1) {
-              c_start = c_start + namyMixin.length + 1;
+              c_start = c_start + name.length + 1;
               c_end = lc.indexOf(";", c_start);
               if (c_end == -1) c_end = lc.length;
               var llc = lc.substring(c_start, c_end);
@@ -2332,10 +2340,10 @@ import $ from 'jquery'
         // 当有文件添加进来的时候
         uploader.on('fileQueued', function (file) {
           var $li = $(
-              '<div id="' + file.id + '" class="file-item thumbnail">' +
-              '<img>' +
-              '<div class="info">' + file.name + '</div>' +
-              '</div>'
+            '<div id="' + file.id + '" class="file-item thumbnail">' +
+            '<img>' +
+            '<div class="info">' + file.name + '</div>' +
+            '</div>'
             ),
             $img = $li.find('img');
 
