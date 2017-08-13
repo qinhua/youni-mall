@@ -19,7 +19,7 @@
     <!--中间入口-->
     <div class="middle-entry">
       <grid :rows="4">
-        <grid-item label="订水" link="/nearby" @on-item-click="setPageStatus(1)">
+        <grid-item label="订水" link="/home" @on-item-click="setPageStatus(1)">
           <img slot="icon" src="../../static/img/item_water.png">
         </grid-item>
         <grid-item label="订奶" link="/nearby" @on-item-click="setPageStatus(2)">
@@ -93,11 +93,10 @@
                 <span class="dispatchTime">平均{{item.dispatchTime}}分钟送达</span>
               </div>
             </section>
-            <section class="sleep-tips" v-if="item.sleep">
+            <section class="sleep-tips" v-if="item.isSleep">
               <div class="wrap">
-                <h3>商家已打烊（09:00~22:00）<br><span>非营业时间仍可预定</span>
-                  <button type="button" class="btn btn-reserve"><i class="fa fa-clock-o" aria-hidden="true"></i>&nbsp;预定
-                  </button>
+                <h3>商家已打烊（{{item.runStartTime}}~{{item.runEndTime}}）<br><span>非营业时间仍可预定</span>
+                  <button type="button" class="btn btn-reserve" @click="preBook(item.id)"><i class="fa fa-clock-o" aria-hidden="true"></i>&nbsp;预定</button>
                 </h3>
               </div>
             </section>
@@ -226,7 +225,6 @@
     mounted () {
       vm = this
       // me.attachClick()
-      vm.getPos()
       let mySwiper = function () {
         return new Swiper('.swiper-container.swiper-home', {
           initialSlide: 0,
@@ -254,6 +252,7 @@
       vm.getNotice()
       vm.getShops()
       this.$nextTick(function () {
+        vm.getPos()
         vm.$refs.scrollerBottom.reset({top: 0})
       })
     },
@@ -319,12 +318,15 @@
         this.$emit('listenPage', data)
       },
       toMap () {
-        vm.$router.push({path: '/map/' + vm.$route.path.replace(/\//g, '_')})
+        vm.$router.push({name: 'map', params: {path: vm.$route.path.replace(/\//g,'_')}})
       },
       toTopic (url) {
         location.href = url
       },
       toDetail (id) {
+        vm.$router.push({path: '/detail/' + id})
+      },
+      preBook (id) {
         vm.$router.push({path: '/detail/' + id})
       },
       /* 页面数据 */

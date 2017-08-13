@@ -20,6 +20,7 @@
       return {
         onFetching: false,
         isPosting: false,
+        userId: null,
         nickName: ''
       }
     },
@@ -30,6 +31,8 @@
     mounted () {
       vm = this
       // me.attachClick()
+      vm.userId = vm.$route.query.userId
+      console.log(vm.userId)
     },
     methods: {
       updateUser () {
@@ -40,7 +43,7 @@
         }
         vm.isPosting = true
         vm.processing()
-        vm.loadData(userApi.orders, vm.params, 'POST', function (res) {
+        vm.loadData(userApi.updateName, {userId: vm.userId, nickName: vm.nickName}, 'POST', function (res) {
           console.log(res, '修改用户信息')
           this.$store.commit('updateNickName', vm.nickName)
           vm.$router.back()

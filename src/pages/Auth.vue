@@ -9,6 +9,7 @@
   // import $ from 'jquery'
   let vm
   import {Tabbar, TabbarItem} from 'vux'
+  // import {mapState, mapMutations} from 'vuex'
   export default {
     name: 'auth',
     data () {

@@ -9,6 +9,7 @@ import Order from '@/pages/Order'
 import Map from '@/pages/Map'
 import My from '@/pages/My'
 import EditUser from '@/pages/my/EditUser'
+import EditAddress from '@/pages/my/EditAddress'
 import MyCoupons from '@/pages/my/Coupons'
 import MyGuarantee from '@/pages/my/Guarantee'
 import MyAddress from '@/pages/my/Address'
@@ -26,7 +27,7 @@ export default new Router({
   routes: [
     {
       path: '/author',
-      name: '微信授权',
+      name: 'author',
       component: Auth,
       meta: {
         title: '微信授权',
@@ -35,7 +36,7 @@ export default new Router({
     },
     {
       path: '/',
-      name: '首页',
+      name: 'home',
       redirect: '/home',
       component: Home,
       meta: {
@@ -45,7 +46,7 @@ export default new Router({
     },
     {
       path: '/home',
-      name: '首页',
+      name: 'home',
       component: Home,
       meta: {
         title: '首页',
@@ -54,7 +55,7 @@ export default new Router({
     },
     {
       path: '/nearby',
-      name: '附近',
+      name: 'nearby',
       component: NearBy,
       meta: {
         title: '附近',
@@ -63,7 +64,7 @@ export default new Router({
     },
     {
       path: '/ticket',
-      name: '水票',
+      name: 'ticket',
       component: Ticket,
       meta: {
         title: '水票',
@@ -72,7 +73,7 @@ export default new Router({
     },
     {
       path: '/ticket/:type',
-      name: '水票',
+      name: 'ticket',
       component: Ticket,
       meta: {
         title: '水票',
@@ -81,16 +82,7 @@ export default new Router({
     },
     {
       path: '/order',
-      name: '订单',
-      component: Order,
-      meta: {
-        title: '订单',
-        keepAlive: false
-      }
-    },
-    {
-      path: '/order/:type',
-      name: '订单',
+      name: 'order',
       component: Order,
       meta: {
         title: '订单',
@@ -99,7 +91,7 @@ export default new Router({
     },
     {
       path: '/user',
-      name: '我的',
+      name: 'user',
       component: My,
       meta: {
         title: '我的',
@@ -112,8 +104,8 @@ export default new Router({
        }] */
     },
     {
-      path: '/edit_user/:userId',
-      name: '我的',
+      path: '/edit_user',
+      name: 'edit_user',
       component: EditUser,
       meta: {
         title: '我的',
@@ -122,7 +114,7 @@ export default new Router({
     },
     {
       path: '/mycoupons',
-      name: '我的卡券',
+      name: 'mycoupons',
       component: MyCoupons,
       meta: {
         title: '我的卡券',
@@ -131,7 +123,7 @@ export default new Router({
     },
     {
       path: '/myguarantee',
-      name: '我的押金',
+      name: 'myguarantee',
       component: MyGuarantee,
       meta: {
         title: '我的押金',
@@ -140,7 +132,7 @@ export default new Router({
     },
     {
       path: '/myaddress',
-      name: '收货地址',
+      name: 'myaddress',
       component: MyAddress,
       meta: {
         title: '收货地址',
@@ -148,8 +140,17 @@ export default new Router({
       }
     },
     {
+      path: '/edit_address',
+      name: 'edit_address',
+      component: EditAddress,
+      meta: {
+        title: '收货地址',
+        keepAlive: false
+      }
+    },
+    {
       path: '/myfavor',
-      name: '我的收藏',
+      name: 'myfavor',
       component: MyFavorite,
       meta: {
         title: '我的收藏',
@@ -158,7 +159,7 @@ export default new Router({
     },
     {
       path: '/help',
-      name: '使用帮助',
+      name: 'help',
       component: Help,
       meta: {
         title: '使用帮助',
@@ -167,7 +168,7 @@ export default new Router({
     },
     {
       path: '/aboutus',
-      name: '关于友你',
+      name: 'aboutus',
       component: About,
       meta: {
         title: '关于友你',
@@ -176,16 +177,7 @@ export default new Router({
     },
     {
       path: '/map',
-      name: '地图',
-      component: Map,
-      meta: {
-        title: '地图',
-        keepAlive: false
-      }
-    },
-    {
-      path: '/map/:path',
-      name: '地图',
+      name: 'map',
       component: Map,
       meta: {
         title: '地图',

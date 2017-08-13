@@ -2,7 +2,8 @@ export default {
   // state
   state: {
     name: '购物车',
-    show: false
+    show: false,
+    count: 0
   },
   // 相当于vue中的computed
   getters: {
@@ -13,10 +14,9 @@ export default {
   },
   // 一些方法
   mutations: {
-    switchDialog (state) {
+    updateCart (state, data) {
       // 这里的state对应着上面的state
-      state.show = !state.show
-      // 你还可以在这里执行其他的操作改变state
+      state.count = data
     }
   },
   // 一次可执行多个方法

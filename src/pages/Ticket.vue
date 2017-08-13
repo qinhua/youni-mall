@@ -17,25 +17,27 @@
       <tab-item @on-item-click="filterTicket(1)">买5送1</tab-item>
       <tab-item @on-item-click="filterTicket(2)">买10送2</tab-item>
     </tab>
-    <scroller class="ticket-list" height="100%" :on-refresh="refresh" :on-infinite="infinite" refreshText="下拉刷新"
-              noDataText="没有更多数据"
-              snapping>
-      <!-- content goes here -->
-      <section class="v-items" v-for="(item, index) in tickets" :data-id="item.id">
-        <section class="wrap">
-          <img :src="item.imgurl">
-          <section class="infos">
-            <h3>{{item.name}}<span class="count">数量：<i>{{item.count}}桶</i></span></h3>
-            <section class="middle">
-              <span class="price">￥{{item.price}}</span>
-              <span class="retail-price">零售价<i>￥{{item.retailPrice}}</i></span>
-              <button type="button" class="btn btn-buy" @click="buy(item.id)">购买</button>
+    <div class="ticket-list">
+      <scroller class="inner-scroller" ref="myScroller" height="100%" :on-refresh="refresh" :on-infinite="infinite" refreshText="下拉刷新"
+                noDataText="没有更多数据"
+                snapping>
+        <!-- content goes here -->
+        <section class="v-items" v-for="(item, index) in tickets" :data-id="item.id">
+          <section class="wrap">
+            <img :src="item.imgurl">
+            <section class="infos">
+              <h3>{{item.name}}<span class="count">数量：<i>{{item.count}}桶</i></span></h3>
+              <section class="middle">
+                <span class="price">￥{{item.price}}</span>
+                <span class="retail-price">零售价<i>￥{{item.retailPrice}}</i></span>
+                <button type="button" class="btn btn-buy" @click="buy(item.id)">购买</button>
+              </section>
+              <label>{{item.note}}</label>
             </section>
-            <label>{{item.note}}</label>
           </section>
         </section>
-      </section>
-    </scroller>
+      </scroller>
+    </div>
   </div>
 </template>
 
@@ -71,6 +73,9 @@
     mounted () {
       vm = this
       vm.getTickets()
+      vm.$nextTick(() => {
+        vm.$refs.myScroller.resize()
+      })
     },
     /* computed: {
      'params.type' () {
@@ -94,14 +99,15 @@
         console.log('下拉加载')
         setTimeout(function () {
           vm.getTickets()
-          // this.finishInfinite(true)
+          vm.$refs.myScroller.finishPullToRefresh()
         }, 1200)
       },
       infinite (done) {
         console.log('无限滚动')
         setTimeout(function () {
           vm.getTickets(true)
-        }, 2000)
+          vm.$refs.myScroller.finishInfinite(true)
+        }, 1000)
       },
       onItemClick (type) {
         if (type) {
@@ -140,6 +146,7 @@
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang='less'>
   @import '../../static/css/tools.less';
+  /*.ticket{}*/
 
   .ticket-type {
     z-index: 10;
@@ -161,86 +168,88 @@
   }
 
   .ticket-list {
-    .borBox;
-    padding: 88px 0 50px;
-    .v-items {
-      padding: 20/@rem;
-      .bf;
-      &:not(:last-child) {
-        .bor-b;
-      }
-      .wrap {
-        .rel;
-        .h(150);
-      }
-      img {
-        .abs;
-        left: 0;
-        top: 0;
-        .size(150, 150);
-        background: #f5f5f5 url(../../static/img/noImg.png) no-repeat center;
-        -webkit-background-size: 30% auto;
-        background-size: 30% auto;
-      }
-      .infos {
-        .flex;
-        .flex-d-v;
-        .borBox;
-        width: 100%;
-        height: 100%;
-        padding-left: 170/@rem;
-        h3 {
-          .flex-r(1);
-          .fz(30);
-          .txt-normal;
-          .c3;
-          .ellipsis;
+    .inner-scroller{
+      .borBox;
+      padding: 88px 0 150px;
+      .v-items {
+        padding: 20/@rem;
+        .bf;
+        &:not(:last-child) {
+          .bor-b;
         }
-        .count {
+        .wrap {
+          .rel;
+          .h(150);
+        }
+        img {
           .abs;
-          right: 0;
-          .fz(20);
-          .c3;
-          i {
-            .txt-normal;
-            .c9;
-          }
+          left: 0;
+          top: 0;
+          .size(150, 150);
+          background: #f5f5f5 url(../../static/img/noImg.png) no-repeat center;
+          -webkit-background-size: 30% auto;
+          background-size: 30% auto;
         }
-        .middle {
-          .flex-r(1);
-          padding: 10/@rem 0;
-          .price {
+        .infos {
+          .flex;
+          .flex-d-v;
+          .borBox;
+          width: 100%;
+          height: 100%;
+          padding-left: 170/@rem;
+          h3 {
+            .flex-r(1);
+            .fz(30);
+            .txt-normal;
+            .c3;
+            .ellipsis;
           }
-          span {
-            &.price {
-              .c3;
-              .fz(26);
-            }
-            &.retail-price {
-              padding-left: 30/@rem;
+          .count {
+            .abs;
+            right: 0;
+            .fz(20);
+            .c3;
+            i {
+              .txt-normal;
               .c9;
-              .fz(22);
-              .txt-del;
-              i {
-                .txt-normal;
+            }
+          }
+          .middle {
+            .flex-r(1);
+            padding: 10/@rem 0;
+            .price {
+            }
+            span {
+              &.price {
+                .c3;
+                .fz(26);
+              }
+              &.retail-price {
+                padding-left: 30/@rem;
+                .c9;
+                .fz(22);
+                .txt-del;
+                i {
+                  .txt-normal;
+                }
               }
             }
+            .btn-buy {
+              .fr;
+              padding: 2px 20/@rem;
+              .fz(24);
+              .cf;
+              /*.bdiy(#f16b41);*/
+              .bdiy(#5cc5d0);
+              .borR(4px);
+            }
           }
-          .btn-buy {
-            .fr;
-            padding: 2px 20/@rem;
-            .fz(24);
-            .cf;
-            /*.bdiy(#f16b41);*/
-            .bdiy(#5cc5d0);
-            .borR(4px);
+          label {
+            .flex-r(1);
+            .cdiy(#f34c18);
+            .fz(22);
+            .ellipsis;
           }
-        }
-        label {
-          .flex-r(1);
-          .cdiy(#f34c18);
-          .fz(22);
-          .ellipsis;
         }
       }
     }

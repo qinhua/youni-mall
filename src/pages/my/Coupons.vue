@@ -1,6 +1,5 @@
 <template>
   <div class="my-coupons">
-    <a href="javascript:;"><img class="wd-img ads" src="../../../static/img/ads.jpg"></a>
     <div class="content">
       <tab class="order-tab" active-color="#f34c18">
         <tab-item :selected="params.type==0?true:false" @on-item-click="onItemClick">全部</tab-item>
@@ -9,60 +8,72 @@
         <tab-item :selected="params.type==2?true:false" @on-item-click="onItemClick(2)">红包</tab-item>
         <tab-item :selected="params.type==3?true:false" @on-item-click="onItemClick(3)">其它</tab-item>
       </tab>
-      <scroller class="coupon-list" :on-refresh="refresh" :on-infinite="infinite" refreshText="下拉刷新" noDataText="没有更多数据"
-                snapping>
+      <scroller class="coupon-list" :on-refresh="refresh" :on-infinite="infinite" refreshText="下拉刷新" noDataText="没有更多数据" snapping>
         <!-- content goes here -->
         <section class="v-items" v-for="(item, index) in orders" :data-id="item.id">
-          <h4 class="item-top"><i class="fa fa-shopping-bag"></i>&nbsp;{{item.sellerName}}&nbsp;&nbsp;<i
-            class="fa fa-angle-right cc"></i><span>{{item.statusName}}</span></h4>
-          <section class="item-middle">
-            <div class="img-con">
-              <img :src="item.imgurl">
+          <div class="stamp type-coupon">
+            <div class="wrap">
+              <div class="par">
+                <p>XXXXXX折扣店</p>
+                <div class="value">
+                  <sub class="sign">￥</sub>
+                  <span>50.00</span>
+                  <sub class="type">优惠券</sub>
+                </div>
+                <p class="info">订单满100.00元</p>
+              </div>
+              <div class="copy">副券<p>2015-08-13<br>2016-08-13</p></div>
             </div>
-            <div class="info-con">
-              <h3>{{item.productName}}</h3>
-              <section class="middle">
-                <span class="unit-price">￥{{item.unitPrice}}</span>
-                <span class="order-info">{{item.info}}</span>
-              </section>
-              <label>{{item.label}}</label>
+            <i></i>
+          </div>
+          <div class="stamp type-ticket">
+            <div class="wrap">
+              <div class="par">
+                <p>XXXXXX折扣店</p>
+                <div class="value">
+                  <sub class="sign">￥</sub>
+                  <span>50.00</span>
+                  <sub class="type">优惠券</sub>
+                </div>
+                <p class="info">订单满100.00元</p>
+              </div>
+              <div class="copy">副券<p>2015-08-13<br>2016-08-13</p></div>
             </div>
-            <div class="price-con">
-              <p class="price">￥{{item.price}}</p>
-              <p class="buy-count">x{{item.buyCount}}</p>
+            <i></i>
+          </div>
+          <div class="stamp type-redpacket">
+            <div class="wrap">
+              <div class="par">
+                <p>XXXXXX折扣店</p>
+                <div class="value">
+                  <sub class="sign">￥</sub>
+                  <span>50.00</span>
+                  <sub class="type">优惠券</sub>
+                </div>
+                <p class="info">订单满100.00元</p>
+              </div>
+              <div class="copy">副券<p>2015-08-13<br>2016-08-13</p></div>
             </div>
-          </section>
-          <section class="item-bottom">
-            <div class="extra-info">
-              <p v-for="(ext, idx) in item.extras">{{ext.name}}<span>￥{{ext.type ? '-' : ''}}{{ext.value}}.00</span></p>
+            <i></i>
+          </div>
+          <div class="stamp type-expired">
+            <div class="wrap">
+              <div class="par">
+                <p>XXXXXX折扣店</p>
+                <div class="value">
+                  <sub class="sign">￥</sub>
+                  <span>50.00</span>
+                  <sub class="type">优惠券</sub>
+                </div>
+                <p class="info">订单满100.00元</p>
+              </div>
+              <div class="copy"><span class="exp">已过期</span></div>
             </div>
-            <div class="total-price">共{{item.buyCount}}件商品&nbsp;合计：<span>￥{{item.total}}</span>.00（含上楼费）</div>
-            <div class="btns" v-if="item.status===-1">
-              <a class="btn btn-del" @click.prevent="delOrder(item.orderId||2)">删除订单</a>
-            </div>
-            <div class="btns" v-if="item.status===0">
-              <a class="btn btn-pay">支付</a>
-              <a class="btn btn-cancel">取消订单</a>
-            </div>
-            <div class="btns" v-if="item.status===1">
-              <a class="btn btn-push">催单</a>
-              <a class="btn btn-cancel">取消订单</a>
-            </div>
-            <div class="btns" v-if="item.status===2">
-              <a class="btn btn-cancel">取消订单</a>
-            </div>
-            <div class="btns" v-if="item.status===3">
-              <a class="btn btn-appraise">评价</a>
-              <a class="btn btn-del">删除订单</a>
-            </div>
-            <div class="btns" v-if="item.status===4">
-              <a class="btn btn-del">删除订单</a>
-            </div>
-          </section>
+            <i></i>
+          </div>
         </section>
       </scroller>
     </div>
-
   </div>
 </template>
 <!--/* eslint-disable no-unused-vars */-->
@@ -212,6 +223,7 @@
   .my-coupons {
     height: 100%;
     overflow: hidden;
+    .bf;
     .ads {
       .rel;
       z-index: 10;
@@ -234,122 +246,178 @@
 
   .coupon-list {
     .borBox;
+    width: 100%;
     height: auto !important;
-    padding: 240/@rem 0 30px;
+    padding:50px 0 30px 0;
     .v-items {
       .borBox;
+      width:100%;
       margin-bottom: 20/@rem;
-      /*padding: 0 20/@rem 20/@rem;*/
-      .bf;
-      .bsd(0, 2px, 10px, 0, #ccc);
-      .item-top {
-        padding: 14/@rem 20/@rem;
-        .txt-normal;
-        .c3;
-        .fz(24);
-        .bor-b;
-        span {
-          .fr;
-          .fz(22);
-          .cdiy(@c2);
+      .stamp {
+        .rel;
+        .borBox;
+        width:94%;
+        min-height:200/@rem;
+        padding:0 30/@rem;
+        margin: 0 auto 16/@rem;
+        overflow: hidden;
+        &:before{
+          .abs;
+          .block;
+          top: 0;
+          left: 0;
+          width: 20px;
+          height: 100%;
+          content:'';
         }
-      }
-      .item-middle {
-        padding: 14/@rem 20/@rem;
-        .flex;
-        .bf8;
-        .img-con {
+        &:after{
+          .abs;
+          .block;
+          top: 0;
+          right: 0;
+          width: 20px;
+          height: 100%;
+          content:'';
+        }
+        .wrap {
+          .flex;
+          .borBox;
+          .abs;
+          padding:20/@rem 0 20/@rem 20/@rem;
+          content: '';
+          top:0;
+          bottom:0;
+          left:10px;
+          right:10px;
+          z-index: -1;
+          background-color:#f1a83f;
+        }
+        i {
+           position: absolute;
+           right: -20%;
+           top: 120/@rem;
+           height: 300/@rem;
+           width:320px;
+            z-index: 5;
+           .fz(24);
+           background-color: rgba(255, 255, 255, .15);
+           transform: rotate(-30deg);
+         }
+        .par {
           .rel;
-          .size(130, 130);
-          img {
-            width: 100%;
-            .abs-center-vh;
-          }
-        }
-        .info-con {
-          .flex-r(2);
-          padding: 0 14/@rem;
-          h3 {
-            padding-bottom: 10/@rem;
-            .txt-normal;
-            .c3;
-            .fz(26);
-            .ellipsis-clamp-2;
-          }
-          .middle {
-            .c9;
-            .fz(22);
-            .ellipsis-clamp-2;
-            .unit-price {
-              padding-right: 40/@rem;
-              .c3;
-              .fz(24);
-            }
-          }
-        }
-        .price-con {
-          .flex-r(1);
-          .right;
-          .price {
-            padding-bottom: 10/@rem;
-            .c3;
+          .flex-r(3);
+          z-index:5;
+          .left;
+          border-right:2px dashed rgba(255, 255, 255, .3);
+          p {
+            padding-top:5/@rem;
+            color:#fff;
             .fz(24);
           }
-          .buy-count {
-            .c9;
-            .fz(22);
-          }
+          .value{
+              padding:10/@rem 0;
+              span {
+                .fz(48);
+                color:#fff;
+                margin-right: 14/@rem;
+                line-height: 60/@rem;
+              }
+              .sign, .type {
+                position: relative;
+                top:0;
+                .fz(24);
+                color:rgba(255, 255, 255, .8);
+              }
+              .info{
+                .cdiy(#ffe041);
+              }
+            }
         }
-      }
-      .item-bottom {
-        .extra-info {
-          margin-top: 2px;
-          padding: 10/@rem 20/@rem;
-          .bf8;
+        .copy {
+          .rel;
+          .flex-r(1);
+          .rel;
+          z-index: 5;
+          padding:30/@rem;
+          .fz(32);
+          .center;
+          color:rgb(255,255,255);
+          .exp{
+            .abs-center-vh;
+          }
           p {
-            .fz(22);
-            .c3;
-            span {
-              .fr;
-            }
-            &:not(:last-child) {
-              padding-bottom: 10/@rem;
-            }
+            .fz(18);
+            margin-top: 10/@rem;
           }
         }
-        .total-price {
-          padding: 10/@rem 20/@rem;
-          .right;
-          .c3;
-          .fz(22);
-          .bor;
-          span {
-            .fz(30);
+        &.type-coupon {
+          &:before {
+            background: -webkit-radial-gradient(transparent 0, transparent 5px,#f1a83f 5px) repeat-y;
+            background: radial-gradient(transparent 0, transparent 5px, #f1a83f 5px) repeat-y;
+            background-size: 20px 18px;
+            background-position: -10px 3px;
+          }
+          &:after {
+            background: -webkit-radial-gradient(transparent 0, transparent 5px,#f1a83f 5px) repeat-y;
+            background: radial-gradient(transparent 0, transparent 5px, #f1a83f 5px) repeat-y;
+            background-size: 20px 18px;
+            background-position: 10px 3px;
+          }
+          .wrap {
+            background-color:#f1a83f;
           }
         }
-        .btns {
-          padding: 20/@rem 20/@rem;
-          overflow: hidden;
-          a {
-            .fr;
-            padding: 4px 40/@rem;
-            margin-left: 20/@rem;
-            .cf;
-            .fz(22);
-            .borR(50px);
-            &.btn-cancel, &.btn-del {
-              .c6;
-              .bor(1px, solid, #ccc);
-            }
-            &.btn-push, &.btn-appraise, &.btn-pay {
-              .cdiy(@c2);
-              .bor(1px, solid, @c2);
-            }
+        &.type-ticket {
+          &:before {
+            background: -webkit-radial-gradient(transparent 0, transparent 5px,#3fa1f1 5px) repeat-y;
+            background: radial-gradient(transparent 0, transparent 5px, #3fa1f1 5px) repeat-y;
+            background-size: 20px 18px;
+            background-position: -10px 3px;
+          }
+          &:after {
+            background: -webkit-radial-gradient(transparent 0, transparent 5px,#3fa1f1 5px) repeat-y;
+            background: radial-gradient(transparent 0, transparent 5px, #3fa1f1 5px) repeat-y;
+            background-size: 20px 18px;
+            background-position: 10px 3px;
+          }
+          .wrap {
+            background-color:#3fa1f1;
           }
         }
-      }
-      &.grey {
-        .c9!important;
+        &.type-redpacket {
+          &:before {
+            background: -webkit-radial-gradient(transparent 0, transparent 5px,#D24161 5px) repeat-y;
+            background: radial-gradient(transparent 0, transparent 5px, #D24161 5px) repeat-y;
+            background-size: 20px 18px;
+            background-position: -10px 3px;
+          }
+          &:after {
+            background: -webkit-radial-gradient(transparent 0, transparent 5px,#D24161 5px) repeat-y;
+            background: radial-gradient(transparent 0, transparent 5px, #D24161 5px) repeat-y;
+            background-size: 20px 18px;
+            background-position: 10px 3px;
+          }
+          .wrap {
+            background-color:#D24161;
+          }
+        }
+        &.type-expired {
+          &:before {
+            background: -webkit-radial-gradient(transparent 0, transparent 5px,#bbb 5px) repeat-y;
+            background: radial-gradient(transparent 0, transparent 5px, #bbb 5px) repeat-y;
+            background-size: 20px 18px;
+            background-position: -10px 3px;
+          }
+          &:after {
+            background: -webkit-radial-gradient(transparent 0, transparent 5px,#bbb 5px) repeat-y;
+            background: radial-gradient(transparent 0, transparent 5px, #bbb 5px) repeat-y;
+            background-size: 20px 18px;
+            background-position: 10px 3px;
+          }
+          .wrap {
+            background-color:#bbb;
+          }
+        }
       }
     }
   }

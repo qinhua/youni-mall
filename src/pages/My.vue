@@ -4,30 +4,30 @@
     <div class="user-modal">
       <div class="user-inner">
         <img src="../../static/img/av.jpg">
-        <p class="user-name" @click="jumpTo('/edit_user', userId||255)">{{nickName}}<i class="fa fa-pencil-square-o"></i></p>
+        <p class="user-name" :data-userId="255" v-jump="['edit_user', ['userId'], 3]">{{nickName}}<i class="fa fa-pencil-square-o"></i></p>
       </div>
       <canvas id="canvas" style="position:absolute;bottom:0px;left:0px;z-index:1;"></canvas>
     </div>
     <div class="order-model">
       <div class="arc"></div>
       <grid :rows="5">
-        <grid-item @on-item-click="goOrder(1)">
-          <p>2</p>
+        <grid-item @on-item-click="jumpTo('order', {id:1}, 2)">
+          <p>{{count}}</p>
           <label>待支付</label>
         </grid-item>
-        <grid-item @on-item-click="goOrder()">
+        <grid-item @on-item-click="jumpTo('order', null, 2)">
           <p>0</p>
           <label>待接单</label>
         </grid-item>
-        <grid-item @on-item-click="goOrder(2)">
+        <grid-item @on-item-click="jumpTo('order', {id:2}, 2)">
           <p>0</p>
           <label>待派送</label>
         </grid-item>
-        <grid-item @on-item-click="goOrder()">
+        <grid-item @on-item-click="jumpTo('order', null, 2)">
           <p>1</p>
           <label>派送中</label>
         </grid-item>
-        <grid-item @on-item-click="goOrder(3)">
+        <grid-item @on-item-click="jumpTo('order', {id:3}, 2)">
           <p>2</p>
           <label>待评价</label>
         </grid-item>
@@ -67,7 +67,8 @@
     name: 'my',
     data () {
       return {
-        nickName: '七灵'
+        nickName: '七灵',
+        count: 0
       }
     },
     components: {Grid, GridItem, Group, Cell},
@@ -76,7 +77,7 @@
     },
     mounted () {
       // me.attachClick()
-      this.nickName = this.$store.state.global.nickName
+      this.count = this.$store.state.cart.count
       var canvas = document.getElementById('canvas')
       var ctx = canvas.getContext('2d')
       canvas.width = canvas.parentNode.offsetWidth
@@ -119,17 +120,31 @@
       }
       loop()
     },
+    watch: {
+      '$route' (to, from) {
+        this.count = this.$store.state.cart.count
+      }
+    },
     computed: {},
     methods: {
       // 向父组件传值
       setPageStatus (data) {
         this.$emit('listenPage', data)
       },
-      jumpTo (path, param) {
-        this.$router.push({path: path + (param ? '/' + param : '')})
-      },
-      goOrder (param) {
-        this.$router.push({path: '/order' + (param ? '/' + param : '')})
+      jumpTo (pathName, param, type) {
+        /* [type=2] 1:'path'2:'name',3:'query' */
+        type = type || 'name'
+        if (pathName) {
+          if (type === 1) {
+            this.$router.push({path: '/' + pathName + (param ? '/' + param : '')})
+          }
+          if (type === 2) {
+            this.$router.push({name: pathName, params: param || ''})
+          }
+          if (type === 3) {
+            this.$router.push({path: '/' + pathName, query: param || ''})
+          }
+        }
       }
     }
   }

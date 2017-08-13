@@ -28,7 +28,8 @@ export default (function () {
   Mock.mock(/\/home\/banner/, {
     'itemList|1-4': [{
       'id|+1': 1,
-      'image': '../static/img/banner/p0' + rdnBetween(1, 5) + '.jpg',
+      'image': '../static/img/banner/p0' + Mock.Random.integer(1, 9) + '.jpg',
+      // 'image': Mock.Random.dataImage('636x320'),
       'linkUrl': Mock.mock('@url')
     }]
   })
@@ -45,7 +46,7 @@ export default (function () {
       // 'name': Mock.mock('@ctitle()'),
       'name|+1': Mock.mock('@string(矿泉水好喝的牛奶桶装一方人20L超值农夫三拳喝完跳三万米,3,10)'),
       'price|8-100': 3,
-      'imgurl': '../static/img/goods/0' + rdnBetween(1, 5) + '.jpg',
+      'imgurl': '../static/img/goods/0' + rdnBetween(1, 13) + '.jpg',
       'label': Mock.mock('@cword(2,4)'),
       'saleCount|1-1000': 0,
       'discountPrice|5-100': 1,
@@ -55,7 +56,7 @@ export default (function () {
   })
   /*附近接口*/
   Mock.mock(/\/home\/shopsList/, {
-    'itemList|1-100': [{
+    'itemList|1-15': [{
       'id|+1': 102,
       'name': '武汉市水一族加盟店',
       'price|8-100': 3,
@@ -64,8 +65,11 @@ export default (function () {
       'saleCount|1-1000': 0,
       'score|1-5': 0,
       'note': '买十桶送一桶',
-      'distance|+1': 0.5,
-      'dispatchTime|+1': 10
+      'distance|+1': Mock.mock('@float(0.2, 2, 0, 2)'),
+      'dispatchTime|+1': 10,
+      'isSleep|1-2': true,
+      'runStartTime': '09:00',
+      'runEndTime': '22:30'
     }]
   })
   /*水票接口*/
@@ -88,6 +92,7 @@ export default (function () {
   Mock.mock(/\/home\/order/, {
     'itemList|1-20': [{
       'id|+1': 20,
+      'orderNumber|+1': Mock.Random.id(),
       'sellerName': '武汉市水一族加盟店',
       'productName': '农夫山泉20桶一季度',
       'price': 500,

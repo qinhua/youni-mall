@@ -1,8 +1,10 @@
 <template>
   <div class="container">
+    <!--地图容器-->
     <div id="mapContainer"></div>
+    <!--标签栏-->
     <tabbar v-if="showTabbar" style="position:fixed">
-      <tabbar-item :selected="(curSelected===1||$route.path=='/home')?true:false" link="/home" @on-item-click>
+      <tabbar-item :selected="(curSelected===1||$route.path=='/home')?true:false" link="/home">
         <img slot="icon" src="../static/img/ico_home.png">
         <img slot="icon-active" src="../static/img/ico_home_sel.png">
         <span slot="label">首页</span>
@@ -28,6 +30,7 @@
         <span slot="label">我的</span>
       </tabbar-item>
     </tabbar>
+
     <!--这里是被缓存的视图组件，比如 Home！-->
     <!--<transition :name="'vux-pop-' + (direction === 'forward' ? 'in' : 'out')">-->
     <transition>
@@ -44,7 +47,6 @@
     </transition>
   </div>
 </template>
-
 <script>
   /* eslint-disable */
   // import $ from 'jquery'
@@ -55,28 +57,29 @@
   import {mapState, mapActions} from 'vuex'
   export default {
     name: 'app',
-    data () {
+    data() {
       return {
         transitionName: 'fade', // 默认动态路由过渡
-        curSelected: 1,
-        direction: ''
+        // showTabbar: false, // 是否显示标签栏
+        curSelected: 1, // 当前选中的tab
+        direction: '', // 路由方向
+        curCount: 0 // 当前购物车中商品数
       }
     },
     components: {Tabbar, TabbarItem},
-    beforeMount () {
+    beforeMount() {
       // console.log(window.me)
     },
-    mounted () {
+    mounted() {
       // me.attachClick()
       vm = this
     },
     computed: {
       'showTabbar' () {
-        // console.log(this.$route.path)
-        var path = this.$route.path
-        return path.indexOf('/home') > -1 || path.indexOf('/nearby') > -1 || path.indexOf('/ticket') > -1 || path.indexOf('/order') > -1 || path.indexOf('/user') > -1
+        let path = this.$route.name
+        return path === 'home' || path === 'nearby' || path === 'ticket' ||path === 'order' || path === 'user'
       },
-      'key' () {
+      'key'() {
         return this.$route.path.replace(/\//g, '_')
       }
     },
@@ -87,8 +90,10 @@
       }
     },
     watch: {
+      'curCount' () {
+        return vm.$store.state.cart.count
+      },
       '$route' (to, from) {
-        // console.log(to, from)
         /* let isBack = this.$router.isBack //  监听路由变化时的状态为前进还是后退
         console.log(isBack)
         if (isBack) {
@@ -100,21 +105,25 @@
         const toDepth = to.path.split('/').length
         const fromDepth = from.path.split('/').length
         vm.direction = toDepth < fromDepth ? 'forward' : 'reverse' */
+//        vm.showTabbar = true
         switch (to.name) {
-          case '首页':
+          case 'home':
             vm.curSelected = 1
             break
-          case '附近':
+          case 'nearby':
             vm.curSelected = 2
             break
-          case '水票':
+          case 'ticket':
             vm.curSelected = 3
             break
-          case '订单':
+          case 'order':
             vm.curSelected = 4
             break
-          case '我的':
+          case 'user':
             vm.curSelected = 5
+            break
+          default:
+//            vm.showTabbar = false
             break
         }
       }
@@ -139,30 +148,4 @@
     overflow: auto;
   }
 
-  /*左右滑动*/
-  .slide-left-enter,
-  .slide-right-leave-active {
-    opacity: 0;
-    -webkit-transform: translate3d(100%, 0, 0);
-    transform: translate3d(100%, 0, 0);
-  }
-
-  .slide-left-leave-active,
-  .slide-right-enter {
-    opacity: 0;
-    -webkit-transform: translate3d(-100%, 0, 0);
-    transform: translate3d(-100%, 0, 0);
-  }
-
-  /*渐入渐出*/
-  .fade-enter-active,
-  .fade-leave-active {
-    -webkit-transition: opacity .3s;
-    transition: opacity .3s
-  }
-
-  .fade-enter,
-  .fade-leave {
-    opacity: 0
-  }
 </style>

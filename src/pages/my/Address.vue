@@ -1,30 +1,22 @@
 <template>
   <div class="my-address">
     <ul class="address-list">
-      <li class="current">
-        <h2>七灵<span>13260610021</span></h2>
-        <p>在武汉光谷软件园十万八千里深的坑里，遥望月球上两个小姐姐</p>
-        <div class="operates">
-          <span class="btn btn-setDefault">默认收货地址</span>
-          <div class="right">
-            <span><i class="fa fa-pencil-square-o"></i>&nbsp;编辑</span>
-            <span><i class="fa fa-bitbucket"></i>&nbsp;删除</span>
-          </div>
+      <li :class="item.isCurrent?'current':''" v-for="(item, index) in list" :key="index">
+        <div class="top">
+          <h2>{{item.name}}<span>{{item.phone}}</span></h2>
+          <p>{{item.address}}</p>
         </div>
-      </li>
-      <li>
-        <h2>天启2<span>15858554545</span></h2>
-        <p>在武汉光谷软件园十万八千里深的坑里，遥望月球上两个小姐姐</p>
         <div class="operates">
-          <span class="btn btn-setDefault">设为默认</span>
+          <span class="btn btn-set" v-if="item.isCurrent">默认收货地址&nbsp;<i class="fa fa-check-circle"></i></span>
+          <span class="btn btn-set" v-else @click="setDefault(item.id)">设为默认</span>
           <div class="right">
-            <span><i class="fa fa-pencil-square-o"></i>&nbsp;编辑</span>
-            <span><i class="fa fa-bitbucket"></i>&nbsp;删除</span>
+            <span :data-id="item.id" v-jump="['edit_address',['id'],3]"><i class="fa fa-pencil-square-o"></i>&nbsp;编辑</span>
+            <span @click.stop="delAddress(item.id)"><i class="fa fa-bitbucket"></i>&nbsp;删除</span>
           </div>
         </div>
       </li>
     </ul>
-    <div class="add-address" @click="addAddress"><i class="fa fa-plus"></i>&nbsp;添加新地址</div>
+    <div class="add-address" v-jump="['edit_address',null,3]"><i class="fa fa-plus"></i>&nbsp;添加新地址</div>
   </div>
 </template>
 
@@ -40,7 +32,8 @@
       return {
         onFetching: false,
         isPosting: false,
-        address: null
+        userId: null,
+        list: null
       }
     },
     components: {Grid, GridItem, Group, Cell},
@@ -49,29 +42,57 @@
     },
     mounted () {
       vm = this
+      vm.userId = vm.$route.query.userId
       // me.attachClick()
+      this.$nextTick(function () {
+        vm.getAddress()
+      })
     },
     computed: {},
+    watch: {
+      '$route' (to, from) {
+        vm.getAddress()
+      }
+    },
     methods: {
       getAddress () {
-        if (vm.isPosting) return false
+        vm.list = vm.$store.state.global.address
+        /* if (vm.isPosting) return false
         vm.isPosting = true
         vm.processing()
-        vm.loadData(userApi.orders, vm.params, 'POST', function (res) {
-          vm.address = res.data.itemList
-          console.log(vm.address, '地址数据')
+        vm.loadData(userApi.getAddress, {userId: vm.userId}, 'POST', function (res) {
+          vm.list = res.data.itemList
+          vm.$store.state.global.address = vm.list
+          console.log(vm.list, '地址数据')
           vm.isPosting = false
           vm.processing(0, 1)
         }, function () {
           vm.isPosting = false
           vm.processing(0, 1)
-        })
+        }) */
+      },
+      setDefault (id) {
+        if (vm.isPosting) return false
+        for (let i = 0; i < vm.list.length; i++) {
+          vm.list[i].isCurrent = false
+          id === vm.list[i].id ? vm.list[i].isCurrent = true : null
+        }
+        /* vm.isPosting = true
+        vm.processing()
+        vm.loadData(userApi.updateAddress, {id: id}, 'POST', function (res) {
+          console.log(res.data)
+          vm.isPosting = false
+          vm.processing(0, 1)
+        }, function () {
+          vm.isPosting = false
+          vm.processing(0, 1)
+        }) */
       },
       addAddress () {
         if (vm.isPosting) return false
         vm.isPosting = true
         vm.processing()
-        vm.loadData(userApi.orders, vm.params, 'POST', function (res) {
+        vm.loadData(userApi.addAddress, vm.params, 'POST', function (res) {
           console.log(res.data)
           vm.isPosting = false
           vm.processing(0, 1)
@@ -83,6 +104,23 @@
       updateAddress (id) {
       },
       delAddress (id) {
+        if (vm.isPosting) return false
+        vm.confirm('确认删除？', '删除后只能重新添加了！', function () {
+          for (let i = 0; i < vm.list.length; i++) {
+            if (id === vm.list[i].id) {
+              vm.list.splice(i, 1)
+              vm.$store.commit('updateAddress', {data: vm.list})
+            }
+          }
+          /* vm.isPosting = true
+          vm.loadData(userApi.delOrder, {id: id}, 'POST', function (res) {
+            vm.isPosting = false
+          }, function () {
+            vm.isPosting = false
+          }) */
+        }, function () {
+          // console.log('no')
+        })
       }
     }
   }
@@ -110,11 +148,18 @@
       li {
         .borBox;
         margin-bottom: 16/@rem;
-        padding: 20/@rem 20/@rem 0;
         .fz(24);
         .bf;
         &.current {
           .bor-b(2px, solid, @c2);
+          .operates .btn-set{
+            .cdiy(@c2);
+            .no-bor;
+            .borR(0);
+          }
+        }
+        .top{
+          padding: 20/@rem;
         }
         h2 {
           .c3;
@@ -124,17 +169,23 @@
         }
         p {
           padding: 20/@rem 0;
-          .bor-b;
         }
         .operates {
+          .rel;
+          padding: 0 20/@rem;
           overflow: hidden;
+          .bor-t;
           span {
             .iblock;
             padding: 16/@rem 0;
           }
-          .btn-setOperate {
-            .fl;
-            .cdiy(@c2);
+          .btn-set {
+            .abs-center-vertical;
+            padding: 5/@rem 20/@rem;
+            .c3;
+            .fz(20);
+            .bor(1px,solid,#ddd);
+            .borR(80px)
           }
           .right {
             .fr;
