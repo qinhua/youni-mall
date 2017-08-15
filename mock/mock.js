@@ -120,4 +120,32 @@ export default (function () {
       }]
     }]
   })
+
+  /*商品详情接口*/
+  Mock.mock(/\/goods\/detail/, {
+    'itemList|1-4': [{
+      'id|+1': 1,
+      'image': '../static/img/banner/p0' + Mock.Random.integer(1, 9) + '.jpg',
+      // 'image': Mock.Random.dataImage('636x320'),
+      'linkUrl': Mock.mock('@url')
+    }]
+  })
+
+  /*优惠券接口*/
+  Mock.mock(/\/user\/coupons/, {
+    'itemList|1-10': [{
+      'id|+1': 2,
+      'sellerName': '武汉市水一族加盟店',
+      'info': '订单满100元使用',
+      'value|10-50': 50,
+      // 1：优惠券，2：水票券，3：红包，4：其它
+      'type': rdnFromArr([1, 2, 3, 4]),
+      // 0：失效，1：有效
+      'status|0-1': 1,
+      //'label': Mock.mock('@cword(2,4)'),
+      'label': '副券',
+      'startTime': Mock.Random.date('yyyy-MM-dd'),
+      'endTime': Mock.Random.date('yyyy-MM-dd')
+    }]
+  })
 })()

@@ -39,11 +39,11 @@
             date: '时间',
             other: '其他信息'
           }
-        }]
-//        footer: {
-//          title: '查看更多',
-//          url: 'http://vux.li'
-//        }
+        }],
+        footer: {
+          title: '查看更多',
+          url: 'http://vux.li'
+        }
       }
     },
     components: {Group, Cell, Panel, Radio},

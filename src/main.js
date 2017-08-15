@@ -27,23 +27,23 @@ let me = window.me
 router.beforeEach((to, from, next) => {
   /* 判断页面的方向 */
   /* const history = window.sessionStorage
-  history.clear()
-  let historyCount = history.getItem('count') * 1 || 0
-  history.setItem('/', 0)
-  const toIndex = history.getItem(to.path)
-  const fromIndex = history.getItem(from.path)
-  if (toIndex) {
-    if (!fromIndex || parseInt(toIndex, 10) > parseInt(fromIndex, 10) || (toIndex === '0' && fromIndex === '0')) {
-      store.commit('UPDATE_DIRECTION', {direction: 'forward'})
-    } else {
-      store.commit('UPDATE_DIRECTION', {direction: 'reverse'})
-    }
-  } else {
-    ++historyCount
-    history.setItem('count', historyCount)
-    to.path !== '/' && history.setItem(to.path, historyCount)
-    store.commit('UPDATE_DIRECTION', {direction: 'forward'})
-  } */
+   history.clear()
+   let historyCount = history.getItem('count') * 1 || 0
+   history.setItem('/', 0)
+   const toIndex = history.getItem(to.path)
+   const fromIndex = history.getItem(from.path)
+   if (toIndex) {
+   if (!fromIndex || parseInt(toIndex, 10) > parseInt(fromIndex, 10) || (toIndex === '0' && fromIndex === '0')) {
+   store.commit('UPDATE_DIRECTION', {direction: 'forward'})
+   } else {
+   store.commit('UPDATE_DIRECTION', {direction: 'reverse'})
+   }
+   } else {
+   ++historyCount
+   history.setItem('count', historyCount)
+   to.path !== '/' && history.setItem(to.path, historyCount)
+   store.commit('UPDATE_DIRECTION', {direction: 'forward'})
+   } */
   /* 判断是否已经授权过 */
   console.log(store.state, '当前vuex中的data')
   if (to.path === '/author') {
@@ -73,14 +73,14 @@ router.beforeEach((to, from, next) => {
 Vue.prototype.$axios = Axios
 Vue.prototype.loadData = function (url, params, type, sucCb, errCb) {
   /* $.post(url, {'requestapp': params ? JSON.stringify(params) : '{}'},
-     function (res) {
-       if (res.success) {
-         sucCb ? sucCb(res) : console.log(res, '接口的res')
-       } else {
-         errCb ? errCb(res) : console.error('请求失败！')
-       }
-     }
-  ) */
+   function (res) {
+   if (res.success) {
+   sucCb ? sucCb(res) : console.log(res, '接口的res')
+   } else {
+   errCb ? errCb(res) : console.error('请求失败！')
+   }
+   }
+   ) */
   /* Axios.post(url, {'requestapp': '{}'}).then(function (res) {
    sucCb ? sucCb(res) : console.log(res, '接口的res')
    }).catch(function (error) {
@@ -201,8 +201,8 @@ Vue.directive('jump', {
           param[paramArr[i]] = el.getAttribute('data-' + paramArr[i])
         }
       }
-      console.info(param, 'v-jump中的param')
       // console.log(pathName, param, type)
+      // console.info(param, 'v-jump中的param')
       el.addEventListener('click', function () {
         if (pathName) {
           if (type === 1) {
@@ -235,6 +235,21 @@ Vue.directive('jump', {
   unbind: function () {
     // 做清理工作（比如移除在 bind() 中添加的事件监听器）
     //
+  }
+})
+
+/* ----- 封装一些过滤器 -------- */
+/* 优惠券类型 */
+Vue.filter('couponType', function (type) {
+  switch (type) {
+    case 1:
+      return '优惠券'
+    case 2:
+      return '水票券'
+    case 3:
+      return '红包'
+    case 4:
+      return '其它'
   }
 })
 // main.js

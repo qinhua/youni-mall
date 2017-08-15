@@ -16,6 +16,8 @@ import MyAddress from '@/pages/my/Address'
 import MyFavorite from '@/pages/my/Favorite'
 import Help from '@/pages/my/Help'
 import About from '@/pages/my/About'
+import GoodsDetail from '@/pages/goods/Detail'
+
 import NoPage from '@/pages/NoPage'
 Router.prototype.goBack = function () {
   this.isBack = true
@@ -181,6 +183,15 @@ export default new Router({
       component: Map,
       meta: {
         title: '地图',
+        keepAlive: false
+      }
+    },
+    {
+      path: '/goods_detail',
+      name: 'goods_detail',
+      component: GoodsDetail,
+      meta: {
+        title: '商品详情',
         keepAlive: false
       }
     },

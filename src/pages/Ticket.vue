@@ -18,7 +18,7 @@
       <tab-item @on-item-click="filterTicket(2)">买10送2</tab-item>
     </tab>
     <div class="ticket-list">
-      <scroller class="inner-scroller" ref="myScroller" height="100%" :on-refresh="refresh" :on-infinite="infinite" refreshText="下拉刷新"
+      <scroller class="inner-scroller" ref="ticketScroller" height="100%" :on-refresh="refresh" :on-infinite="infinite" refreshText="下拉刷新"
                 noDataText="没有更多数据"
                 snapping>
         <!-- content goes here -->
@@ -74,7 +74,8 @@
       vm = this
       vm.getTickets()
       vm.$nextTick(() => {
-        vm.$refs.myScroller.resize()
+        vm.$refs.ticketScroller.finishInfinite(true)
+        vm.$refs.ticketScroller.resize()
       })
     },
     /* computed: {
@@ -99,14 +100,14 @@
         console.log('下拉加载')
         setTimeout(function () {
           vm.getTickets()
-          vm.$refs.myScroller.finishPullToRefresh()
+          vm.$refs.ticketScroller.finishPullToRefresh()
         }, 1200)
       },
       infinite (done) {
         console.log('无限滚动')
         setTimeout(function () {
           vm.getTickets(true)
-          vm.$refs.myScroller.finishInfinite(true)
+          vm.$refs.ticketScroller.finishInfinite(true)
         }, 1000)
       },
       onItemClick (type) {

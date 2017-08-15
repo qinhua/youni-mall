@@ -1,73 +1,29 @@
 <template>
   <div class="my-coupons">
-    <div class="content">
-      <tab class="order-tab" active-color="#f34c18">
+    <tab class="order-tab" active-color="#f34c18">
         <tab-item :selected="params.type==0?true:false" @on-item-click="onItemClick">全部</tab-item>
         <tab-item :selected="params.type==1?true:false" @on-item-click="onItemClick(1)">优惠券</tab-item>
         <tab-item :selected="params.type==1?true:false" @on-item-click="onItemClick(1)">水票券</tab-item>
         <tab-item :selected="params.type==2?true:false" @on-item-click="onItemClick(2)">红包</tab-item>
         <tab-item :selected="params.type==3?true:false" @on-item-click="onItemClick(3)">其它</tab-item>
       </tab>
-      <scroller class="coupon-list" :on-refresh="refresh" :on-infinite="infinite" refreshText="下拉刷新" noDataText="没有更多数据" snapping>
+    <div class="coupon-list">
+      <scroller class="inner-scroller" ref="couponScroller" :on-refresh="refresh" :on-infinite="infinite" refreshText="下拉刷新" noDataText="没有更多数据" snapping>
         <!-- content goes here -->
-        <section class="v-items" v-for="(item, index) in orders" :data-id="item.id">
-          <div class="stamp type-coupon">
+        <section class="v-items" v-for="(item, index) in coupons" :data-id="item.id">
+          <div :class="('stamp type0'+item.type) + (!item.status?' expired':'')">
             <div class="wrap">
               <div class="par">
-                <p>XXXXXX折扣店</p>
+                <p>{{item.sellerName}}</p>
                 <div class="value">
                   <sub class="sign">￥</sub>
-                  <span>50.00</span>
-                  <sub class="type">优惠券</sub>
+                  <span>{{item.value}}.00</span>
+                  <sub class="type">{{item.type | couponType(item.type)}}</sub>
                 </div>
-                <p class="info">订单满100.00元</p>
+                <p class="info">{{item.info}}</p>
               </div>
-              <div class="copy">副券<p>2015-08-13<br>2016-08-13</p></div>
-            </div>
-            <i></i>
-          </div>
-          <div class="stamp type-ticket">
-            <div class="wrap">
-              <div class="par">
-                <p>XXXXXX折扣店</p>
-                <div class="value">
-                  <sub class="sign">￥</sub>
-                  <span>50.00</span>
-                  <sub class="type">优惠券</sub>
-                </div>
-                <p class="info">订单满100.00元</p>
-              </div>
-              <div class="copy">副券<p>2015-08-13<br>2016-08-13</p></div>
-            </div>
-            <i></i>
-          </div>
-          <div class="stamp type-redpacket">
-            <div class="wrap">
-              <div class="par">
-                <p>XXXXXX折扣店</p>
-                <div class="value">
-                  <sub class="sign">￥</sub>
-                  <span>50.00</span>
-                  <sub class="type">优惠券</sub>
-                </div>
-                <p class="info">订单满100.00元</p>
-              </div>
-              <div class="copy">副券<p>2015-08-13<br>2016-08-13</p></div>
-            </div>
-            <i></i>
-          </div>
-          <div class="stamp type-expired">
-            <div class="wrap">
-              <div class="par">
-                <p>XXXXXX折扣店</p>
-                <div class="value">
-                  <sub class="sign">￥</sub>
-                  <span>50.00</span>
-                  <sub class="type">优惠券</sub>
-                </div>
-                <p class="info">订单满100.00元</p>
-              </div>
-              <div class="copy"><span class="exp">已过期</span></div>
+              <div class="copy" v-if="item.status">{{item.label}}<p>{{item.startTime}}<br>{{item.endTime}}</p></div>
+              <div class="copy" v-else><span class="exp">已过期</span></div>
             </div>
             <i></i>
           </div>
@@ -83,14 +39,13 @@
   let vm
   import {Tab, TabItem} from 'vux'
   import {orderApi, userApi} from '../../store/main.js'
-
   export default {
     name: 'my-coupons',
     data () {
       return {
         show: false,
         curOrderFilter: '',
-        orders: [],
+        coupons: [],
         params: {
           type: 0,
           pagerSize: 10,
@@ -110,12 +65,16 @@
     },
     mounted () {
       vm = this
-      vm.getOrders()
+      vm.getCoupons()
+      vm.$nextTick(() => {
+        vm.$refs.couponScroller.finishInfinite(true)
+        vm.$refs.couponScroller.resize()
+      })
     },
     computed: {},
     watch: {
       '$route' (to, from) {
-        vm.getOrders()
+        vm.getCoupons()
       }
     },
     methods: {
@@ -126,14 +85,16 @@
       refresh (done) {
         console.log('下拉加载')
         setTimeout(function () {
-          vm.getOrders()
+          vm.getCoupons()
+          vm.$refs.couponScroller.finishPullToRefresh()
         }, 1200)
       },
       infinite (done) {
         console.log('无限滚动')
         setTimeout(function () {
-          vm.getOrders(true)
-        }, 2000)
+          vm.getCoupons(true)
+          vm.$refs.couponScroller.finishInfinite(true)
+        }, 1000)
       },
       onItemClick (type) {
         if (type === 'undefined') {
@@ -141,20 +102,20 @@
         } else {
           vm.params.type = type
         }
-        vm.getOrders()
+        vm.getCoupons()
       },
       filterTicket (type, isMine) {
         vm.curTicketFilter = type
-        vm.getOrders()
+        vm.getCoupons()
       },
-      getOrders (isLoadMore) {
+      getCoupons (isLoadMore) {
         vm.params.type = vm.$route.params.type
         if (vm.onFetching) return false
         vm.processing()
         vm.onFetching = true
-        vm.loadData(orderApi.orders, vm.params, 'POST', function (res) {
+        vm.loadData(userApi.coupons, vm.params, 'POST', function (res) {
           var resD = res.data.itemList
-          for (var i = 0; i < resD.length; i++) {
+          /* for (var i = 0; i < resD.length; i++) {
             switch (resD[i].status) {
               case -1:
                 resD[i].statusName = '已取消'
@@ -175,13 +136,13 @@
                 resD[i].statusName = '已完成'
                 break
             }
-          }
+          } */
           if (!isLoadMore) {
-            vm.orders = resD
+            vm.coupons = resD
           } else {
-            vm.orders.push(resD, '订单数据')
+            vm.coupons.push(resD)
           }
-          console.log(vm.orders)
+          console.log(vm.coupons, '优惠券数据')
           vm.onFetching = false
           vm.processing(0, 1)
         }, function () {
@@ -220,19 +181,10 @@
 <style scoped lang='less'>
   @import '../../../static/css/tools.less';
 
-  .my-coupons {
+  .my-coupons{
     height: 100%;
-    overflow: hidden;
-    .bf;
-    .ads {
-      .rel;
-      z-index: 10;
-      height: 210/@rem;
-    }
-    .content {
-    }
+    overflow: auto;
   }
-
   .order-tab {
     z-index: 10;
     .vux-tab-item {
@@ -245,76 +197,75 @@
   }
 
   .coupon-list {
-    .borBox;
-    width: 100%;
-    height: auto !important;
-    padding:50px 0 30px 0;
-    .v-items {
+    .inner-scroller{
       .borBox;
-      width:100%;
-      margin-bottom: 20/@rem;
-      .stamp {
-        .rel;
+      padding:50px 0 20px 0;
+      .v-items {
         .borBox;
-        width:94%;
-        min-height:200/@rem;
-        padding:0 30/@rem;
-        margin: 0 auto 16/@rem;
-        overflow: hidden;
-        &:before{
-          .abs;
-          .block;
-          top: 0;
-          left: 0;
-          width: 20px;
-          height: 100%;
-          content:'';
-        }
-        &:after{
-          .abs;
-          .block;
-          top: 0;
-          right: 0;
-          width: 20px;
-          height: 100%;
-          content:'';
-        }
-        .wrap {
-          .flex;
-          .borBox;
-          .abs;
-          padding:20/@rem 0 20/@rem 20/@rem;
-          content: '';
-          top:0;
-          bottom:0;
-          left:10px;
-          right:10px;
-          z-index: -1;
-          background-color:#f1a83f;
-        }
-        i {
-           position: absolute;
-           right: -20%;
-           top: 120/@rem;
-           height: 300/@rem;
-           width:320px;
-            z-index: 5;
-           .fz(24);
-           background-color: rgba(255, 255, 255, .15);
-           transform: rotate(-30deg);
-         }
-        .par {
+        width:100%;
+        margin-bottom: 20/@rem;
+        .stamp {
           .rel;
-          .flex-r(3);
-          z-index:5;
-          .left;
-          border-right:2px dashed rgba(255, 255, 255, .3);
-          p {
-            padding-top:5/@rem;
-            color:#fff;
-            .fz(24);
+          .borBox;
+          width:94%;
+          min-height:200/@rem;
+          padding:0 30/@rem;
+          margin: 0 auto 16/@rem;
+          overflow: hidden;
+          &:before{
+            .abs;
+            .block;
+            top: 0;
+            left: 0;
+            width: 20px;
+            height: 100%;
+            content:'';
           }
-          .value{
+          &:after{
+            .abs;
+            .block;
+            top: 0;
+            right: 0;
+            width: 20px;
+            height: 100%;
+            content:'';
+          }
+          .wrap {
+            .flex;
+            .borBox;
+            .abs;
+            padding:20/@rem 0 20/@rem 20/@rem;
+            content: '';
+            top:0;
+            bottom:0;
+            left:10px;
+            right:10px;
+            z-index: -1;
+            background-color:#e0552e;
+          }
+          i {
+            position: absolute;
+            right: -20%;
+            top: 120/@rem;
+            height: 300/@rem;
+            width:320px;
+            z-index: 5;
+            .fz(24);
+            background-color: rgba(255, 255, 255, .15);
+            transform: rotate(-30deg);
+          }
+          .par {
+            .rel;
+            .flex-r(3);
+            z-index:5;
+            .left;
+            border-right:2px dashed rgba(255, 255, 255, .3);
+            p {
+              padding-top:5/@rem;
+              color:#fff;
+              .fz(24);
+            }
+            .value{
               padding:10/@rem 0;
               span {
                 .fz(48);
@@ -332,90 +283,112 @@
                 .cdiy(#ffe041);
               }
             }
-        }
-        .copy {
-          .rel;
-          .flex-r(1);
-          .rel;
-          z-index: 5;
-          padding:30/@rem;
-          .fz(32);
-          .center;
-          color:rgb(255,255,255);
-          .exp{
-            .abs-center-vh;
           }
-          p {
-            .fz(18);
-            margin-top: 10/@rem;
+          .copy {
+            .rel;
+            .flex-r(1);
+            .rel;
+            z-index: 5;
+            padding:30/@rem;
+            .fz(32);
+            .center;
+            color:rgb(255,255,255);
+            .exp{
+              .abs-center-vh;
+            }
+            p {
+              .fz(18);
+              margin-top: 10/@rem;
+            }
           }
-        }
-        &.type-coupon {
-          &:before {
-            background: -webkit-radial-gradient(transparent 0, transparent 5px,#f1a83f 5px) repeat-y;
-            background: radial-gradient(transparent 0, transparent 5px, #f1a83f 5px) repeat-y;
-            background-size: 20px 18px;
-            background-position: -10px 3px;
+          /*&.type-coupon {*/
+          &.type01 {
+            &:before {
+              background: -webkit-radial-gradient(transparent 0, transparent 5px,#f1a83f 5px) repeat-y;
+              background: radial-gradient(transparent 0, transparent 5px, #f1a83f 5px) repeat-y;
+              background-size: 20px 18px;
+              background-position: -10px 3px;
+            }
+            &:after {
+              background: -webkit-radial-gradient(transparent 0, transparent 5px,#f1a83f 5px) repeat-y;
+              background: radial-gradient(transparent 0, transparent 5px, #f1a83f 5px) repeat-y;
+              background-size: 20px 18px;
+              background-position: 10px 3px;
+            }
+            .wrap {
+              background-color:#f1a83f;
+            }
           }
-          &:after {
-            background: -webkit-radial-gradient(transparent 0, transparent 5px,#f1a83f 5px) repeat-y;
-            background: radial-gradient(transparent 0, transparent 5px, #f1a83f 5px) repeat-y;
-            background-size: 20px 18px;
-            background-position: 10px 3px;
+          /*&.type-ticket {*/
+          &.type02 {
+            &:before {
+              background: -webkit-radial-gradient(transparent 0, transparent 5px,#3fa1f1 5px) repeat-y;
+              background: radial-gradient(transparent 0, transparent 5px, #3fa1f1 5px) repeat-y;
+              background-size: 20px 18px;
+              background-position: -10px 3px;
+            }
+            &:after {
+              background: -webkit-radial-gradient(transparent 0, transparent 5px,#3fa1f1 5px) repeat-y;
+              background: radial-gradient(transparent 0, transparent 5px, #3fa1f1 5px) repeat-y;
+              background-size: 20px 18px;
+              background-position: 10px 3px;
+            }
+            .wrap {
+              background-color:#3fa1f1;
+            }
           }
-          .wrap {
-            background-color:#f1a83f;
+          /*&.type-redpacket {*/
+          &.type03 {
+            &:before {
+              background: -webkit-radial-gradient(transparent 0, transparent 5px,#e0552e 5px) repeat-y;
+              background: radial-gradient(transparent 0, transparent 5px, #e0552e 5px) repeat-y;
+              background-size: 20px 18px;
+              background-position: -10px 3px;
+            }
+            &:after {
+              background: -webkit-radial-gradient(transparent 0, transparent 5px,#e0552e 5px) repeat-y;
+              background: radial-gradient(transparent 0, transparent 5px, #e0552e 5px) repeat-y;
+              background-size: 20px 18px;
+              background-position: 10px 3px;
+            }
+            .wrap {
+              background-color:#e0552e;
+            }
           }
-        }
-        &.type-ticket {
-          &:before {
-            background: -webkit-radial-gradient(transparent 0, transparent 5px,#3fa1f1 5px) repeat-y;
-            background: radial-gradient(transparent 0, transparent 5px, #3fa1f1 5px) repeat-y;
-            background-size: 20px 18px;
-            background-position: -10px 3px;
+          &.type04 {
+            &:before {
+              background: -webkit-radial-gradient(transparent 0, transparent 5px,#e0552e 5px) repeat-y;
+              background: radial-gradient(transparent 0, transparent 5px, #e0552e 5px) repeat-y;
+              background-size: 20px 18px;
+              background-position: -10px 3px;
+            }
+            &:after {
+              background: -webkit-radial-gradient(transparent 0, transparent 5px,#e0552e 5px) repeat-y;
+              background: radial-gradient(transparent 0, transparent 5px, #e0552e 5px) repeat-y;
+              background-size: 20px 18px;
+              background-position: 10px 3px;
+            }
+            .wrap {
+              background-color:#e0552e;
+            }
           }
-          &:after {
-            background: -webkit-radial-gradient(transparent 0, transparent 5px,#3fa1f1 5px) repeat-y;
-            background: radial-gradient(transparent 0, transparent 5px, #3fa1f1 5px) repeat-y;
-            background-size: 20px 18px;
-            background-position: 10px 3px;
-          }
-          .wrap {
-            background-color:#3fa1f1;
-          }
-        }
-        &.type-redpacket {
-          &:before {
-            background: -webkit-radial-gradient(transparent 0, transparent 5px,#D24161 5px) repeat-y;
-            background: radial-gradient(transparent 0, transparent 5px, #D24161 5px) repeat-y;
-            background-size: 20px 18px;
-            background-position: -10px 3px;
-          }
-          &:after {
-            background: -webkit-radial-gradient(transparent 0, transparent 5px,#D24161 5px) repeat-y;
-            background: radial-gradient(transparent 0, transparent 5px, #D24161 5px) repeat-y;
-            background-size: 20px 18px;
-            background-position: 10px 3px;
-          }
-          .wrap {
-            background-color:#D24161;
-          }
-        }
-        &.type-expired {
-          &:before {
-            background: -webkit-radial-gradient(transparent 0, transparent 5px,#bbb 5px) repeat-y;
-            background: radial-gradient(transparent 0, transparent 5px, #bbb 5px) repeat-y;
-            background-size: 20px 18px;
-            background-position: -10px 3px;
-          }
-          &:after {
-            background: -webkit-radial-gradient(transparent 0, transparent 5px,#bbb 5px) repeat-y;
-            background: radial-gradient(transparent 0, transparent 5px, #bbb 5px) repeat-y;
-            background-size: 20px 18px;
-            background-position: 10px 3px;
-          }
-          .wrap {
-            background-color:#bbb;
+          /*&.type-expired {*/
+          &.expired {
+            &:before {
+              background: -webkit-radial-gradient(transparent 0, transparent 5px,#bbb 5px) repeat-y;
+              background: radial-gradient(transparent 0, transparent 5px, #bbb 5px) repeat-y;
+              background-size: 20px 18px;
+              background-position: -10px 3px;
+            }
+            &:after {
+              background: -webkit-radial-gradient(transparent 0, transparent 5px,#bbb 5px) repeat-y;
+              background: radial-gradient(transparent 0, transparent 5px, #bbb 5px) repeat-y;
+              background-size: 20px 18px;
+              background-position: 10px 3px;
+            }
+            .wrap {
+              background-color:#bbb;
+            }
           }
         }
       }

@@ -8,7 +8,7 @@
       <tab-item :selected="params.type==4?true:false" @on-item-click="onItemClick(4)">已完成</tab-item>
     </tab>
     <div class="order-list">
-      <scroller class="inner-scroller" ref="myScroller" :on-refresh="refresh" :on-infinite="infinite" refreshText="下拉刷新" noDataText="没有更多数据" snapping>
+      <scroller class="inner-scroller" ref="orderScroller" :on-refresh="refresh" :on-infinite="infinite" refreshText="下拉刷新" noDataText="没有更多数据" snapping>
         <!-- content goes here -->
         <section class="v-items" v-for="(item, index) in orders" :data-id="item.id" :data-orderNumber="item.orderNumber">
           <h4 class="item-top"><i class="ico-store"></i>&nbsp;{{item.sellerName}}&nbsp;&nbsp;<i
@@ -97,7 +97,8 @@
       vm = this
       vm.getOrders()
       vm.$nextTick(() => {
-        vm.$refs.myScroller.resize()
+        vm.$refs.orderScroller.finishInfinite(true)
+        vm.$refs.orderScroller.resize()
       })
     },
     computed: {
@@ -119,14 +120,14 @@
         console.log('下拉加载')
         setTimeout(function () {
           vm.getOrders()
-          vm.$refs.myScroller.finishPullToRefresh()
+          vm.$refs.orderScroller.finishPullToRefresh()
         }, 1200)
       },
       infinite (done) {
         console.log('无限滚动')
         setTimeout(function () {
           vm.getOrders(true)
-          vm.$refs.myScroller.finishInfinite(true)
+          vm.$refs.orderScroller.finishInfinite(true)
         }, 1000)
       },
       onItemClick (type) {
@@ -173,9 +174,9 @@
           if (!isLoadMore) {
             vm.orders = resD
           } else {
-            vm.orders.push(resD, '订单数据')
+            vm.orders.push(resD)
           }
-          console.log(vm.orders)
+          console.log(vm.orders, '订单数据')
           vm.onFetching = false
           vm.processing(0,1)
         }, function () {

@@ -6,16 +6,10 @@
       <a @click.prevent="toMap"><i class="right-arrow"></i></a>
     </div>
     <!--banner-->
-    <div class="swiper-container swiper-home" v-show="banner.length">
-      <div class="swiper-wrapper">
-        <div class="swiper-slide" v-for="(item, index) in banner" :key="index" :data-id="item.id">
-          <a :href="item.linkUrl" target="blank">
-            <img class="wd-img" :src="item.image" alt="">
-          </a>
-        </div>
-      </div>
-      <div class="swiper-pagination"></div>
+    <div class="swiper-home">
+      <swiper ref="slider02" skey="s02" :slides="banner" autoPlay="2500"></swiper>
     </div>
+
     <!--中间入口-->
     <div class="middle-entry">
       <grid :rows="4">
@@ -114,7 +108,7 @@
   /* eslint-disable */
   let me
   let vm
-  import Swiper from 'swiper'
+  import Swiper from '../components/Swiper'
   import {Group, GroupTitle, Grid, GridItem, Marquee, MarqueeItem, XNumber, Scroller, LoadMore} from 'vux'
   import { homeApi, nearbyApi } from '../store/main.js'
   export default {
@@ -209,6 +203,7 @@
       }
     },
     components: {
+      Swiper,
       Group,
       GroupTitle,
       Grid,
@@ -225,30 +220,7 @@
     mounted () {
       vm = this
       // me.attachClick()
-      let mySwiper = function () {
-        return new Swiper('.swiper-container.swiper-home', {
-          initialSlide: 0,
-          direction: 'horizontal',
-          autoplay: 2000,
-          preloadImages: true,
-          autoplayDisableOnInteraction: false,
-          observer: true,
-          observeParents: true,
-          // If we need pagination
-          pagination: '.swiper-pagination',
-          paginationClickable: true,
-          // Navigation arrows
-          // nextButton: '.swiper-button-next',
-          // prevButton: '.swiper-button-prev',
-          grabCursor: true,
-          // onClick: function (swiper) {
-          // var curIdx = swiper.activeIndex
-          // },
-          // onSlideChangeEnd: function () {
-          // }
-        })
-      }
-      vm.getBanner(mySwiper)
+      vm.getBanner()
       vm.getNotice()
       vm.getShops()
       this.$nextTick(function () {

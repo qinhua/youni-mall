@@ -9,6 +9,16 @@
     <!--banner-->
     <div class="swiper-home">
       <swiper ref="slider01" skey="s01" :slides="banner" autoPlay="2500"></swiper>
+      <!--<div class="swiper-container" v-show="banner.length">
+        <div class="swiper-wrapper">
+          <div class="swiper-slide" v-for="(item, index) in banner" :key="index" :data-id="item.id">
+            <a :href="item.linkUrl" target="blank">
+              <img class="wd-img" :src="item.image" alt="">
+            </a>
+          </div>
+        </div>
+        <div class="swiper-pagination"></div>
+      </div>-->
     </div>
 
     <!--中间入口-->
@@ -117,6 +127,7 @@
   /* eslint-disable */
   let me
   let vm
+  // import Swiper from 'swiper'
   import Swiper from '../components/Swiper'
   import {Group, GroupTitle, Grid, GridItem, Marquee, MarqueeItem, XNumber, XSwitch, Scroller, LoadMore} from 'vux'
   import {homeApi} from '../store/main.js'
@@ -392,6 +403,29 @@
         if (vm.showFilterCon) return
         vm.$router.push({path: '/detail/' + id})
       },
+      /*mySwiper () {
+       return new Swiper('.swiper-home .swiper-container', {
+       initialSlide: 0,
+       direction: 'horizontal',
+       autoplay: 2000,
+       preloadImages: true,
+       autoplayDisableOnInteraction: false,
+       observer: true,
+       observeParents: true,
+       // If we need pagination
+       pagination: '.swiper-pagination',
+       paginationClickable: true,
+       // Navigation arrows
+       // nextButton: '.swiper-button-next',
+       // prevButton: '.swiper-button-prev',
+       grabCursor: true,
+       // onClick: function (swiper) {
+       // var curIdx = swiper.activeIndex
+       // },
+       // onSlideChangeEnd: function () {
+       // }
+       })
+       },*/
       /* 页面数据 */
       getBanner (cb) {
         vm.loadData(homeApi.banner, null, 'POST', function (res) {
