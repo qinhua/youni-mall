@@ -156,6 +156,7 @@
 
   .my {
     padding-bottom: 150/@rem;
+    overflow-x: hidden;
     .user-modal {
       .rel;
       .center;

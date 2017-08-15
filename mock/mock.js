@@ -33,6 +33,7 @@ export default (function () {
       'linkUrl': Mock.mock('@url')
     }]
   })
+
   Mock.mock(/\/home\/topNotice/, {
     'itemList|1-5': [{
       'noticeId|+1': 10,
@@ -40,6 +41,7 @@ export default (function () {
       'linkUrl': Mock.mock('@url')
     }]
   })
+
   Mock.mock(/\/home\/goodsList/, {
     'itemList|1-15': [{
       'id|+1': 102,
