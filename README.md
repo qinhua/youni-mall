@@ -1,7 +1,6 @@
 # youni-mall
 
-> A Vue.js project
-
+> A e-mall system base on vuejs 2.0
 ## Build Setup
 
 ``` bash
