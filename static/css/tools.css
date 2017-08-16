@@ -191,6 +191,7 @@ html,
 body {
   position: relative;
   width: 100%;
+  max-width: 640px;
   height: 100%;
   margin-left: auto;
   margin-right: auto;
@@ -224,6 +225,10 @@ body.isInApp div[class*=header] {
   /*横屏 css*/
 }
 @media screen and (min-width: 780px) {
+  html,
+  body {
+    max-width: 640px;
+  }
   html .browser-tips,
   body .browser-tips {
     display: block;
