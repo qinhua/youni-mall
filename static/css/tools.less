@@ -2,13 +2,13 @@
 
 //---- 项目中样式颜色模板 -----
 //橙色
-@c1:rgb(255, 153, 0);
-@c2:#f34c18;
-@c3:#46b774;
+@c1: rgb(255, 153, 0);
+@c2: #f34c18;
+@c3: #46b774;
 
 //蓝色
-@b1:#5cc5d0;
-@b2:#2877f3;
+@b1: #5cc5d0;
+@b2: #2877f3;
 //---------------------------
 
 @rem: 32rem; //基准字体=设计高宽度/10
@@ -17,7 +17,7 @@
 html, body {
   .rel;
   width: 100%;
-  //.ma-w(640);
+  .ma-w(640);
   height: 100%;
   .ma;
   font: normal 14px/1.5 "MicrosoftYaHei", "微软雅黑", "Helvetica Neue", 'Avenir', Helvetica, Tahoma, STHeiTi, sans-serif;
@@ -47,7 +47,6 @@ html, body {
 
 @media screen and (min-width: 780px) {
   html, body {
-    //.ma-w(640);
     .browser-tips {
       .block;
     }
@@ -1052,19 +1051,19 @@ input[type="radio"] {
 }
 
 .ma-w(@width) {
-  max-width: @width + 0px;
+  max-width: @width *1px;
 }
 
 .ma-h(@height) {
-  max-height: @height + 0px;
+  max-height: @height *1px;
 }
 
 .mi-w(@width) {
-  min-width: @width + 0px;
+  min-width: @width *1px;
 }
 
 .mi-h(@height) {
-  min-height: @height + 0px;
+  min-height: @height *1px;
 }
 
 .full-screen {

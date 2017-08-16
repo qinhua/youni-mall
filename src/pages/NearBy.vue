@@ -239,7 +239,7 @@
       getPos () {
         var lp = me.locals.get('cur5656Position')
         if (lp) {
-          vm.location = JSON.parse(lp).name
+          vm.location = JSON.parse(lp).name || JSON.parse(lp).formattedAddress
         } else {
           try {
             vm.location = '定位中…'
@@ -263,6 +263,7 @@
             });
             // 解析定位结果
             function onComplete(data) {
+              me.locals.set('cur5656Position',JSON.stringify(data))
               vm.location = data.formattedAddress
               var str = ['定位成功'];
               str.push('经度：' + data.position.getLng());

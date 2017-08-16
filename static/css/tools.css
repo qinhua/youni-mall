@@ -191,6 +191,7 @@ html,
 body {
   position: relative;
   width: 100%;
+  max-width: 640px;
   height: 100%;
   margin-left: auto;
   margin-right: auto;
