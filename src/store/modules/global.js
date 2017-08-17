@@ -29,8 +29,8 @@ export default {
     itemDetail: [],
     answerid: {},
     userInfo: {
-      id: 'xxxxxxx',
-      // id: '',
+      // id: 'xxxxxxx',
+      id: '',
       name: ''
     }
   },
