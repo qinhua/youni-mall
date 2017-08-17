@@ -38,7 +38,7 @@
           if (urlParam.code) {
             window.location.href = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid=' + vm.appId + '&secret=' + vm.appSecret + '&code=' + urlParam.code + '&grant_type=authorization_code'
           } else {
-            window.location.href = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=' + vm.appId + '&redirect_uri=' + window.encodeURIComponent('https://qinhua.github.io/youni-mall/dist/#/author') + '&response_type=code&scope=SCOPE&state=STATE#wechat_redirect'
+            window.location.href = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=' + vm.appId + '&redirect_uri=' + window.encodeURIComponent('https://qinhua.github.io/youni-mall/dist/#/author') + '&response_type=code&scope=snsapi_userinfo&state=STATE#wechat_redirect'
           }
         } else {
           // 外部登录页面
