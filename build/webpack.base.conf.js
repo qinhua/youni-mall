@@ -7,8 +7,10 @@ var vuxLoader = require('vux-loader')
 function resolve(dir) {
   return path.join(__dirname, '..', dir)
 }
+
 var originalConfig = {
   entry: {
+    'babel-polyfill': 'babel-polyfill', // 用来解决的兼容性
     app: './src/main.js'
   },
   // 此处配置jquery等外部插件
@@ -37,7 +39,7 @@ var originalConfig = {
   },
   module: {
     rules: [
-      {
+      /* {
         test: /\.(js|vue)$/,
         loader: 'eslint-loader',
         enforce: 'pre',
@@ -45,7 +47,7 @@ var originalConfig = {
         options: {
           formatter: require('eslint-friendly-formatter')
         }
-      },
+      }, */
       {
         test: /\.vue$/,
         loader: 'vue-loader',

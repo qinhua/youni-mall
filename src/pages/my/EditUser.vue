@@ -12,7 +12,7 @@
   let me
   let vm
   import {Group, Cell, XInput} from 'vux'
-  import {userApi} from '../../store/main.js'
+  import {userApi} from '../../service/main.js'
 
   export default {
     name: 'my-edit',

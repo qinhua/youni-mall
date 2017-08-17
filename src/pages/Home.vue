@@ -41,7 +41,7 @@
     </div>
 
     <!--过滤条-->
-    <div class="goods-filter" ref="filters">
+    <div class="goods-filter" ref="filters01">
       <div class="v-filter-tabs">
         <ul class="v-f-tabs">
           <li :class="factive==='goods'?'mfilterActive':''" @click="showFilter('goods',$event)">商品类目<i
@@ -53,7 +53,7 @@
           <li :class="factive==='specials'?'mfilterActive':''" @click="showFilter('specials',$event)">筛选<i
             class="ico-arr-down"></i></li>
         </ul>
-        <div class="filter-data" v-if="showFilterCon" @blur="hideFilter" :class="showFilterCon?'show':''">
+        <div class="filter-data" v-if="showFilterCon" :class="showFilterCon?'show':''">
           <ul class="filter-tags" v-show="currentFilter">
             <li v-for="(data,idx) in currentFilter" :class="subActive==idx?'sfilterActive':''" :data-key="data.key"
                 :data-value="data.value" @click="chooseFilter(idx,data.key,data.value,$event)">{{data.value}}
@@ -65,14 +65,15 @@
 
     <!--商品列表-->
     <div class="goods-list" ref="goodsList">
-      <scroller class="inner-scroller" lock-x scrollbarY use-pullup use-pulldown :pullup-config="pullupConfig" :pulldown-config="pulldownConfig"
+      <scroller class="inner-scroller" lock-x scrollbarY use-pullup use-pulldown :pullup-config="pullupConfig"
+                :pulldown-config="pulldownConfig"
                 @on-scroll="onScroll"
                 @on-pulldown-loading="onPullDown" @on-pullup-loading="onPullUp" @on-scroll-bottom="" ref="myScroll"
                 :scroll-bottom-offst="300">
         <div class="box">
           <section class="v-items" v-for="(item, index) in goods" :data-id="item.id">
             <section class="wrap">
-              <div class="click-wrap" :data-id="item.id" v-jump="['goods_detail',['id'],3]">
+              <div class="click-wrap" :data-id="item.id" @click="toDetail(item.id)">
                 <img :src="item.imgurl">
                 <section class="infos">
                   <h3>{{item.name}}</h3>
@@ -84,7 +85,8 @@
                 </section>
               </div>
               <group class="buy-count">
-                <x-number button-style="round" :min="0" :max="50" align="right" @on-change="changeCount" fillable></x-number>
+                <x-number button-style="round" :min="0" :max="50" align="right" @on-change="changeCount"
+                          fillable></x-number>
               </group>
             </section>
           </section>
@@ -106,7 +108,8 @@
       </div>
     </div>
     <!--悬浮购物车-->
-    <div class="float-cart" ref="floatCart" v-show="curCount && $route.path.indexOf('/home')>-1">
+    <div class="float-cart" ref="floatCart" v-show="curCount && ($route.name==='home'||$route.name==='shops_detail')"
+         v-jump="['cart']">
       <div class="cart-wrap"><i class="cur-count" v-if="curCount">{{curCount}}</i></div>
     </div>
   </div>
@@ -119,11 +122,12 @@
   let vm
   import Swiper from '../components/Swiper'
   import {Group, GroupTitle, Grid, GridItem, Marquee, MarqueeItem, XNumber, XSwitch, Scroller, LoadMore} from 'vux'
-  import {homeApi} from '../store/main.js'
+  import {homeApi} from '../service/main.js'
   import {mapState, mapMutations} from 'vuex'
+
   export default {
     name: 'home',
-    data () {
+    data() {
       return {
         location: '',
         banner: [],
@@ -225,6 +229,7 @@
         showList: true,
         scrollTop: 0,
         onFetching: false,
+        isPosting: false,
         pulldownConfig: {
           content: '下拉刷新',
           height: 60,
@@ -266,14 +271,13 @@
       Marquee,
       MarqueeItem,
       XNumber,
-      XSwitch,
       Scroller,
       LoadMore
     },
-    beforeMount () {
+    beforeMount() {
       me = window.me
     },
-    mounted () {
+    mounted() {
       vm = this
       // me.attachClick()
       this.count = this.$store.state.cart.count
@@ -292,7 +296,8 @@
       }, false)
       vm.$nextTick(function () {
         setTimeout(() => {
-        vm.filterOffset = vm.$refs.filters.offsetTop},500) //获取筛选栏位置
+          vm.filterOffset = vm.$refs.filters01.offsetTop
+        }, 500) //获取筛选栏位置
         vm.$refs.myScroll.reset()
         vm.$refs.myScroll.donePullup()
         vm.$refs.myScroll.donePulldown()
@@ -302,15 +307,15 @@
       curCount: state => state.cart.count
     }),
     watch: {
-      '$route' (to, from) {
+      '$route'(to, from) {
         vm.getPos()
       }
     },
     methods: {
       // 全局定位
-      getPos () {
+      getPos() {
         var lp = me.locals.get('cur5656Position')
-        setTimeout(function(){
+        setTimeout(function () {
           if (lp) {
             vm.location = JSON.parse(lp).name || JSON.parse(lp).formattedAddress
           } else {
@@ -334,9 +339,10 @@
                 AMap.event.addListener(geolocation, 'complete', onComplete);//返回定位信息
                 AMap.event.addListener(geolocation, 'error', onError);      //返回定位出错信息
               });
+
               // 解析定位结果
               function onComplete(data) {
-                me.locals.set('cur5656Position',JSON.stringify(data))
+                me.locals.set('cur5656Position', JSON.stringify(data))
                 vm.location = data.formattedAddress
                 var str = ['定位成功'];
                 str.push('经度：' + data.position.getLng());
@@ -358,72 +364,72 @@
               console.log(e)
             }
           }
-        },800)
+        }, 200)
       },
       // 向父组件传值
-      setPageStatus (data) {
+      setPageStatus(data) {
         this.$emit('listenPage', data)
       },
-      scrollHandler () {
+      scrollHandler() {
         // 监听dom的scroll事件
-          setTimeout(function(){
-            let scrollTop = vm.$refs.home.scrollTop
-            let target = vm.$refs.filters
-            let list = vm.$refs.goodsList
-            if(vm.showFilterCon){
-              vm.hideFilter()
-            }
-            if(scrollTop >= vm.filterOffset ){
-              target.classList.add('fixed')
-              list.classList.add('fixed')
-            }else{
-              target.classList.remove('fixed')
-              list.classList.remove('fixed')
-            }
-          },300)
+        setTimeout(function () {
+          let scrollTop = vm.$refs.home.scrollTop
+          let target = vm.$refs.filters01
+          let list = vm.$refs.goodsList
+          if (vm.showFilterCon) {
+            vm.hideFilter()
+          }
+          if (scrollTop >= vm.filterOffset) {
+            target.classList.add('fixed')
+            list.classList.add('fixed')
+          } else {
+            target.classList.remove('fixed')
+            list.classList.remove('fixed')
+          }
+        }, 300)
       },
-      toMap () {
-        vm.$router.push({name: 'map', params: {path: vm.$route.path.replace(/\//g,'_')}})
+      toMap() {
+        vm.$router.push({name: 'map', params: {path: vm.$route.path.replace(/\//g, '_')}})
       },
-      toTopic (url) {
+      toTopic(url) {
         if (vm.showFilterCon) return
         location.href = url
       },
-      toDetail (id) {
+      toDetail(id) {
         if (vm.showFilterCon) return
-        vm.$router.push({path: '/detail/' + id})
+        vm.$router.push({name: 'goods_detail', query: {id: id}})
       },
       /* 页面数据 */
-      getBanner (cb) {
+      getBanner(cb) {
         vm.loadData(homeApi.banner, null, 'POST', function (res) {
           console.log(res.data, '首页Banner')
           vm.banner = res.data.itemList
           cb ? cb() : null
         })
       },
-      getNotice () {
+      getNotice() {
         vm.loadData(homeApi.topNotice, null, 'POST', function (res) {
           console.log(res.data, '首页TopNews')
           vm.notice = res.data.itemList
         })
       },
-      getGoods (isLoadMore) {
+      getGoods(isLoadMore) {
         if (vm.onFetching) return false
         var params = vm.filterData || {
-            pagerSize: 10,
-            pageNo: 1,
-            goodsType: 'XXX',
-            goodsCategory: '',
-            brandId: '',
-            filter: ''
-          }
+          pagerSize: 10,
+          pageNo: 1,
+          goodsType: 'XXX',
+          goodsCategory: '',
+          brandId: '',
+          filter: ''
+        }
         vm.loadData(homeApi.goodsList, params, 'POST', function (res) {
           console.log(res.data, '首页GoodsList')
           if (!isLoadMore) {
             vm.goods = res.data.itemList
-            if(res.data.noMore){
+            if (res.data.noMore) {
               vm.$nextTick(function () {
-                vm.$refs.myScroll.disablePullup ()
+                vm.$refs.myScroll.disablePullup()
               })
             }
           } else {
@@ -435,7 +441,7 @@
         })
       },
       /* 商品筛选 */
-      showFilter (type, e) {
+      showFilter(type, e) {
         vm.factive = type
         console.log(vm.subActive)
         if (vm.showFilterCon) {
@@ -454,13 +460,13 @@
         }
         // 默认选中已选择的筛选条件
       },
-      hideFilter () {
-        if(vm.showFilterCon){
+      hideFilter() {
+        if (vm.showFilterCon) {
           vm.showFilterCon = false
           vm.factive = ''
         }
       },
-      chooseFilter (idx, key, value, e) {
+      chooseFilter(idx, key, value, e) {
         vm.goods = []
         console.log(JSON.stringify(vm.filterData), vm.curFilterType)
         if (JSON.stringify(vm.filterData).indexOf(vm.curFilterType) === -1) {
@@ -493,7 +499,7 @@
         vm.getGoods(lastF)
       },
       /* 上下拉刷新 */
-      onPullDown () {
+      onPullDown() {
         if (vm.onFetching) {
           // do nothing
           return false
@@ -509,14 +515,11 @@
           }, 1500)
         }
       },
-      onPullUp () {
+      onPullUp() {
         if (vm.onFetching) {
           // do nothing
           return false
         } else {
-          /* if(vm.$refs.myScroll.top<500){
-           return
-           } */
           // vm.onFetching = true
           setTimeout(function () {
             vm.getGoods(true)
@@ -528,30 +531,30 @@
           }, 200)
         }
       },
-      onScroll (pos) {
+      onScroll(pos) {
         this.scrollTop = pos.top
         vm.factive = ''
         vm.showFilterCon ? vm.showFilterCon = false : null
       },
-      changeCount (obj) {
+      changeCount(obj) {
         console.log(obj)
-        if (obj.type==='add') {
+        if (obj.type === 'add') {
           this.additem(obj.event)
-          this.count ++
-        } else if (obj.type==='sub') {
-          this.count --
+          this.count++
+        } else if (obj.type === 'sub') {
+          this.count--
         } else {
           this.count = obj.value
         }
-        vm.$store.commit('updateCart', this.count )
+        vm.$store.commit('updateCart', this.count)
         console.log(vm.$store.state.cart.count)
       },
       /* 购物车 */
-      additem(event){
+      additem(event) {
         this.drop(event.target);
       },
       /* 购物车小球动画 */
-      drop (el) {
+      drop(el) {
         //抛物
         for (let i = 0; i < this.balls.length; i++) {
           let ball = this.balls[i]
@@ -563,7 +566,7 @@
           }
         }
       },
-      beforeDrop (el) {
+      beforeDrop(el) {
         let count = this.balls.length
         while (count--) {
           let ball = this.balls[count]
@@ -581,7 +584,7 @@
         }
       },
       /*重置小球数量  样式重置*/
-      dropping (el, done) {
+      dropping(el, done) {
         let rf = el.offsetHeight
         let cartCls = vm.$refs.floatCart.classList
         el.style.webkitTransform = 'translate3d(0,0,0)'
@@ -590,13 +593,13 @@
         inner.style.webkitTransform = 'translate3d(-10px,-80px,0)'
         inner.style.transform = 'translate3d(-10px,-80px,0)'
         el.addEventListener('transitionend', done)
-          cartCls.toggle('bulbing')
-          setTimeout(() => {
-            cartCls.remove('bulbing')
-          },800)
+        cartCls.toggle('bulbing')
+        setTimeout(() => {
+          cartCls.remove('bulbing')
+        }, 800)
       },
       /*初始化小球*/
-      afterDrop (el) {
+      afterDrop(el) {
         let ball = this.dropBalls.shift()
         if (ball) {
           ball.show = false
@@ -631,12 +634,12 @@
         .cdiy(#f34c18);
       }
     }
-    .right-arrow{
+    .right-arrow {
       .abs-center-vertical;
     }
   }
 
-  .swiper-home{
+  .swiper-home {
     min-height: 320/@rem;
     margin-bottom: 10/@rem;
     .swiper-container {
@@ -822,7 +825,7 @@
     /*max-height:500px;*/
     overflow: auto;
     &.fixed {
-      margin-top:100/@rem;
+      margin-top: 100/@rem;
     }
     .inner-scroller {
       .borBox;
@@ -838,7 +841,7 @@
           .rel;
           .h(150);
         }
-        .click-wrap{
+        .click-wrap {
           .borBox;
           .flex-r(1);
           overflow: hidden;
@@ -893,7 +896,7 @@
       }
       .buy-count {
         .rel;
-        width:160/@rem;
+        width: 160/@rem;
         .weui-cells {
           .abs-center-vertical;
           right: -10/@rem;

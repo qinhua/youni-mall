@@ -2,13 +2,20 @@
 
 //---- 项目中样式颜色模板 -----
 //橙色
-@c1:rgb(255, 153, 0);
-@c2:#f34c18;
-@c3:#46b774;
+@c1: #ff9900;
+@c2: #f34c18;
+@c3: #f37018;
+
+//绿色
+@g3: #46b774;
 
 //蓝色
-@b1:#5cc5d0;
-@b2:#2877f3;
+@b1: #5cc5d0;
+@b2: #2877f3;
+
+//蓝色
+@b1: #5cc5d0;
+@b2: #2877f3;
 //---------------------------
 
 @rem: 32rem; //基准字体=设计高宽度/10
@@ -28,6 +35,7 @@ html, body {
   -webkit-tap-highlight-color: transparent;
   .scroll-touch;
   .disable-sel;
+  .no-scroll;
   .transi(.2s);
   &.isInApp {
     div[class*=header] {
@@ -47,7 +55,6 @@ html, body {
 
 @media screen and (min-width: 780px) {
   html, body {
-    .ma-w(640);
     .browser-tips {
       .block;
     }
@@ -1052,19 +1059,19 @@ input[type="radio"] {
 }
 
 .ma-w(@width) {
-  max-width: @width * 1px;
+  max-width: @width *1px;
 }
 
 .ma-h(@height) {
-  max-height: @height * 1px;
+  max-height: @height *1px;
 }
 
 .mi-w(@width) {
-  min-width: @width * 1px;
+  min-width: @width *1px;
 }
 
 .mi-h(@height) {
-  min-height: @height * 1px;
+  min-height: @height *1px;
 }
 
 .full-screen {
@@ -1104,7 +1111,7 @@ input[type="radio"] {
   background-size: @b-width / @rem @b-height / @rem;
 }
 
-.rbg-size(@b-width, @b-height) {
+.rbg-size(@b-width:auto, @b-height:auto) {
   -webkit-background-size: @b-width @b-height;
   background-size: @b-width @b-height;
 }

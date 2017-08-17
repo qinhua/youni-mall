@@ -216,6 +216,12 @@ body {
   -o-transition: all 0.2s linear;
   transition: all 0.2s linear;
 }
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  visibility: hidden;
+}
 html.isInApp div[class*=header],
 body.isInApp div[class*=header] {
   display: none !important;
@@ -4010,5 +4016,5 @@ body {
   font-size: 0.625rem;
   color: #fff;
   background-color: #f74c31;
-  border-radius: 50%;
+  border-radius: 30px;
 }

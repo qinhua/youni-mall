@@ -132,6 +132,17 @@ export default (function () {
       'linkUrl': Mock.mock('@url')
     }]
   })
+  Mock.mock(/\/goods\/appraise/, {
+    'itemList|1-4': [{
+      'id|+1': 1,
+      'imgUrl': Mock.Random.dataImage('100x100'),
+      'type|1-3': 1,
+      'name': Mock.mock('@cword(2,4)'),
+      'content': Mock.mock('@cparagraph()'),
+      'score|+1': 0,
+      'createTime': Mock.Random.date('yyyy-MM-dd')
+    }]
+  })
 
   /*优惠券接口*/
   Mock.mock(/\/user\/coupons/, {

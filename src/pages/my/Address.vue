@@ -25,7 +25,7 @@
   let me
   let vm
   import {Grid, GridItem, Group, Cell} from 'vux'
-  import {userApi} from '../../store/main.js'
+  import {userApi} from '../../service/main.js'
   export default {
     name: 'my-address',
     data () {

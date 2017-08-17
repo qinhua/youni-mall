@@ -38,7 +38,7 @@
   let me
   let vm
   import {Tab, TabItem} from 'vux'
-  import {orderApi, userApi} from '../../store/main.js'
+  import {orderApi, userApi} from '../../service/main.js'
   export default {
     name: 'my-coupons',
     data () {

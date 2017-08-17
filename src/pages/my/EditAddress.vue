@@ -24,7 +24,7 @@
   let me
   let vm
   import {Group, Cell, XAddress, ChinaAddressV3Data, XInput} from 'vux'
-  import {userApi} from '../../store/main.js'
+  import {userApi} from '../../service/main.js'
   export default {
     name: 'address-edit',
     data () {

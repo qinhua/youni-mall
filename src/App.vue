@@ -55,6 +55,7 @@
   import Home from './pages/Home'
   import {Tabbar, TabbarItem} from 'vux'
   import {mapState, mapActions} from 'vuex'
+
   export default {
     name: 'app',
     data() {
@@ -75,9 +76,9 @@
       vm = this
     },
     computed: {
-      'showTabbar' () {
+      'showTabbar'() {
         let path = this.$route.name
-        return path === 'home' || path === 'nearby' || path === 'ticket' ||path === 'order' || path === 'user'
+        return path === 'home' || path === 'nearby' || path === 'ticket' || path === 'order' || path === 'user'
       },
       'key'() {
         return this.$route.path.replace(/\//g, '_')
@@ -85,15 +86,15 @@
     },
     methods: {
       // 从子组件获取数据
-      getPageStatus (data) {
+      getPageStatus(data) {
         vm.curSelected = data
       }
     },
     watch: {
-      'curCount' () {
+      'curCount'() {
         return vm.$store.state.cart.count
       },
-      '$route' (to, from) {
+      '$route'(to, from) {
         /* let isBack = this.$router.isBack //  监听路由变化时的状态为前进还是后退
         console.log(isBack)
         if (isBack) {
@@ -122,9 +123,9 @@
           case 'user':
             vm.curSelected = 5
             break
-          default:
-//            vm.showTabbar = false
-            break
+          /* default:
+            vm.showTabbar = false
+            break */
         }
       }
     }

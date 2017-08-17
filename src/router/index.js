@@ -8,6 +8,7 @@ import Ticket from '@/pages/Ticket'
 import Order from '@/pages/Order'
 import Map from '@/pages/Map'
 import My from '@/pages/My'
+import Cart from '@/pages/cart/Cart'
 import EditUser from '@/pages/my/EditUser'
 import EditAddress from '@/pages/my/EditAddress'
 import MyCoupons from '@/pages/my/Coupons'
@@ -17,6 +18,7 @@ import MyFavorite from '@/pages/my/Favorite'
 import Help from '@/pages/my/Help'
 import About from '@/pages/my/About'
 import GoodsDetail from '@/pages/goods/Detail'
+import ShopsDetail from '@/pages/shops/Detail'
 
 import NoPage from '@/pages/NoPage'
 Router.prototype.goBack = function () {
@@ -187,11 +189,29 @@ export default new Router({
       }
     },
     {
+      path: '/cart',
+      name: 'cart',
+      component: Cart,
+      meta: {
+        title: '购物车',
+        keepAlive: false
+      }
+    },
+    {
       path: '/goods_detail',
       name: 'goods_detail',
       component: GoodsDetail,
       meta: {
         title: '商品详情',
+        keepAlive: false
+      }
+    },
+    {
+      path: '/shops_detail',
+      name: 'shops_detail',
+      component: ShopsDetail,
+      meta: {
+        title: '店铺详情',
         keepAlive: false
       }
     },

@@ -1139,6 +1139,21 @@ import $ from 'jquery'
       }
       return source;
     },
+    // 判断是否为隐私模式
+    isPrivacyMode: function () {
+      var testV = +new Date();
+      var result = false;
+      try {
+        localStorage.setItem('checkStealth', testV);
+        if (localStorage.getItem('checkStealth') != testV) {
+          result = true;
+        }
+      } catch (e) {
+        result = true;
+      }
+      return result;
+    },
+
     /**
      * 本地存储LocalStorage
      */

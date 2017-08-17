@@ -46,7 +46,7 @@
   let me
   let vm
   import {Tab, TabItem} from 'vux'
-  import {ticketApi} from '../store/main.js'
+  import {ticketApi} from '../service/main.js'
   export default {
     name: 'ticket',
     data () {

@@ -1,5 +1,5 @@
 <template>
-  <div class="nearby">
+  <div class="nearby" ref="nearby" @scroll="scrollHandler">
     <!--定位组件-->
     <div class="location-chooser">
       <p><span><i class="fa fa-map-marker"></i>&nbsp;您的位置：</span>{{location}}</p>
@@ -39,21 +39,21 @@
       </div>
     </div>
     <!--过滤条-->
-    <div class="shops-filter" ref="filters">
+    <div class="shops-filter" ref="filters02">
       <div class="v-filter-tabs">
         <ul class="v-f-tabs">
-          <li :class="factive==='shop'?'active':''" @click="showFilter('shop',$event)">店铺分类<i
+          <li :class="factive==='shop'?'mfilterActive':''" @click="showFilter('shop',$event)">店铺分类<i
             class="ico-arr-down"></i>
           </li>
-          <li :class="factive==='sort'?'active':''" @click="showFilter('sort',$event)">排序<i
+          <li :class="factive==='sort'?'mfilterActive':''" @click="showFilter('sort',$event)">排序<i
             class="ico-arr-down"></i>
           </li>
-          <li :class="factive==='specials'?'active':''" @click="showFilter('specials',$event)">筛选<i
+          <li :class="factive==='specials'?'mfilterActive':''" @click="showFilter('specials',$event)">筛选<i
             class="ico-arr-down"></i></li>
         </ul>
         <div class="filter-data" v-if="showFilterCon" :class="showFilterCon?'show':''">
           <ul class="filter-tags" v-show="currentFilter">
-            <li v-for="(data,idx) in currentFilter" :class="{active:active==idx}" :data-key="data.key"
+            <li v-for="(data,idx) in currentFilter" :class="subActive==idx?'sfilterActive':''" :data-key="data.key"
                 :data-value="data.value" @click="chooseFilter(idx,data.key,data.value,$event)">{{data.value}}
             </li>
           </ul>
@@ -61,13 +61,14 @@
       </div>
     </div>
     <!--店铺列表-->
-    <div class="shops-list">
-      <scroller class="inner-scroller" lock-x use-pulldown :pulldown-config="pulldownConfig"
+    <div class="shops-list" ref="shopsList">
+      <scroller class="inner-scroller" lock-x scrollbarY use-pullup use-pulldown :pullup-config="pullupConfig"
+                :pulldown-config="pulldownConfig"
                 @on-scroll="onScroll"
-                @on-pulldown-loading="onPullDown" @on-scroll-bottom="onScrollBottom" ref="scrollerBottom"
+                @on-pulldown-loading="onPullDown" @on-pullup-loading="onPullUp" @on-scroll-bottom="" ref="myScroll"
                 :scroll-bottom-offst="300">
         <div class="box">
-          <section class="v-items" v-for="(item, index) in shops" :data-id="item.id" @click.prevent="toDetail(item.id)">
+          <section class="v-items" v-for="(item, index) in shops" :data-id="item.id" @click="toDetail(item.id)">
             <section class="wrap">
               <img :src="item.imgurl">
               <section class="infos">
@@ -90,12 +91,13 @@
             <section class="sleep-tips" v-if="item.isSleep">
               <div class="wrap">
                 <h3>商家已打烊（{{item.runStartTime}}~{{item.runEndTime}}）<br><span>非营业时间仍可预定</span>
-                  <button type="button" class="btn btn-reserve" @click="preBook(item.id)"><i class="fa fa-clock-o" aria-hidden="true"></i>&nbsp;预定</button>
+                  <button type="button" class="btn btn-reserve" @click="preBook(item.id)"><i class="fa fa-clock-o"
+                                                                                             aria-hidden="true"></i>&nbsp;预定
+                  </button>
                 </h3>
               </div>
             </section>
           </section>
-          <load-more tip="loading"></load-more>
         </div>
         <!--<div class="iconNoData" @click="beContinue(curNumber)"><i></i><p>暂无内容</p></div>-->
       </scroller>
@@ -110,10 +112,11 @@
   let vm
   import Swiper from '../components/Swiper'
   import {Group, GroupTitle, Grid, GridItem, Marquee, MarqueeItem, XNumber, Scroller, LoadMore} from 'vux'
-  import { homeApi, nearbyApi } from '../store/main.js'
+  import {homeApi, nearbyApi} from '../service/main.js'
+
   export default {
     name: 'nearby',
-    data () {
+    data() {
       return {
         location: '',
         banner: [],
@@ -184,7 +187,8 @@
         filterData: [],
         showFilterCon: false,
         factive: '',
-        active: 0,
+        subActive: 0,
+        /* filter end */
         showList: true,
         scrollTop: 0,
         roundValue: 0,
@@ -199,7 +203,16 @@
           loadingContent: '加载中…',
           clsPrefix: 'xs-plugin-pulldown-'
         },
-        bottomCount: 20
+        pullupConfig: {
+          content: '上滑加载更多',
+          height: 40,
+          pullUpHeight: 60,
+          autoRefresh: false,
+          downContent: '上滑加载',
+          upContent: '上滑加载',
+          loadingContent: '加载中…',
+          clsPrefix: 'xs-plugin-pullup-'
+        },
       }
     },
     components: {
@@ -214,122 +227,164 @@
       Scroller,
       LoadMore
     },
-    beforeMount () {
+    beforeMount() {
       me = window.me
     },
-    mounted () {
+    mounted() {
       vm = this
       // me.attachClick()
+      vm.getPos()
       vm.getBanner()
       vm.getNotice()
       vm.getShops()
-      this.$nextTick(function () {
-        vm.getPos()
-        vm.$refs.scrollerBottom.reset({top: 0})
+      // 点击区域之外隐藏筛选栏
+      document.addEventListener('click', (e) => {
+        if (e.target.offsetParent) {
+          if (JSON.stringify(e.target.offsetParent.classList).indexOf('filter') === -1) {
+            vm.hideFilter()
+            return false
+          }
+        }
+      }, false)
+      vm.$nextTick(function () {
+        setTimeout(() => {
+          vm.filterOffset = vm.$refs.filters02.offsetTop
+        }, 500) //获取筛选栏位置
+        vm.$refs.myScroll.reset()
+        vm.$refs.myScroll.donePullup()
+        vm.$refs.myScroll.donePulldown()
       })
     },
     computed: {},
     watch: {
-      '$route' (to, from) {
+      '$route'(to, from) {
         vm.getPos()
       }
     },
     methods: {
       // 全局定位
-      getPos () {
+      getPos() {
         var lp = me.locals.get('cur5656Position')
-        if (lp) {
-          vm.location = JSON.parse(lp).name || JSON.parse(lp).formattedAddress
-        } else {
-          try {
-            vm.location = '定位中…'
-            var map, geolocation;
-            // 加载地图，调用浏览器定位服务
-            map = new AMap.Map('mapContainer', {
-              resizeEnable: true
-            });
-            map.plugin('AMap.Geolocation', function () {
-              geolocation = new AMap.Geolocation({
-                enableHighAccuracy: true,//是否使用高精度定位，默认:true
-                timeout: 10000,          //超过10秒后停止定位，默认：无穷大
-                buttonOffset: new AMap.Pixel(10, 20),//定位按钮与设置的停靠位置的偏移量，默认：Pixel(10, 20)
-                zoomToAccuracy: true,  //定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
-                buttonPosition: 'RB'
+        setTimeout(function () {
+          if (lp) {
+            vm.location = JSON.parse(lp).name || JSON.parse(lp).formattedAddress
+          } else {
+            try {
+              vm.location = '定位中…'
+              var map, geolocation;
+              // 加载地图，调用浏览器定位服务
+              map = new AMap.Map('mapContainer', {
+                resizeEnable: true
               });
-              map.addControl(geolocation);
-              geolocation.getCurrentPosition();
-              AMap.event.addListener(geolocation, 'complete', onComplete);//返回定位信息
-              AMap.event.addListener(geolocation, 'error', onError);      //返回定位出错信息
-            });
-            // 解析定位结果
-            function onComplete(data) {
-              me.locals.set('cur5656Position',JSON.stringify(data))
-              vm.location = data.formattedAddress
-              var str = ['定位成功'];
-              str.push('经度：' + data.position.getLng());
-              str.push('纬度：' + data.position.getLat());
-              if (data.accuracy) {
-                str.push('精度：' + data.accuracy + ' 米');
-              }
-              // 如为IP精确定位结果则没有精度信息
-              str.push('是否经过偏移：' + (data.isConverted ? '是' : '否'));
-              // document.getElementById('tip').innerHTML = str.join('<br>');
-            }
+              map.plugin('AMap.Geolocation', function () {
+                geolocation = new AMap.Geolocation({
+                  enableHighAccuracy: true,//是否使用高精度定位，默认:true
+                  timeout: 10000,          //超过10秒后停止定位，默认：无穷大
+                  buttonOffset: new AMap.Pixel(10, 20),//定位按钮与设置的停靠位置的偏移量，默认：Pixel(10, 20)
+                  zoomToAccuracy: true,  //定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
+                  buttonPosition: 'RB'
+                });
+                map.addControl(geolocation);
+                geolocation.getCurrentPosition();
+                AMap.event.addListener(geolocation, 'complete', onComplete);//返回定位信息
+                AMap.event.addListener(geolocation, 'error', onError);      //返回定位出错信息
+              });
 
-            // 解析定位错误信息
-            function onError(data) {
-              vm.location = '定位失败'
-              // document.getElementById('tip').innerHTML = '定位失败';
+              // 解析定位结果
+              function onComplete(data) {
+                me.locals.set('cur5656Position', JSON.stringify(data))
+                vm.location = data.formattedAddress
+                var str = ['定位成功'];
+                str.push('经度：' + data.position.getLng());
+                str.push('纬度：' + data.position.getLat());
+                if (data.accuracy) {
+                  str.push('精度：' + data.accuracy + ' 米');
+                }
+                // 如为IP精确定位结果则没有精度信息
+                str.push('是否经过偏移：' + (data.isConverted ? '是' : '否'));
+                // document.getElementById('tip').innerHTML = str.join('<br>');
+              }
+
+              // 解析定位错误信息
+              function onError(data) {
+                vm.location = '定位失败'
+                // document.getElementById('tip').innerHTML = '定位失败';
+              }
+            } catch (e) {
+              console.log(e)
             }
-          } catch (e) {
-            console.log(e)
           }
-        }
+        }, 200)
       },
       // 向父组件传值
-      setPageStatus (data) {
+      setPageStatus(data) {
         this.$emit('listenPage', data)
       },
-      toMap () {
-        vm.$router.push({name: 'map', params: {path: vm.$route.path.replace(/\//g,'_')}})
+      scrollHandler() {
+        // 监听dom的scroll事件
+        setTimeout(function () {
+          let scrollTop = vm.$refs.nearby.scrollTop
+          let target = vm.$refs.filters02
+          let list = vm.$refs.shopsList
+          if (vm.showFilterCon) {
+            vm.hideFilter()
+          }
+          if (scrollTop >= vm.filterOffset) {
+            target.classList.add('fixed')
+            list.classList.add('fixed')
+          } else {
+            target.classList.remove('fixed')
+            list.classList.remove('fixed')
+          }
+        }, 300)
       },
-      toTopic (url) {
+      toMap() {
+        vm.$router.push({name: 'map', params: {path: vm.$route.path.replace(/\//g, '_')}})
+      },
+      toTopic(url) {
+        if (vm.showFilterCon) return
         location.href = url
       },
-      toDetail (id) {
-        vm.$router.push({path: '/detail/' + id})
+      toDetail(id) {
+        if (vm.showFilterCon) return
+        vm.$router.push({name: 'shops_detail', query: {id: id}})
       },
-      preBook (id) {
+      preBook(id) {
         vm.$router.push({path: '/detail/' + id})
       },
       /* 页面数据 */
-      getBanner (cb) {
+      getBanner(cb) {
         vm.loadData(homeApi.banner, null, 'POST', function (res) {
           console.log(res.data, '首页Banner')
           vm.banner = res.data.itemList
           cb ? cb() : null
         })
       },
-      getNotice () {
+      getNotice() {
         vm.loadData(homeApi.topNotice, null, 'POST', function (res) {
           console.log(res.data, '首页TopNews')
           vm.notice = res.data.itemList
         })
       },
-      getShops (isLoadMore) {
+      getShops(isLoadMore) {
         if (vm.onFetching) return false
         var params = vm.filterData || {
-            pagerSize: 10,
-            pageNo: 1,
-            goodsType: 'XXX',
-            goodsCategory: '',
-            brandId: '',
-            filter: ''
-          }
+          pagerSize: 10,
+          pageNo: 1,
+          goodsType: 'XXX',
+          goodsCategory: '',
+          brandId: '',
+          filter: ''
+        }
         vm.loadData(nearbyApi.shopsList, params, 'POST', function (res) {
           console.log(res.data, '首页shopsList')
           if (!isLoadMore) {
             vm.shops = res.data.itemList
+            if (res.data.noMore) {
+              vm.$nextTick(function () {
+                vm.$refs.myScroll.disablePullup()
+              })
+            }
           } else {
             vm.shops.push(res.data.itemList)
           }
@@ -339,9 +394,9 @@
         })
       },
       /* 商品筛选 */
-      showFilter (type, e) {
+      showFilter(type, e) {
         vm.factive = type
-        // console.log(vm.active)
+        // console.log(vm.subActive)
         if (vm.showFilterCon) {
           if (vm.curFilterType === type) {
             vm.factive = ''
@@ -358,7 +413,13 @@
         }
         // 默认选中已选择的筛选条件
       },
-      chooseFilter (idx, key, value, e) {
+      hideFilter() {
+        if (vm.showFilterCon) {
+          vm.showFilterCon = false
+          vm.factive = ''
+        }
+      },
+      chooseFilter(idx, key, value, e) {
         vm.shops = []
         console.log(JSON.stringify(vm.filterData), vm.curFilterType)
         if (JSON.stringify(vm.filterData).indexOf(vm.curFilterType) === -1) {
@@ -390,7 +451,7 @@
         }
         vm.getShops(lastF)
       },
-      onPullDown () {
+      onPullDown() {
         if (vm.onFetching) {
           // do nothing
           return false
@@ -400,13 +461,14 @@
             // vm.bottomCount += 10
             vm.getShops()
             vm.$nextTick(function () {
-              vm.$refs.scrollerBottom.donePulldown()
-              vm.onFetching = false
+              vm.$refs.myScroll.reset({top: 0})
+              vm.$refs.myScroll.donePullup()
+              vm.$refs.myScroll.donePulldown()
             })
-          }, 2000)
+          }, 1500)
         }
       },
-      onScrollBottom () {
+      onPullUp() {
         if (vm.onFetching) {
           // do nothing
           return false
@@ -416,25 +478,17 @@
             // vm.bottomCount += 10
             vm.getShops(true)
             vm.$nextTick(function () {
-              vm.$refs.scrollerBottom.reset()
-              vm.onFetching = false
+              vm.$refs.myScroll.reset({bottom: 0})
+              vm.$refs.myScroll.donePullup()
+              vm.$refs.myScroll.donePulldown()
             })
-          }, 2000)
+          }, 200)
         }
       },
-      onScroll (pos) {
+      onScroll(pos) {
         this.scrollTop = pos.top
         vm.factive = ''
         vm.showFilterCon ? vm.showFilterCon = false : null
-      },
-      changeList () {
-        this.showList = false
-        this.$nextTick(function () {
-          vm.$refs.scrollerEvent.reset({top: 0})
-        })
-      },
-      changeCount (index, val) {
-        console.log(arguments)
       }
     }
   }
@@ -445,6 +499,8 @@
   @import '../../static/css/tools.less';
 
   .nearby {
+    height: 100%;
+    overflow: scroll; // 此两个属性至关重要，不写@scroll监听不到滚动
   }
 
   .location-chooser {
@@ -542,7 +598,9 @@
     .rel;
     z-index: 10;
     margin-bottom: 10/@rem;
-    &.fix {
+    .transi(.2s);
+    &.fixed {
+      width: 100%;
       .fix;
       top: 0;
     }
@@ -584,7 +642,7 @@
               .transi(.2s);
             }
           }
-          &.active {
+          &.mfilterActive {
             .cdiy(#f1582a);
             .ico-arr-down {
               &:before {
@@ -631,7 +689,7 @@
             .c6;
             .bf1;
             .borR(10px);
-            &.active {
+            &.sfilterActive {
               .cf;
               .bdiy(#f1582a);
             }

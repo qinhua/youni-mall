@@ -10,9 +10,10 @@ import 'ionicons/dist/css/ionicons.css'
 import $ from 'jquery'
 import '../static/js/fastclick.js'
 import 'myMixin'
-import store from './vuex-store'
+import store from './store'
 import VueScroller from 'vue-scroller'
 import {AlertPlugin, ConfirmPlugin, ToastPlugin, LoadingPlugin} from 'vux'
+
 Vue.use(require('vue-wechat-title'))
 Vue.use(ConfirmPlugin)
 Vue.use(AlertPlugin)
@@ -103,10 +104,10 @@ Vue.prototype.alert = function (title, content, showCb, hideCb) {
   _this.$vux.alert.show({
     title: title || '',
     content: content || '',
-    onShow () {
+    onShow() {
       showCb ? showCb() : null
     },
-    onHide () {
+    onHide() {
       hideCb ? hideCb() : null
     }
   })
@@ -118,15 +119,15 @@ Vue.prototype.confirm = function (title, content, confirmCb, cancelCb) {
     theme: 'ios',
     title: title || '',
     content: content || '',
-    onCancel () {
+    onCancel() {
       cancelCb ? cancelCb() : null
     },
-    onConfirm () {
+    onConfirm() {
       confirmCb ? confirmCb() : null
     },
-    onShow () {
+    onShow() {
     },
-    onHide () {
+    onHide() {
     }
   })
 }
@@ -205,21 +206,25 @@ Vue.directive('jump', {
       // console.info(param, 'v-jump中的param')
       el.addEventListener('click', function () {
         if (pathName) {
-          if (type === 1) {
-            // path类型单独处理参数格式
-            if (param) {
-              var str = []
-              for (let j in param) {
-                param[j] ? str.push(param[j]) : null
+          switch (type) {
+            case 1:
+              // path类型单独处理参数格式
+              if (param) {
+                var str = []
+                for (let j in param) {
+                  param[j] ? str.push(param[j]) : null
+                }
               }
-            }
-            vm.$router.push({path: '/' + pathName + (param ? '/' + str.join('/') : '')})
-          }
-          if (type === 2) {
-            vm.$router.push({name: pathName, params: param || ''})
-          }
-          if (type === 3) {
-            vm.$router.push({path: '/' + pathName, query: param || ''})
+              vm.$router.push({path: '/' + pathName + (param ? '/' + str.join('/') : '')})
+              break
+            case 2:
+              vm.$router.push({name: pathName, params: param || ''})
+              break
+            case 3:
+              vm.$router.push({path: '/' + pathName, query: param || ''})
+              break
+            default:
+              vm.$router.push({path: '/' + pathName})
           }
         } else {
           console.warn('好歹给个pathName啊！')
@@ -259,7 +264,7 @@ new Vue({
   store,
   template: '<App/>',
   components: {App},
-  mounted () {
+  mounted() {
     // console.log(XXX)
     // GET
     /* this.$axios.get('/user', {
