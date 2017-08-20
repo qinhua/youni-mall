@@ -422,9 +422,11 @@
         .middle {
           padding: 10/@rem 0;
           .fz(24);
-          .txt-del;
           .fz(28);
           .c9;
+          span{
+            .txt-del;
+          }
           sub {
             .fz(24);
             padding-left: 20/@rem;
