@@ -7,6 +7,8 @@ import App from './App'
 import router from './router'
 import 'font-awesome/css/font-awesome.css'
 import 'ionicons/dist/css/ionicons.css'
+import 'weui/dist/style/weui.min.css'
+import weui from '../static/js/weui.js'
 import $ from 'jquery'
 import '../static/js/fastclick.js'
 import 'myMixin'
@@ -73,30 +75,36 @@ router.beforeEach((to, from, next) => {
 /* ajax请求 */
 Vue.prototype.$axios = Axios
 Vue.prototype.loadData = function (url, params, type, sucCb, errCb) {
-  /* $.post(url, {'requestapp': params ? JSON.stringify(params) : '{}'},
-   function (res) {
-   if (res.success) {
-   sucCb ? sucCb(res) : console.log(res, '接口的res')
-   } else {
-   errCb ? errCb(res) : console.error('请求失败！')
-   }
-   }
-   ) */
-  /* Axios.post(url, {'requestapp': '{}'}).then(function (res) {
-   sucCb ? sucCb(res) : console.log(res, '接口的res')
-   }).catch(function (error) {
-   errCb ? errCb(error) : console.error(error, '错误信息')
-   }) */
-  Axios({
-    method: type || 'POST',
-    url: url,
-    data: {'requestapp': params ? JSON.stringify(params) : '{}'},
-    responseType: 'JSON'
-  }).then(function (res) {
-    sucCb ? sucCb(res) : console.log(res, '接口的res')
-  }).catch(function (error) {
-    errCb ? errCb(error) : console.error(error, '错误信息')
-  })
+  setTimeout(function () {
+    $.extend(params, window.youniMall.userAuth)
+    // console.log('%c'+JSON.stringify(params, null, 2), 'color:#fff;background:purple')
+    $.ajax({
+      url: url,
+      type: type || 'POST',
+      data: {'requestapp': JSON.stringify(params ? params : {})},
+      dataType: "JSON",
+      cache: false,
+      headers: {token: window.youniMall.userAuth.openid},
+      success: function (res) {
+        sucCb ? sucCb(res) : console.log(res, '接口的res')
+      },
+      error: function (res) {
+        errCb ? errCb(res) : console.error('请求失败！')
+      }
+    });
+    /*Axios({
+     method: type || 'POST',
+     url: url,
+     data: {requestapp: params ? params : {}},
+     responseType: 'JSON',
+     cache: false,
+     headers: {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'token': window.youniMall.userAuth.openid}
+     }).then(function (res) {
+     sucCb ? sucCb(res) : console.log(res, '接口的res')
+     }).catch(function (error) {
+     errCb ? errCb(error) : console.error(error, '错误信息')
+     })*/
+  }, 0)
 }
 /* alert */
 Vue.prototype.alert = function (title, content, showCb, hideCb) {
@@ -148,7 +156,7 @@ Vue.prototype.toast = function (content, type, position, cb) {
     case 4:
       type = 'text'
       break
-    default:
+    case '':
       type = 'success'
   }
   _this.$vux.toast.show({
@@ -160,6 +168,15 @@ Vue.prototype.toast = function (content, type, position, cb) {
   cb ? cb() : null
   // _this.$vux.toast.text('hello', 'top')
 }
+Vue.prototype.tips = function (content, duration, cls, cb) {
+  weui.topTips(content, {
+    duration: duration || 3000,
+    className: cls || 'custom-classname',
+    callback: function () {
+      cb ? cb() : null
+    }
+  })
+}
 /* loading */
 Vue.prototype.processing = function (content, isClose, cb, timeCb) {
   let _this = this
@@ -168,13 +185,20 @@ Vue.prototype.processing = function (content, isClose, cb, timeCb) {
     return false
   } else {
     _this.$vux.loading.show({
-      text: content || '努力中…'
+      text: content || ''
     })
     cb ? cb() : null
     setTimeout(function () {
       _this.$vux.loading.hide()
       timeCb ? timeCb() : null
     }, 2000)
+  }
+}
+Vue.prototype.jump = function (name, params) {
+  if (name.indexOf('/') > -1) {
+    this.$router.push({path: name, query: params || ''})
+  } else {
+    this.$router.push({name: name, query: params || ''})
   }
 }
 /* ----- 封装一些指令 -------- */
@@ -206,25 +230,21 @@ Vue.directive('jump', {
       // console.info(param, 'v-jump中的param')
       el.addEventListener('click', function () {
         if (pathName) {
-          switch (type) {
-            case 1:
-              // path类型单独处理参数格式
-              if (param) {
-                var str = []
-                for (let j in param) {
-                  param[j] ? str.push(param[j]) : null
-                }
+          if (type === 1) {
+            // path类型单独处理参数格式
+            if (param) {
+              var str = []
+              for (let j in param) {
+                param[j] ? str.push(param[j]) : null
               }
-              vm.$router.push({path: '/' + pathName + (param ? '/' + str.join('/') : '')})
-              break
-            case 2:
-              vm.$router.push({name: pathName, params: param || ''})
-              break
-            case 3:
-              vm.$router.push({path: '/' + pathName, query: param || ''})
-              break
-            default:
-              vm.$router.push({path: '/' + pathName})
+            }
+            vm.$router.push({path: '/' + pathName + (param ? '/' + str.join('/') : '')})
+          }
+          if (type === 2) {
+            vm.$router.push({name: pathName, params: param || ''})
+          }
+          if (type === 3) {
+            vm.$router.push({path: '/' + pathName, query: param || ''})
           }
         } else {
           console.warn('好歹给个pathName啊！')

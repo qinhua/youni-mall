@@ -1,9 +1,9 @@
 <template>
-  <div class="my">
+  <div class="my" v-cloak>
     <!--<router-view></router-view>-->
     <div class="user-modal">
       <div class="user-inner">
-        <img src="../../static/img/av.jpg">
+        <img :src="avatar">
         <p class="user-name" :data-userId="255" v-jump="['edit_user', ['userId'], 3]">{{nickName}}<i class="fa fa-pencil-square-o"></i></p>
       </div>
       <canvas id="canvas" style="position:absolute;bottom:0px;left:0px;z-index:1;"></canvas>
@@ -67,7 +67,8 @@
     name: 'my',
     data () {
       return {
-        nickName: '七灵',
+        nickName: '',
+        avatar: '',
         count: 0
       }
     },
@@ -77,6 +78,9 @@
     },
     mounted () {
       // me.attachClick()
+      vm = this
+      vm.nickName=vm.$store.state.global.wxInfo.nickname
+      vm.avatar=vm.$store.state.global.wxInfo.headimgurl
       this.count = this.$store.state.cart.count
       var canvas = document.getElementById('canvas')
       var ctx = canvas.getContext('2d')

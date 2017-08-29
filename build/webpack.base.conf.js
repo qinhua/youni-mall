@@ -10,8 +10,8 @@ function resolve(dir) {
 
 var originalConfig = {
   entry: {
-    'babel-polyfill': 'babel-polyfill', // 用来解决的兼容性
-    app: './src/main.js'
+    // 'babel-polyfill': 'babel-polyfill', // 用来解决的兼容性
+    app: ['babel-polyfill','./src/main.js']
   },
   // 此处配置jquery等外部插件
   // plugins: [

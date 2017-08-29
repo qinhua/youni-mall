@@ -1,5 +1,5 @@
 <template>
-  <div class="home" ref="home" @scroll="scrollHandler">
+  <div class="home" ref="home" v-cloak @scroll="scrollHandler">
     <!--定位组件-->
     <div class="location-chooser">
       <p><span><i class="fa fa-map-marker"></i>&nbsp;您的位置：</span>{{location}}</p>
@@ -32,8 +32,8 @@
           <div class="ico ico-toutiao"></div>
           <marquee>
             <marquee-item v-for="(news, i) in notice" :key="i" :data-id="news.noticeId"
-                          @click.native="toTopic(news.linkUrl)"
-                          class="align-middle">{{news.content}}
+                          @click.native="toTopic(news.url)"
+                          class="align-middle">{{news.name}}
             </marquee-item>
           </marquee>
         </div>
@@ -81,12 +81,14 @@
                     <span class="price">￥{{item.price}}</span>
                     <span class="hasSell">已售{{item.saleCount}}单</span>
                   </section>
-                  <label>{{item.label}}</label>
+                  <ul class="tags" v-if="item.label">
+                    <li v-for="t in item.label.split(',')">{{t}}</li>
+                  </ul>
+                  <label></label>
                 </section>
               </div>
               <group class="buy-count">
-                <x-number button-style="round" :min="0" :max="50" align="right" @on-change="changeCount"
-                          fillable></x-number>
+                <x-number button-style="round" :min="0" :max="50" align="right" @on-change="changeCount" fillable></x-number>
               </group>
             </section>
           </section>
@@ -122,7 +124,7 @@
   let vm
   import Swiper from '../components/Swiper'
   import {Group, GroupTitle, Grid, GridItem, Marquee, MarqueeItem, XNumber, XSwitch, Scroller, LoadMore} from 'vux'
-  import {homeApi} from '../service/main.js'
+  import {homeApi,cartApi} from '../service/main.js'
   import {mapState, mapMutations} from 'vuex'
 
   export default {
@@ -133,6 +135,13 @@
         banner: [],
         notice: [],
         goods: [],
+        params: {
+        pagerSize: 8,
+        pageNo: 1,
+        goodsType: 'goods_type.1',
+        goodsCategory: 'goods_category.1',
+        brandId: '038283447c4311e7aa18d8cb8a971936'
+        },
         /* filter start */
         filterOffset: 0,
         filters: {
@@ -308,13 +317,13 @@
     }),
     watch: {
       '$route'(to, from) {
-        vm.getPos()
+         vm.getPos()
       }
     },
     methods: {
       // 全局定位
       getPos() {
-        var lp = me.locals.get('cur5656Position')
+        var lp = me.sessions.get('cur5656Position')
         setTimeout(function () {
           if (lp) {
             vm.location = JSON.parse(lp).name || JSON.parse(lp).formattedAddress
@@ -342,7 +351,7 @@
 
               // 解析定位结果
               function onComplete(data) {
-                me.locals.set('cur5656Position', JSON.stringify(data))
+                me.sessions.set('cur5656Position', JSON.stringify(data))
                 vm.location = data.formattedAddress
                 var str = ['定位成功'];
                 str.push('经度：' + data.position.getLng());
@@ -399,6 +408,11 @@
         if (vm.showFilterCon) return
         vm.$router.push({name: 'goods_detail', query: {id: id}})
       },
+      operateCart(id,num) {
+        vm.loadData(cartApi.add, {goodsId:id,goodsNum:num}, 'POST', function (res) {
+          console.log(res, '添加购物车xxxxx')
+        })
+      },
       /* 页面数据 */
       getBanner(cb) {
         vm.loadData(homeApi.banner, null, 'POST', function (res) {
@@ -414,26 +428,20 @@
         })
       },
       getGoods(isLoadMore) {
-        if (vm.onFetching) return false
-        var params = vm.filterData || {
-          pagerSize: 10,
-          pageNo: 1,
-          goodsType: 'XXX',
-          goodsCategory: '',
-          brandId: '',
-          filter: ''
-        }
+        if (vm.onFetching) return
+        var params = {}
+        console.log(params)
         vm.loadData(homeApi.goodsList, params, 'POST', function (res) {
           console.log(res.data, '首页GoodsList')
           if (!isLoadMore) {
-            vm.goods = res.data.itemList
+            vm.goods = res.data.pager.itemList
             if (res.data.noMore) {
               vm.$nextTick(function () {
                 vm.$refs.myScroll.disablePullup()
               })
             }
           } else {
-            vm.goods.push(res.data.itemList)
+            vm.goods.push(res.data.pager.itemList)
           }
           vm.onFetching = false
         }, function () {
@@ -536,7 +544,7 @@
         vm.factive = ''
         vm.showFilterCon ? vm.showFilterCon = false : null
       },
-      changeCount(obj) {
+      changeCount(obj,id) {
         console.log(obj)
         if (obj.type === 'add') {
           this.additem(obj.event)
@@ -887,10 +895,20 @@
               }
             }
           }
-          label {
+          .tags {
             .flex-r(1);
             .cdiy(#f34c18);
             .fz(22);
+            li{
+              .fl;
+              margin-right: 10/@rem;
+              padding: 1px 8px;
+              line-height: 1.8;
+              .cf;
+              .fz(16);
+              .borR(4px);
+              background: orange;
+            }
           }
         }
       }

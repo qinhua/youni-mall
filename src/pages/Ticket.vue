@@ -1,5 +1,5 @@
 <template>
-  <div class="ticket">
+  <div class="ticket" v-cloak>
     <tab class="ticket-type" bar-active-color="transparent">
       <tab-item :selected="!params.type?true:false" @on-item-click="onItemClick"><i class="fa fa-ticket"></i>&nbsp;购买水票
       </tab-item>

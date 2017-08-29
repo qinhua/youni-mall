@@ -60,7 +60,7 @@
         /* if (vm.isPosting) return false
         vm.isPosting = true
         vm.processing()
-        vm.loadData(userApi.getAddress, {userId: vm.userId}, 'POST', function (res) {
+        vm.loadData(userApi.addressList, {userId: vm.userId}, 'POST', function (res) {
           vm.list = res.data.itemList
           vm.$store.state.global.address = vm.list
           console.log(vm.list, '地址数据')
@@ -79,7 +79,7 @@
         }
         /* vm.isPosting = true
         vm.processing()
-        vm.loadData(userApi.updateAddress, {id: id}, 'POST', function (res) {
+        vm.loadData(userApi.setDefaultAddress, {id: id}, 'POST', function (res) {
           console.log(res.data)
           vm.isPosting = false
           vm.processing(0, 1)
@@ -113,7 +113,7 @@
             }
           }
           /* vm.isPosting = true
-          vm.loadData(userApi.delOrder, {id: id}, 'POST', function (res) {
+          vm.loadData(userApi.delAddress, {id: id}, 'POST', function (res) {
             vm.isPosting = false
           }, function () {
             vm.isPosting = false

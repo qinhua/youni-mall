@@ -113,7 +113,7 @@
         if (vm.onFetching) return false
         vm.processing()
         vm.onFetching = true
-        vm.loadData(userApi.coupons, vm.params, 'POST', function (res) {
+        vm.loadData(userApi.couponList, vm.params, 'POST', function (res) {
           var resD = res.data.itemList
           /* for (var i = 0; i < resD.length; i++) {
             switch (resD[i].status) {

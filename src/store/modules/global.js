@@ -5,6 +5,22 @@ export default {
     nickName: '七灵',
     userId: 'vv58585',
     name: '全局',
+    wxInfo: {
+      'city': '武汉',
+      'country': '中国',
+      'errorCode': 0,
+      'errorMessage': null,
+      'headimgurl': 'http://wx.qlogo.cn/mmopen/QAm7hEbaujS41jY5T0icQd9ySS9FaRJibTiclJGyysBmLoFmswkhLemAHAibYOQml4hibx3BqD2u8NRIwrAhTyeLgjavI70oxia8uk/0',
+      'nickname': '覃华',
+      'openid': 'oEo51t1PTVGj7H6Ahdqr_kac-1vs',
+      'privilege': [],
+      'province': '湖北',
+      'sex': '1',
+      'subscribe': 0,
+      'subscribeTime': null,
+      'unionid': null
+    },
+    dict: null,
     address: [
       {
         id: 1,
@@ -39,6 +55,17 @@ export default {
   },
 
   mutations: {
+    getFromDict(state, type) {
+      setTimeout(function () {
+        for (var i = 0; i < state.dict.length; i++) {
+          var cur = state.dict[i]
+          if (cur.dictType === type) {
+            console.log(cur.items)
+            return cur.items
+          }
+        }
+      }, 2000)
+    },
     getData (state, payload) {
       if (payload.res.httpStatusCode === 200) {
         state.itemDetail = payload.res.topiclist
@@ -46,6 +73,9 @@ export default {
     },
     getUser (state, payload) {
       state.userInfo = payload
+    },
+    storeData(state, response) {
+      state[response['key']] = response.data
     },
     addTimeNum (state, payload) {
       state.itemNum += payload.num

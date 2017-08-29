@@ -30,14 +30,14 @@ export default (function () {
       'id|+1': 1,
       'image': '../static/img/banner/p0' + Mock.Random.integer(1, 9) + '.jpg',
       // 'image': Mock.Random.dataImage('636x320'),
-      'linkUrl': Mock.mock('@url')
+      'url': Mock.mock('@url')
     }]
   })
 
   Mock.mock(/\/home\/topNotice/, {
     'itemList|1-5': [{
       'noticeId|+1': 10,
-      'content': Mock.mock('@cparagraph()'),
+      'name': Mock.mock('@cparagraph()'),
       'linkUrl': Mock.mock('@url')
     }]
   })
@@ -145,7 +145,7 @@ export default (function () {
   })
 
   /*优惠券接口*/
-  Mock.mock(/\/user\/coupons/, {
+  Mock.mock(/\/user\/couponList/, {
     'itemList|1-10': [{
       'id|+1': 2,
       'sellerName': '武汉市水一族加盟店',

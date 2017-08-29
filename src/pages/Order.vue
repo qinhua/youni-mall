@@ -1,5 +1,5 @@
 <template>
-  <div class="order">
+  <div class="order" v-cloak>
     <tab class="order-tab" active-color="#f34c18">
       <tab-item :selected="params.type==0?true:false" @on-item-click="onItemClick">全部</tab-item>
       <tab-item :selected="params.type==1?true:false" @on-item-click="onItemClick(1)">待支付</tab-item>

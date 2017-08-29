@@ -3580,6 +3580,9 @@ body {
 .container .weui-tabbar {
   max-width: 640px;
 }
+[v-cloak] {
+  display: none;
+}
 .left-arrow {
   position: absolute;
   width: 30px;

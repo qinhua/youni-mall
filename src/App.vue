@@ -53,6 +53,7 @@
   // import myMixin from 'myMixin'
   let vm
   import Home from './pages/Home'
+  import {commonApi} from './service/main.js'
   import {Tabbar, TabbarItem} from 'vux'
   import {mapState, mapActions} from 'vuex'
 
@@ -74,6 +75,8 @@
     mounted() {
       // me.attachClick()
       vm = this
+      window.youniMall.userAuth = vm.$store.state.global.wxInfo
+      !vm.$store.state.global.wxInfo.dict ? vm.getDict() : null
     },
     computed: {
       'showTabbar'() {
@@ -88,6 +91,12 @@
       // 从子组件获取数据
       getPageStatus(data) {
         vm.curSelected = data
+      },
+      getDict() {
+        vm.loadData(commonApi.dict, {}, 'POST', function (res) {
+          vm.$store.commit('storeData', {key: 'dict', data: res.data.itemList})
+        }, function () {
+        })
       }
     },
     watch: {

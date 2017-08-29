@@ -1,5 +1,5 @@
 <template>
-  <div id="page">
+  <div id="page" v-cloak>
     <!-- 地图容器 -->
     <div id="container" class="map" tabindex="0"></div>
     <!-- 搜索框-->

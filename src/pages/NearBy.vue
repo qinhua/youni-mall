@@ -1,5 +1,5 @@
 <template>
-  <div class="nearby" ref="nearby" @scroll="scrollHandler">
+  <div class="nearby" ref="nearby" v-cloak @scroll="scrollHandler">
     <!--定位组件-->
     <div class="location-chooser">
       <p><span><i class="fa fa-map-marker"></i>&nbsp;您的位置：</span>{{location}}</p>
@@ -264,7 +264,7 @@
     methods: {
       // 全局定位
       getPos() {
-        var lp = me.locals.get('cur5656Position')
+        var lp = me.sessions.get('cur5656Position')
         setTimeout(function () {
           if (lp) {
             vm.location = JSON.parse(lp).name || JSON.parse(lp).formattedAddress
@@ -292,7 +292,7 @@
 
               // 解析定位结果
               function onComplete(data) {
-                me.locals.set('cur5656Position', JSON.stringify(data))
+                me.sessions.set('cur5656Position', JSON.stringify(data))
                 vm.location = data.formattedAddress
                 var str = ['定位成功'];
                 str.push('经度：' + data.position.getLng());
