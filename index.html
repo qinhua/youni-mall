@@ -35,10 +35,13 @@
     })(document, window)
   </script>
   <script src="//res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
-  <!--<script src="static/js/vconsole.min.js"></script>-->
+  <script type="text/javascript" src="http://pv.sohu.com/cityjson/getip.aspx" charset="utf-8"></script>
   <script>
+    console.log(returnCitySN,'外部ip定位')
+    sessionStorage.setItem('cur5656Ips',returnCitySN.cip)
     // 百度统计
   </script>
+  <!--<script src="static/js/vconsole.min.js"></script>-->
   <!--<script>-->
     <!--//微信配置-->
     <!--var Utils = window.mcShare.Utils;-->

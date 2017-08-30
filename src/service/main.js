@@ -45,6 +45,7 @@ const userApi = {
 const cartApi = {
   view: host + '/cart/view',
   add: host + '/cart/add',
+  minus: host + '/cart/subtract',
   update: host + '/cart/udpateNum',
   del: host + '/cart/del'
 }

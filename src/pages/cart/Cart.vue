@@ -55,7 +55,7 @@
   let me
   let vm
   import {Tab, TabItem, Checklist, XButton, Checker, CheckerItem} from 'vux'
-  import {orderApi} from '../../service/main.js'
+  import {orderApi, cartApi} from '../../service/main.js'
 
   export default {
     name: 'order',
@@ -88,7 +88,8 @@
     },
     mounted() {
       vm = this
-      vm.getOrders()
+      // vm.getOrders()
+      vm.viewCart()
       vm.$nextTick(() => {
         vm.$refs.orderScroller.finishInfinite(true)
         vm.$refs.orderScroller.resize()
@@ -98,6 +99,7 @@
     watch: {
       '$route'(to, from) {
         vm.getOrders()
+        vm.viewCart()
       }
     },
     methods: {
@@ -133,6 +135,19 @@
       filterTicket(type, isMine) {
         vm.curTicketFilter = type
         vm.getOrders()
+      },
+      viewCart() {
+        vm.loadData(cartApi.view, null, 'POST', function (res) {
+          var resD = res.data
+          console.log(resD, '购物车数据')
+          var totalCount = 0
+          for (var i = 0; i < resD.goodsList.length; i++) {
+            totalCount += resD.goodsList[i].amount
+          }
+          // vm.curCount = totalCount
+          vm.$store.commit('updateCart', totalCount)
+        }, function () {
+        })
       },
       getOrders(isLoadMore) {
         vm.params.type = vm.$route.params.id

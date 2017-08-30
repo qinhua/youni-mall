@@ -88,7 +88,7 @@
                 </section>
               </div>
               <group class="buy-count">
-                <x-number button-style="round" :min="0" :max="50" align="right" @on-change="changeCount" fillable></x-number>
+                <x-number button-style="round" :min="0" :max="50" align="right" :dataId="item.id" @on-change="changeCount"></x-number>
               </group>
             </section>
           </section>
@@ -294,6 +294,7 @@
       vm.getBanner()
       vm.getNotice()
       vm.getGoods()
+      vm.viewCart()
       // 点击区域之外隐藏筛选栏
       document.addEventListener('click', (e) => {
         if (e.target.offsetParent) {
@@ -318,6 +319,7 @@
     watch: {
       '$route'(to, from) {
          vm.getPos()
+         vm.viewCart()
       }
     },
     methods: {
@@ -326,49 +328,127 @@
         var lp = me.sessions.get('cur5656Position')
         setTimeout(function () {
           if (lp) {
-            vm.location = JSON.parse(lp).name || JSON.parse(lp).formattedAddress
+            vm.location = JSON.parse(lp).address || ''
           } else {
             try {
               vm.location = '定位中…'
-              var map, geolocation;
-              // 加载地图，调用浏览器定位服务
+              var map, geolocation, citysearch
+              // 加载地图，调用定位服务
               map = new AMap.Map('mapContainer', {
                 resizeEnable: true
-              });
-              map.plugin('AMap.Geolocation', function () {
-                geolocation = new AMap.Geolocation({
-                  enableHighAccuracy: true,//是否使用高精度定位，默认:true
-                  timeout: 10000,          //超过10秒后停止定位，默认：无穷大
-                  buttonOffset: new AMap.Pixel(10, 20),//定位按钮与设置的停靠位置的偏移量，默认：Pixel(10, 20)
-                  zoomToAccuracy: true,  //定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
-                  buttonPosition: 'RB'
-                });
-                map.addControl(geolocation);
-                geolocation.getCurrentPosition();
-                AMap.event.addListener(geolocation, 'complete', onComplete);//返回定位信息
-                AMap.event.addListener(geolocation, 'error', onError);      //返回定位出错信息
-              });
+              })
 
-              // 解析定位结果
-              function onComplete(data) {
-                me.sessions.set('cur5656Position', JSON.stringify(data))
-                vm.location = data.formattedAddress
-                var str = ['定位成功'];
-                str.push('经度：' + data.position.getLng());
-                str.push('纬度：' + data.position.getLat());
-                if (data.accuracy) {
-                  str.push('精度：' + data.accuracy + ' 米');
+              /* 浏览器定位 */
+              function geoByBrowser(){
+                // 解析定位结果
+                 var onComplete=function(data) {
+                   if(!data.formattedAddress){
+                     geoByIp()
+                     return
+                   }
+                  console.log(data,'来自浏览器定位')
+                  var tmp = {
+                     source: 'browser',
+                     address: data.formattedAddress,
+                     province: data.addressComponent.province,
+                     city: data.addressComponent.city,
+                     provinceCode: data.addressComponent.citycode,
+                     cityCode: data.addressComponent.adcode,
+                     lng: data.position.lng,
+                     lat: data.position.lat
+                   }
+                  me.sessions.set('cur5656Position', JSON.stringify(tmp))
+                  vm.location = data.formattedAddress || '为获取到城市'
+                  var str = ['定位成功']
+                  str.push('经度：' + data.position.getLng())
+                  str.push('纬度：' + data.position.getLat())
+                  if (data.accuracy) {
+                    str.push('精度：' + data.accuracy + ' 米')
+                  }
+                  // 如为IP精确定位结果则没有精度信息
+                  str.push('是否经过偏移：' + (data.isConverted ? '是' : '否'))
                 }
-                // 如为IP精确定位结果则没有精度信息
-                str.push('是否经过偏移：' + (data.isConverted ? '是' : '否'));
-                // document.getElementById('tip').innerHTML = str.join('<br>');
+
+                // 解析定位错误信息
+                var onError=function(data) {
+                  vm.location = '定位失败'
+                }
+
+                map.plugin('AMap.Geolocation', function () {
+                  geolocation = new AMap.Geolocation({
+                    enableHighAccuracy: true, // 是否使用高精度定位，默认:true
+                    timeout: 8000, // 超过10秒后停止定位，默认：无穷大
+                    buttonOffset: new AMap.Pixel(10, 20),// 定位按钮与设置的停靠位置的偏移量，默认：Pixel(10, 20)
+                    zoomToAccuracy: true, // 定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
+                    buttonPosition: 'RB'
+                  })
+                  map.addControl(geolocation)
+                  geolocation.getCurrentPosition()
+                  AMap.event.addListener(geolocation, 'complete', onComplete)//返回定位信息
+                  AMap.event.addListener(geolocation, 'error', onError)      //返回定位出错信息
+                })
               }
 
-              // 解析定位错误信息
-              function onError(data) {
-                vm.location = '定位失败'
-                // document.getElementById('tip').innerHTML = '定位失败';
+              /* ip定位 */
+              function geoByIp() {
+                // 解析定位结果
+                var onComplete=function(data) {
+                  // console.log(data,'来自ip定位')
+                  // 取出经纬度
+                  var tmpLnglat=[]
+                  for (var i in data.bounds) {
+                    if(data.bounds.hasOwnProperty(i)){
+                      tmpLnglat=[data.bounds[i].lng,data.bounds[i].lat]
+                    }
+                  }
+                  var tmp = {
+                    source: 'ip',
+                    address: data.province+data.city,
+                    province: data.province,
+                    city: data.city,
+                    provinceCode: null,
+                    cityCode: data.adcode,
+                    lng: tmpLnglat[0],
+                    lat: tmpLnglat[1]
+                  }
+                  me.sessions.set('cur5656Position', JSON.stringify(tmp))
+                  vm.location = data.address
+                }
+
+                // 解析定位错误信息
+                var onError=function(data) {
+                  vm.location = '定位失败'
+                }
+
+                map.plugin('AMap.CitySearch', function () {
+                  citysearch = new AMap.CitySearch({
+                    enableHighAccuracy: true, // 是否使用高精度定位，默认:true
+                    timeout: 8000, // 超过10秒后停止定位，默认：无穷大
+                    buttonOffset: new AMap.Pixel(10, 20), // 定位按钮与设置的停靠位置的偏移量，默认：Pixel(10, 20)
+                    zoomToAccuracy: true, // 定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
+                    buttonPosition: 'RB'
+                  })
+                  map.addControl(citysearch)
+                  // 自动获取用户IP，返回当前城市
+                  citysearch.getLocalCity(function(status, result) {
+                    if (status === 'complete' && result.info === 'OK') {
+                      if (result && result.city && result.bounds) {
+                        var cityinfo = result.city
+                        var citybounds = result.bounds
+                        vm.location = cityinfo
+                        // 地图显示当前城市
+                        map.setBounds(citybounds)
+                      }
+                    } else {
+                      vm.location =result.info
+                    }
+                  })
+                  AMap.event.addListener(citysearch, 'complete', onComplete) // 返回定位信息
+                  AMap.event.addListener(citysearch, 'error', onError) //返回定位出错信息
+                })
               }
+
+              geoByBrowser()
             } catch (e) {
               console.log(e)
             }
@@ -544,20 +624,37 @@
         vm.factive = ''
         vm.showFilterCon ? vm.showFilterCon = false : null
       },
-      changeCount(obj,id) {
-        console.log(obj)
+      /* 购物车 */
+      viewCart() {
+        vm.loadData(cartApi.view, null, 'POST', function (res) {
+          var resD = res.data
+          console.log(resD, '购物车数据')
+          var totalCount = 0
+          for (var i = 0; i < resD.goodsList.length; i++) {
+            totalCount += resD.goodsList[i].amount
+          }
+          // vm.curCount = totalCount
+          vm.$store.commit('updateCart', totalCount)
+        }, function () {
+        })
+      },
+      changeCount(obj) {
+        // console.log(obj)
         if (obj.type === 'add') {
           this.additem(obj.event)
           this.count++
-        } else if (obj.type === 'sub') {
-          this.count--
+          vm.loadData(cartApi.add, {goodsId: obj.id}, 'POST', function (res) {
+          }, function () {
+          })
         } else {
-          this.count = obj.value
+          this.count--
+          vm.loadData(cartApi.minus, {goodsId: obj.id}, 'POST', function (res) {
+          }, function () {
+          })
         }
         vm.$store.commit('updateCart', this.count)
         console.log(vm.$store.state.cart.count)
       },
-      /* 购物车 */
       additem(event) {
         this.drop(event.target);
       },
@@ -570,7 +667,7 @@
             ball.show = true
             ball.el = el
             this.dropBalls.push(ball)
-            return;
+            return
           }
         }
       },
@@ -901,7 +998,7 @@
             .fz(22);
             li{
               .fl;
-              margin-right: 10/@rem;
+              margin: 0 10/@rem 5/@rem 0;
               padding: 1px 8px;
               line-height: 1.8;
               .cf;

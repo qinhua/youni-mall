@@ -152,7 +152,17 @@
               AMap.event.addListener(placeSearch, 'selectChanged', function (results) {
                 // 获取当前选中的结果数据
                 console.log(results.selected.data)
-                me.locals.set('cur5656Position', JSON.stringify(results.selected.data))
+                var data=results.selected.data
+                var tmp = {
+                  address:data.name,
+                  province:data.pname,
+                  city:data.cityName,
+                  provinceCode:data.pcode,
+                  cityCode:data.adcode,
+                  lng:data.location.lng,
+                  lat:data.location.lat
+                }
+                me.sessions.set('cur5656Position', JSON.stringify(tmp));
                 vm.lastPage ? vm.$router.push({path: vm.lastPage}) : vm.$router.back()
                 // vm.$emit('listenLocation', results.selected.data.name);
               })

@@ -356,7 +356,7 @@ import $ from 'jquery'
       return bp;
     },
     // 对象转参数字符串
-    param: function (obj) {
+    param: function (obj, prefix) {
       var retData = [];
       for (var e in obj) {
         if (typeof obj[e] === 'object')
@@ -365,7 +365,7 @@ import $ from 'jquery'
         else
           retData.push(e + '=' + encodeURIComponent(obj[e]));
       }
-      return retData.join('&');
+      return ( prefix || '' ) + retData.join('&');
     },
     /**
      * url编码

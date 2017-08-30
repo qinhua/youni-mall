@@ -25,7 +25,6 @@ Vue.use(VueScroller)
 
 Vue.config.productionTip = false
 let me = window.me
-
 // 在路由路由跳转前判断一些东西
 router.beforeEach((to, from, next) => {
   /* 判断页面的方向 */
@@ -74,12 +73,20 @@ router.beforeEach((to, from, next) => {
 /* ----- 封装一些方法 -------- */
 /* ajax请求 */
 Vue.prototype.$axios = Axios
-Vue.prototype.loadData = function (url, params, type, sucCb, errCb) {
+window.loadData = Vue.prototype.loadData = function (url, params, type, sucCb, errCb) {
+  params = params || {}
   setTimeout(function () {
     $.extend(params, window.youniMall.userAuth)
+    var localGeo = me.sessions.get('cur5656Position') ? JSON.parse(me.sessions.get('cur5656Position')) : {}
+    var localParams = {
+      ip: me.sessions.get('cur5656Ips'),
+      cityCode: localGeo.cityCode,
+      lon: localGeo.lng,
+      lat: localGeo.lat
+    }
     // console.log('%c'+JSON.stringify(params, null, 2), 'color:#fff;background:purple')
     $.ajax({
-      url: url,
+      url: url + me.param(localParams, '?'),
       type: type || 'POST',
       data: {'requestapp': JSON.stringify(params ? params : {})},
       dataType: "JSON",
@@ -245,6 +252,12 @@ Vue.directive('jump', {
           }
           if (type === 3) {
             vm.$router.push({path: '/' + pathName, query: param || ''})
+          } else {
+            if (pathName.indexOf('/') > -1) {
+              vm.$router.push({path: pathName})
+            } else {
+              vm.$router.push({name: pathName})
+            }
           }
         } else {
           console.warn('好歹给个pathName啊！')
