@@ -1,36 +1,54 @@
 <template>
-  <div class="global-cart">
+  <div class="global-cart" v-cloak>
     <div class="order-list">
       <scroller class="inner-scroller" ref="orderScroller" :on-refresh="refresh" :on-infinite="infinite"
                 refreshText="下拉刷新" noDataText="没有更多数据" snapping>
         <!-- content goes here -->
-        <section class="v-items" v-for="(item, index) in orders" :data-id="item.id"
-                 :data-orderNumber="item.orderNumber">
-          <h4 class="item-top"><i class="ico-store"></i>&nbsp;{{item.sellerName}}&nbsp;&nbsp;<i
-            class="fa fa-angle-right cc"></i><span>{{item.statusName}}</span></h4>
-          <ul class="has-list">
-            <li>
-              <checker type="checkbox" v-model="demo2" default-item-class="demo2-item" selected-item-class="demo2-item-selected">
-                <checker-item :value="index" on-item-click="curCheck"></checker-item>
-              </checker>
-              <section class="item-middle">
-                <div class="img-con">
-                  <img :src="item.imgurl">
+        <section class="v-items" :data-sellerid="goods.sellerId">
+          <h4 class="item-top"><i class="ico-store"></i>&nbsp;{{goods.sellerName}}&nbsp;&nbsp;<i
+            class="fa fa-angle-right cc"></i><span @click="editGoods(goods.sellerId)">{{isEdit ? '完成' : '编辑'}}</span>
+          </h4>
+          <ul class="has-list" v-cloak>
+            <swipeout>
+              <swipeout-item @on-close="" @on-open="" transition-mode="follow" :disabled="isEdit"
+                             v-for="(item,index) in goods.goodsList"
+                             :data-id="item.goodsId" key="index" :ref="'switem-'+goods.sellerId">
+                <div slot="right-menu">
+                  <!--<swipeout-button @click.native="onButtonClick('edit')" type="primary">编辑</swipeout-button>-->
+                  <swipeout-button @click.native="delGoods(item.goodsId)" type="warn">删除</swipeout-button>
                 </div>
-                <div class="info-con">
-                  <h3>{{item.productName}}</h3>
-                  <section class="middle">
-                    <span class="unit-price">￥{{item.unitPrice}}</span>
-                    <span class="order-info">{{item.info}}</span>
-                  </section>
-                  <!--<label>{{item.label}}</label>-->
+                <div slot="content" class="demo-content vux-1px-t">
+                  <li>
+                    <checker type="checkbox" v-model="demo2" default-item-class="demo2-item"
+                             selected-item-class="demo2-item-selected">
+                      <checker-item :value="index" on-item-click="curCheck"></checker-item>
+                    </checker>
+                    <section class="item-middle">
+                      <div class="img-con">
+                        <img :src="item.goodsImage">
+                      </div>
+                      <div class="info-con">
+                        <h3>{{item.goodsName}}</h3>
+                        <section class="middle">
+                          <span class="unit-price">￥{{item.price}}</span>
+                          <span class="order-info">{{item.info}}</span>
+                        </section>
+                        <!--<label>{{item.label}}</label>-->
+                      </div>
+                      <div class="price-con">
+                        <p class="price">￥{{item.price}}</p>
+                        <p class="buy-count" v-show="!isEdit">x{{item.goodsNum}}</p>
+                        <div class="checker-con" v-show="isEdit">
+                          <label @click="updateGoods(item.goodsId, item.goodsNum, 'add')"><i class="fa fa-minus"></i></label>
+                          <input type="tel" :value="item.goodsNum" @blur="updateGoods(item.goodsId, item.goodsNum)">
+                          <label @click="updateGoods(item.goodsId, item.goodsNum, 'minus')"><i class="fa fa-plus"></i></label>
+                        </div>
+                      </div>
+                    </section>
+                  </li>
                 </div>
-                <div class="price-con">
-                  <p class="price">￥{{item.price}}</p>
-                  <p class="buy-count">x{{item.buyCount}}</p>
-                </div>
-              </section>
-            </li>
+              </swipeout-item>
+            </swipeout>
           </ul>
         </section>
       </scroller>
@@ -42,7 +60,7 @@
                      name="checkerAll" :max="2"></checklist>
         </div>
         <div class="txt-total">
-          <h4>合计：<span>￥0 </span><i>不含配送费用</i></h4>
+          <h4>合计：<span>￥{{goods.totalPrice}}</span><i>&nbsp;不含配送费用</i></h4>
         </div>
         <div class="btn btn-toPay">结算(2)</div>
       </div>
@@ -54,18 +72,18 @@
   /* eslint-disable */
   let me
   let vm
-  import {Tab, TabItem, Checklist, XButton, Checker, CheckerItem} from 'vux'
+  import {Tab, TabItem, Checklist, XButton, Checker, CheckerItem, Swipeout, SwipeoutItem, SwipeoutButton} from 'vux'
   import {orderApi, cartApi} from '../../service/main.js'
 
   export default {
     name: 'order',
     data() {
       return {
-        demo2: [{key: '1', value: 'A'},{key: '2', value: 'B'}],
+        demo2: [{key: '1', value: 'A'}, {key: '2', value: 'B'}],
         checklist0011: [],
         show: false,
         curOrderFilter: '',
-        orders: [],
+        goods: [],
         params: {
           type: 0,
           pagerSize: 10,
@@ -75,6 +93,7 @@
           brandId: '',
           filter: ''
         },
+        isEdit: false,
         isPosting: false,
         onFetching: false,
         labelPosition: '',
@@ -82,14 +101,13 @@
         commonList: ['全选']
       }
     },
-    components: {Tab, TabItem, Checklist, XButton, Checker, CheckerItem},
+    components: {Tab, TabItem, Checklist, XButton, Checker, CheckerItem, Swipeout, SwipeoutItem, SwipeoutButton},
     beforeMount() {
       me = window.me
     },
     mounted() {
       vm = this
-      // vm.getOrders()
-      vm.viewCart()
+      vm.getCart()
       vm.$nextTick(() => {
         vm.$refs.orderScroller.finishInfinite(true)
         vm.$refs.orderScroller.resize()
@@ -98,8 +116,7 @@
     computed: {},
     watch: {
       '$route'(to, from) {
-        vm.getOrders()
-        vm.viewCart()
+        vm.getCart()
       }
     },
     methods: {
@@ -113,14 +130,14 @@
       refresh(done) {
         console.log('下拉加载')
         setTimeout(function () {
-          vm.getOrders()
+          vm.getCart()
           vm.$refs.orderScroller.finishPullToRefresh()
         }, 1200)
       },
       infinite(done) {
         console.log('无限滚动')
         setTimeout(function () {
-          vm.getOrders(true)
+          vm.getCart(true)
           vm.$refs.orderScroller.finishInfinite(true)
         }, 1000)
       },
@@ -136,27 +153,14 @@
         vm.curTicketFilter = type
         vm.getOrders()
       },
-      viewCart() {
-        vm.loadData(cartApi.view, null, 'POST', function (res) {
-          var resD = res.data
-          console.log(resD, '购物车数据')
-          var totalCount = 0
-          for (var i = 0; i < resD.goodsList.length; i++) {
-            totalCount += resD.goodsList[i].amount
-          }
-          // vm.curCount = totalCount
-          vm.$store.commit('updateCart', totalCount)
-        }, function () {
-        })
-      },
-      getOrders(isLoadMore) {
+      getCart(isLoadMore) {
         vm.params.type = vm.$route.params.id
         if (vm.onFetching) return false
         vm.processing()
         vm.onFetching = true
-        vm.loadData(orderApi.orders, vm.params, 'POST', function (res) {
-          var resD = res.data.itemList
-          for (var i = 0; i < resD.length; i++) {
+        vm.loadData(cartApi.view, vm.params, 'POST', function (res) {
+          var resD = res.data
+          /*for (var i = 0; i < resD.length; i++) {
             switch (resD[i].status) {
               case -1:
                 resD[i].statusName = '已取消'
@@ -177,13 +181,13 @@
                 resD[i].statusName = '已完成'
                 break
             }
-          }
-          if (!isLoadMore) {
-            vm.orders = resD
-          } else {
-            vm.orders.push(resD)
-          }
-          console.log(vm.orders, '订单数据')
+          }*/
+//          if (!isLoadMore) {
+          vm.goods = resD
+//          } else {
+//            vm.goods.push(resD)
+//          }
+          console.log(vm.goods, '购物车数据')
           vm.onFetching = false
           vm.processing(0, 1)
         }, function () {
@@ -191,11 +195,37 @@
           vm.processing(0, 1)
         })
       },
-      delOrder(id) {
+      editGoods(id) {
+        if (vm.isEdit) {
+          vm.isEdit = false
+          /*var kk = vm.$refs['switem-' + id]
+          for (var i = 0; i < kk.length; i++) {
+            kk[i].close()
+          }*/
+        } else {
+          vm.isEdit = true
+          /*var kk = vm.$refs['switem-' + id]
+          for (var i = 0; i < kk.length; i++) {
+            kk[i].open('right')
+          }*/
+        }
+      },
+      updateGoods(id, num, type) {
         if (vm.isPosting) return false
-        vm.confirm('确认删除？', '订单删除后不可恢复！', function () {
+        vm.isPosting = true
+        vm.loadData(cartApi.update, {goodsId: id, amount: num}, 'POST', function (res) {
+          vm.getCart()
+          vm.isPosting = false
+        }, function () {
+          vm.isPosting = false
+        })
+      },
+      delGoods(id) {
+        if (vm.isPosting) return false
+        vm.confirm('确认删除？', '删除后不可恢复！', function () {
           vm.isPosting = true
-          vm.loadData(orderApi.delOrder + '?id=' + id, vm.params, 'POST', function (res) {
+          vm.loadData(cartApi.del, {goodsId: id}, 'POST', function (res) {
+            vm.getCart()
             vm.isPosting = false
           }, function () {
             vm.isPosting = false
@@ -257,8 +287,8 @@
 
   .demo2-item {
     &:before {
-      font-family:'weui';
-      content:'\EA01';
+      font-family: 'weui';
+      content: '\EA01';
       .c9;
       .fz(36);
       display: block;
@@ -268,7 +298,7 @@
   .demo2-item-selected {
     border-color: @c3;
     &:before {
-      content:'\EA06';
+      content: '\EA06';
       .cdiy(@c3);
     }
   }
@@ -278,13 +308,15 @@
       .v-items {
         .borBox;
         margin-bottom: 20/@rem;
-        .bf;
         .bsd(0, 2px, 10px, 0, #ccc);
         .item-top {
-          padding: 14/@rem 20/@rem;
+          .rel;
+          .borBox;
+          padding: 14/@rem 60/@rem 14/@rem 20/@rem;
           .txt-normal;
           .c3;
           .fz(24);
+          .ellipsis;
           .bor-b;
           .ico-store {
             .fl;
@@ -296,14 +328,19 @@
             .ele-base;
           }
           span {
-            .fr;
+            .abs-center-vertical;
+            right: 20/@rem;
+            padding-left: 40/@rem;
             .fz(22);
             .cdiy(@c2);
           }
         }
         .has-list {
+          .bf1;
           li {
             .rel;
+            .bf;
+            .bor-b;
           }
         }
         .vux-checker-box {
@@ -314,12 +351,33 @@
             line-height: 28/@rem;
           }
         }
+        .checker-con {
+          .abs;
+          bottom: 14/@rem;
+          right: 20/@rem;
+          .center;
+          label, input {
+            .iblock;
+            height: 50/@rem;
+            line-height: 50/@rem;
+            .center;
+            .c3;
+          }
+          label {
+            width: 50/@rem;
+            .fz(22);
+          }
+          input {
+            .bor;
+            margin: 0 3px;
+            width: 70/@rem;
+          }
+        }
         .item-middle {
           width: 100%;
           .borBox;
           padding: 14/@rem 20/@rem 14/@rem 60/@rem;
           .flex;
-          .bf8;
           .img-con {
             .rel;
             .size(130, 130);
@@ -369,6 +427,7 @@
       }
     }
   }
+
   .count-bar {
     .fix;
     bottom: 0;
@@ -411,7 +470,7 @@
         }
       }
       .weui-cells_checkbox .weui-check:checked + .vux-checklist-icon-checked:before {
-        .cdiy(@c3)!important;
+        .cdiy(@c3) !important;
       }
     }
     .txt-total {

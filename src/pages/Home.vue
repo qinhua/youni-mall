@@ -88,7 +88,8 @@
                 </section>
               </div>
               <group class="buy-count">
-                <x-number button-style="round" :min="0" :max="50" align="right" :dataId="item.id" @on-change="changeCount"></x-number>
+                <x-number button-style="round" :min="0" :max="50" align="right" :dataId="item.id"
+                          @on-change="changeCount"></x-number>
               </group>
             </section>
           </section>
@@ -124,7 +125,7 @@
   let vm
   import Swiper from '../components/Swiper'
   import {Group, GroupTitle, Grid, GridItem, Marquee, MarqueeItem, XNumber, XSwitch, Scroller, LoadMore} from 'vux'
-  import {homeApi,cartApi} from '../service/main.js'
+  import {homeApi, cartApi} from '../service/main.js'
   import {mapState, mapMutations} from 'vuex'
 
   export default {
@@ -136,11 +137,11 @@
         notice: [],
         goods: [],
         params: {
-        pagerSize: 8,
-        pageNo: 1,
-        goodsType: 'goods_type.1',
-        goodsCategory: 'goods_category.1',
-        brandId: '038283447c4311e7aa18d8cb8a971936'
+          pagerSize: 8,
+          pageNo: 1,
+          goodsType: 'goods_type.1',
+          goodsCategory: 'goods_category.1',
+          brandId: '038283447c4311e7aa18d8cb8a971936'
         },
         /* filter start */
         filterOffset: 0,
@@ -237,6 +238,7 @@
         /* filter end */
         showList: true,
         scrollTop: 0,
+        pageCount: 0,
         onFetching: false,
         isPosting: false,
         pulldownConfig: {
@@ -258,7 +260,6 @@
           loadingContent: '加载中…',
           clsPrefix: 'xs-plugin-pullup-'
         },
-        count: 0,
         balls: [ //小球 设为3个
           {
             show: false
@@ -313,13 +314,24 @@
         vm.$refs.myScroll.donePulldown()
       })
     },
-    computed: mapState({
+    /*computed: mapState({
       curCount: state => state.cart.count
-    }),
+    }),*/
+    computed: {
+      //如果要动态改变，必须有setter方法
+      curCount: {
+        get: function () {
+          return this.$store.state.cart.count
+        },
+        set: function (newValue) {
+          this.$store.commit('updateCart', newValue)
+        }
+      }
+    },
     watch: {
       '$route'(to, from) {
-         vm.getPos()
-         vm.viewCart()
+        vm.getPos()
+        vm.viewCart()
       }
     },
     methods: {
@@ -339,24 +351,24 @@
               })
 
               /* 浏览器定位 */
-              function geoByBrowser(){
+              function geoByBrowser() {
                 // 解析定位结果
-                 var onComplete=function(data) {
-                   if(!data.formattedAddress){
-                     geoByIp()
-                     return
-                   }
-                  console.log(data,'来自浏览器定位')
+                var onComplete = function (data) {
+                  if (!data.formattedAddress) {
+                    geoByIp()
+                    return
+                  }
+                  console.log(data, '来自浏览器定位')
                   var tmp = {
-                     source: 'browser',
-                     address: data.formattedAddress,
-                     province: data.addressComponent.province,
-                     city: data.addressComponent.city,
-                     provinceCode: data.addressComponent.citycode,
-                     cityCode: data.addressComponent.adcode,
-                     lng: data.position.lng,
-                     lat: data.position.lat
-                   }
+                    source: 'browser',
+                    address: data.formattedAddress,
+                    province: data.addressComponent.province,
+                    city: data.addressComponent.city,
+                    provinceCode: data.addressComponent.citycode,
+                    cityCode: data.addressComponent.adcode,
+                    lng: data.position.lng,
+                    lat: data.position.lat
+                  }
                   me.sessions.set('cur5656Position', JSON.stringify(tmp))
                   vm.location = data.formattedAddress || '为获取到城市'
                   var str = ['定位成功']
@@ -370,7 +382,7 @@
                 }
 
                 // 解析定位错误信息
-                var onError=function(data) {
+                var onError = function (data) {
                   vm.location = '定位失败'
                 }
 
@@ -392,18 +404,18 @@
               /* ip定位 */
               function geoByIp() {
                 // 解析定位结果
-                var onComplete=function(data) {
+                var onComplete = function (data) {
                   // console.log(data,'来自ip定位')
                   // 取出经纬度
-                  var tmpLnglat=[]
+                  var tmpLnglat = []
                   for (var i in data.bounds) {
-                    if(data.bounds.hasOwnProperty(i)){
-                      tmpLnglat=[data.bounds[i].lng,data.bounds[i].lat]
+                    if (data.bounds.hasOwnProperty(i)) {
+                      tmpLnglat = [data.bounds[i].lng, data.bounds[i].lat]
                     }
                   }
                   var tmp = {
                     source: 'ip',
-                    address: data.province+data.city,
+                    address: data.province + data.city,
                     province: data.province,
                     city: data.city,
                     provinceCode: null,
@@ -416,7 +428,7 @@
                 }
 
                 // 解析定位错误信息
-                var onError=function(data) {
+                var onError = function (data) {
                   vm.location = '定位失败'
                 }
 
@@ -430,7 +442,7 @@
                   })
                   map.addControl(citysearch)
                   // 自动获取用户IP，返回当前城市
-                  citysearch.getLocalCity(function(status, result) {
+                  citysearch.getLocalCity(function (status, result) {
                     if (status === 'complete' && result.info === 'OK') {
                       if (result && result.city && result.bounds) {
                         var cityinfo = result.city
@@ -440,7 +452,7 @@
                         map.setBounds(citybounds)
                       }
                     } else {
-                      vm.location =result.info
+                      vm.location = result.info
                     }
                   })
                   AMap.event.addListener(citysearch, 'complete', onComplete) // 返回定位信息
@@ -488,8 +500,8 @@
         if (vm.showFilterCon) return
         vm.$router.push({name: 'goods_detail', query: {id: id}})
       },
-      operateCart(id,num) {
-        vm.loadData(cartApi.add, {goodsId:id,goodsNum:num}, 'POST', function (res) {
+      operateCart(id, num) {
+        vm.loadData(cartApi.add, {goodsId: id, goodsNum: num}, 'POST', function (res) {
           console.log(res, '添加购物车xxxxx')
         })
       },
@@ -509,16 +521,24 @@
       },
       getGoods(isLoadMore) {
         if (vm.onFetching) return
-        var params = {}
+        var params = {
+          pagerSize: 10,
+          pageNo: 1,
+          /*goodsType: 'goods_type.1',
+          goodsCategory: 'goods_category.1',
+          brandId: '038283447c4311e7aa18d8cb8a971936'*/
+        }
         console.log(params)
         vm.loadData(homeApi.goodsList, params, 'POST', function (res) {
           console.log(res.data, '首页GoodsList')
+          var resD=res.data
+          vm.pageCount=resD.pageCount
           if (!isLoadMore) {
-            vm.goods = res.data.pager.itemList
-            if (res.data.noMore) {
-              vm.$nextTick(function () {
+            vm.goods = resD.pager.itemList
+            if (resD.pageNo===vm.pageCount) {
+              /*vm.$nextTick(function () {
                 vm.$refs.myScroll.disablePullup()
-              })
+              })*/
             }
           } else {
             vm.goods.push(res.data.pager.itemList)
@@ -629,30 +649,24 @@
         vm.loadData(cartApi.view, null, 'POST', function (res) {
           var resD = res.data
           console.log(resD, '购物车数据')
-          var totalCount = 0
-          for (var i = 0; i < resD.goodsList.length; i++) {
-            totalCount += resD.goodsList[i].amount
-          }
-          // vm.curCount = totalCount
-          vm.$store.commit('updateCart', totalCount)
+          vm.$store.commit('updateCart', resD.totalNum)
         }, function () {
         })
       },
       changeCount(obj) {
-        // console.log(obj)
+        console.log(obj, vm.curCount)
         if (obj.type === 'add') {
           this.additem(obj.event)
-          this.count++
+          vm.curCount++
           vm.loadData(cartApi.add, {goodsId: obj.id}, 'POST', function (res) {
           }, function () {
           })
         } else {
-          this.count--
+          vm.curCount--
           vm.loadData(cartApi.minus, {goodsId: obj.id}, 'POST', function (res) {
           }, function () {
           })
         }
-        vm.$store.commit('updateCart', this.count)
         console.log(vm.$store.state.cart.count)
       },
       additem(event) {
@@ -996,7 +1010,7 @@
             .flex-r(1);
             .cdiy(#f34c18);
             .fz(22);
-            li{
+            li {
               .fl;
               margin: 0 10/@rem 5/@rem 0;
               padding: 1px 8px;
