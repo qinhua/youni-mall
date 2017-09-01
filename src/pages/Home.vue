@@ -93,6 +93,7 @@
               </group>
             </section>
           </section>
+          <div class="noMoreData" v-if="noMore">就这么多了</div>
           <!--<load-more tip="loading"></load-more>-->
         </div>
         <!--<div class="iconNoData" @click="beContinue(curNumber)"><i></i><p>暂无内容</p></div>-->
@@ -137,7 +138,7 @@
         notice: [],
         goods: [],
         params: {
-          pagerSize: 8,
+          pageSize: 5,
           pageNo: 1,
           goodsType: 'goods_type.1',
           goodsCategory: 'goods_category.1',
@@ -229,6 +230,7 @@
             }
           ]
         },
+        curPage: 1,
         curFilterType: '',
         currentFilter: null,
         filterData: [],
@@ -237,6 +239,7 @@
         subActive: 0,
         /* filter end */
         showList: true,
+        noMore: false,
         scrollTop: 0,
         pageCount: 0,
         onFetching: false,
@@ -267,7 +270,7 @@
             show: false
           }, {
             show: false
-          },
+          }
         ],
         dropBalls: []
       }
@@ -298,25 +301,28 @@
       vm.viewCart()
       // 点击区域之外隐藏筛选栏
       document.addEventListener('click', (e) => {
-        if (e.target.offsetParent) {
-          if (JSON.stringify(e.target.offsetParent.classList).indexOf('filter') === -1) {
-            vm.hideFilter()
-            return false
-          }
+        if (e.target.offsetParent){
+        if (JSON.stringify(e.target.offsetParent.classList).indexOf('filter') === -1) {
+          vm.hideFilter()
+          return false
         }
-      }, false)
+      }
+    },
+      false
+    )
       vm.$nextTick(function () {
         setTimeout(() => {
           vm.filterOffset = vm.$refs.filters01.offsetTop
-        }, 500) //获取筛选栏位置
+        },500)
+        //获取筛选栏位置
         vm.$refs.myScroll.reset()
         vm.$refs.myScroll.donePullup()
         vm.$refs.myScroll.donePulldown()
       })
     },
     /*computed: mapState({
-      curCount: state => state.cart.count
-    }),*/
+     curCount: state => state.cart.count
+     }),*/
     computed: {
       //如果要动态改变，必须有setter方法
       curCount: {
@@ -521,27 +527,33 @@
       },
       getGoods(isLoadMore) {
         if (vm.onFetching) return
+        !isLoadMore ? vm.curPage = 1 : vm.curPage++
         var params = {
-          pagerSize: 10,
-          pageNo: 1,
+          pageSize: 5,
+          pageNo: vm.curPage,
           /*goodsType: 'goods_type.1',
-          goodsCategory: 'goods_category.1',
-          brandId: '038283447c4311e7aa18d8cb8a971936'*/
+           goodsCategory: 'goods_category.1',
+           brandId: '038283447c4311e7aa18d8cb8a971936'*/
         }
         console.log(params)
         vm.loadData(homeApi.goodsList, params, 'POST', function (res) {
-          console.log(res.data, '首页GoodsList')
-          var resD=res.data
-          vm.pageCount=resD.pageCount
+          var resD = res.data.pager
+          console.log(resD, '首页GoodsList')
+//          vm.pageCount = resD.pageCount
           if (!isLoadMore) {
-            vm.goods = resD.pager.itemList
-            if (resD.pageNo===vm.pageCount) {
+            if (resD.totalCount<params.pageSize) {
+              vm.goods = resD.itemList
+              vm.noMore = true
               /*vm.$nextTick(function () {
-                vm.$refs.myScroll.disablePullup()
-              })*/
+               vm.$refs.myScroll.disablePullup()
+               })*/
+            }else{
+              vm.goods = resD.itemList
+              vm.noMore = false
             }
           } else {
-            vm.goods.push(res.data.pager.itemList)
+            console.log(vm.goods,resD.itemList,858552)
+            resD.itemList.length ? vm.goods=vm.goods.concat(resD.itemList) : vm.noMore = true
           }
           vm.onFetching = false
         }, function () {
@@ -715,7 +727,7 @@
         cartCls.toggle('bulbing')
         setTimeout(() => {
           cartCls.remove('bulbing')
-        }, 800)
+        },800)
       },
       /*初始化小球*/
       afterDrop(el) {

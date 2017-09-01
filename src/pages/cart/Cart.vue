@@ -5,10 +5,10 @@
                 refreshText="下拉刷新" noDataText="没有更多数据" snapping>
         <!-- content goes here -->
         <section class="v-items" :data-sellerid="goods.sellerId">
-          <h4 class="item-top"><i class="ico-store"></i>&nbsp;{{goods.sellerName}}&nbsp;&nbsp;<i
+          <h4 class="item-top" v-if="goods.goodsList&&goods.goodsList.length"><i class="ico-store"></i>&nbsp;{{goods.sellerName}}&nbsp;&nbsp;<i
             class="fa fa-angle-right cc"></i><span @click="editGoods(goods.sellerId)">{{isEdit ? '完成' : '编辑'}}</span>
           </h4>
-          <ul class="has-list" v-cloak>
+          <ul class="has-list">
             <swipeout>
               <swipeout-item @on-close="" @on-open="" transition-mode="follow" :disabled="isEdit"
                              v-for="(item,index) in goods.goodsList"
@@ -20,8 +20,8 @@
                 <div slot="content" class="demo-content vux-1px-t">
                   <li>
                     <checker type="checkbox" v-model="demo2" default-item-class="demo2-item"
-                             selected-item-class="demo2-item-selected">
-                      <checker-item :value="index" on-item-click="curCheck"></checker-item>
+                             selected-item-class="demo2-item-selected" :dataid="item.goodsId" @on-change="selectGoods">
+                      <checker-item :value="index"></checker-item>
                     </checker>
                     <section class="item-middle">
                       <div class="img-con">
@@ -36,12 +36,12 @@
                         <!--<label>{{item.label}}</label>-->
                       </div>
                       <div class="price-con">
-                        <p class="price">￥{{item.price}}</p>
+                        <p class="price">￥{{item.price*item.goodsNum}}</p>
                         <p class="buy-count" v-show="!isEdit">x{{item.goodsNum}}</p>
                         <div class="checker-con" v-show="isEdit">
-                          <label @click="updateGoods(item.goodsId, item.goodsNum, 'add')"><i class="fa fa-minus"></i></label>
-                          <input type="tel" :value="item.goodsNum" @blur="updateGoods(item.goodsId, item.goodsNum)">
-                          <label @click="updateGoods(item.goodsId, item.goodsNum, 'minus')"><i class="fa fa-plus"></i></label>
+                          <label @click="updateGoods(item.goodsId, 'minus')"><i class="fa fa-minus"></i></label>
+                          <input type="tel" readonly :value="item.goodsNum" @blur="updateGoods(item.goodsId, item.goodsNum)">
+                          <label @click="updateGoods(item.goodsId,'add')"><i class="fa fa-plus"></i></label>
                         </div>
                       </div>
                     </section>
@@ -87,11 +87,7 @@
         params: {
           type: 0,
           pagerSize: 10,
-          pageNo: 1,
-          goodsType: 'XXX',
-          goodsCategory: '',
-          brandId: '',
-          filter: ''
+          pageNo: 1
         },
         isEdit: false,
         isPosting: false,
@@ -148,6 +144,15 @@
           vm.params.type = type
         }
         vm.getOrders()
+      },
+      selectGoods(obj) {
+        console.log(arguments,9985557)
+        /*if (type === 'undefined') {
+          vm.params.type = ''
+        } else {
+          vm.params.type = type
+        }
+        vm.getOrders()*/
       },
       filterTicket(type, isMine) {
         vm.curTicketFilter = type
@@ -210,15 +215,32 @@
           }*/
         }
       },
-      updateGoods(id, num, type) {
+      updateGoods(id,type) {
         if (vm.isPosting) return false
         vm.isPosting = true
-        vm.loadData(cartApi.update, {goodsId: id, amount: num}, 'POST', function (res) {
+        if (type === 'add') {
+//          vm.curCount++
+          vm.loadData(cartApi.add, {goodsId: id}, 'POST', function (res) {
+            vm.isPosting = false
+            vm.getCart()
+          }, function () {
+            vm.isPosting = false
+          })
+        } else {
+//          vm.curCount--
+          vm.loadData(cartApi.minus, {goodsId: id}, 'POST', function (res) {
+            vm.isPosting = false
+            vm.getCart()
+          }, function () {
+            vm.isPosting = false
+          })
+        }
+       /* vm.loadData(cartApi.update, {goodsId: id, goodsNum: num}, 'POST', function (res) {
           vm.getCart()
           vm.isPosting = false
         }, function () {
           vm.isPosting = false
-        })
+        })*/
       },
       delGoods(id) {
         if (vm.isPosting) return false
@@ -232,6 +254,25 @@
           })
         }, function () {
         })
+      },
+      generateOrder(id) {
+        if (vm.isPosting) return false
+          vm.isPosting = true
+          vm.loadData(orderApi.add, {
+            openid:'oEo51t1PTVGj7H6Ahdqr_kac-1vs',
+            sellerId:'285o5keqsqh8br81adrviu3bve',
+            goodsId	:'7aah4h26vaij4r8aemnfvhb59n',
+            goodsNum:9,
+            dispatchTime:'3周内',
+            addressId	:'武汉市',
+            userMessage:'something',
+            couponId:''
+          }, 'POST', function (res) {
+            vm.getCart()
+            vm.isPosting = false
+          }, function () {
+            vm.isPosting = false
+          })
       },
       cancelOrder(id) {
         if (vm.isPosting) return false
