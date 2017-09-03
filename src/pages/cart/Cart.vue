@@ -1,11 +1,12 @@
 <template>
   <div class="global-cart" v-cloak>
     <div class="order-list">
-      <scroller class="inner-scroller" ref="orderScroller" :on-refresh="refresh" :on-infinite="infinite"
+      <scroller class="inner-scroller" ref="goodsScroller" :on-refresh="refresh" :on-infinite="infinite"
                 refreshText="下拉刷新" noDataText="没有更多数据" snapping>
         <!-- content goes here -->
         <section class="v-items" :data-sellerid="goods.sellerId">
-          <h4 class="item-top" v-if="goods.goodsList&&goods.goodsList.length"><i class="ico-store"></i>&nbsp;{{goods.sellerName}}&nbsp;&nbsp;<i
+          <h4 class="item-top" v-if="goods.goodsList&&goods.goodsList.length"><i
+            class="ico-store"></i>&nbsp;{{goods.sellerName}}&nbsp;&nbsp;<i
             class="fa fa-angle-right cc"></i><span @click="editGoods(goods.sellerId)">{{isEdit ? '完成' : '编辑'}}</span>
           </h4>
           <ul class="has-list">
@@ -19,9 +20,10 @@
                 </div>
                 <div slot="content" class="demo-content vux-1px-t">
                   <li>
-                    <checker type="checkbox" v-model="demo2" default-item-class="demo2-item"
-                             selected-item-class="demo2-item-selected" :dataid="item.goodsId" @on-change="selectGoods">
-                      <checker-item :value="index"></checker-item>
+                    <checker type="checkbox" default-item-class="demo2-item"
+                             selected-item-class="demo2-item-selected">
+                      <checker-item :value="index" :dataobj="{id:item.goodsId,value:item.goodsNum,image:item.goodsImage,name:item.goodsName,price:item.price}"
+                                    @on-item-click="selectGoods"></checker-item>
                     </checker>
                     <section class="item-middle">
                       <div class="img-con">
@@ -36,11 +38,12 @@
                         <!--<label>{{item.label}}</label>-->
                       </div>
                       <div class="price-con">
-                        <p class="price">￥{{item.price*item.goodsNum}}</p>
+                        <p class="price">￥{{item.price * item.goodsNum}}</p>
                         <p class="buy-count" v-show="!isEdit">x{{item.goodsNum}}</p>
                         <div class="checker-con" v-show="isEdit">
                           <label @click="updateGoods(item.goodsId, 'minus')"><i class="fa fa-minus"></i></label>
-                          <input type="tel" readonly :value="item.goodsNum" @blur="updateGoods(item.goodsId, item.goodsNum)">
+                          <input type="tel" readonly :value="item.goodsNum"
+                                 @blur="updateGoods(item.goodsId, item.goodsNum)">
                           <label @click="updateGoods(item.goodsId,'add')"><i class="fa fa-plus"></i></label>
                         </div>
                       </div>
@@ -56,13 +59,14 @@
     <div class="count-bar">
       <div class="wrap">
         <div class="checker-all">
-          <checklist title="" :options="commonList" v-model="checklist0011" @on-change="change"
-                     name="checkerAll" :max="2"></checklist>
+          <checker type="checkbox" default-item-class="demo3-item" selected-item-class="demo2-item-selected">
+            <checker-item :value="0" @on-item-click="selectAll"><label>全选</label></checker-item>
+          </checker>
         </div>
         <div class="txt-total">
-          <h4>合计：<span>￥{{goods.totalPrice}}</span><i>&nbsp;不含配送费用</i></h4>
+          <h4>合计：<span>￥{{goods.totalPrice | toFixed}}</span><i>&nbsp;不含配送费用</i></h4>
         </div>
-        <div class="btn btn-toPay">结算(2)</div>
+        <div class="btn btn-toPay" @click="goConfirm">结算(2)</div>
       </div>
     </div>
   </div>
@@ -79,120 +83,143 @@
     name: 'order',
     data() {
       return {
-        demo2: [{key: '1', value: 'A'}, {key: '2', value: 'B'}],
-        checklist0011: [],
         show: false,
         curOrderFilter: '',
-        goods: [],
+        goods: {},
         params: {
-          type: 0,
-          pagerSize: 10,
-          pageNo: 1
+          /*pagerSize: 10,
+          pageNo: 1*/
         },
+        curCartData: [],
         isEdit: false,
         isPosting: false,
         onFetching: false,
         labelPosition: '',
         error: '',
-        commonList: ['全选']
       }
     },
-    components: {Tab, TabItem, Checklist, XButton, Checker, CheckerItem, Swipeout, SwipeoutItem, SwipeoutButton},
+    components: {Tab, TabItem, XButton, Checker, CheckerItem, Swipeout, SwipeoutItem, SwipeoutButton},
     beforeMount() {
       me = window.me
     },
     mounted() {
       vm = this
-      vm.getCart()
+      vm.getCart(false, true)
       vm.$nextTick(() => {
-        vm.$refs.orderScroller.finishInfinite(true)
-        vm.$refs.orderScroller.resize()
+        vm.$refs.goodsScroller.finishInfinite(true)
+        vm.$refs.goodsScroller.resize()
       })
     },
-    computed: {},
-    watch: {
-      '$route'(to, from) {
-        vm.getCart()
-      }
-    },
+    /*computed: {},*/
+    /*watch: {
+     $route'(to, from) {
+       vm.getCart()
+     }
+    },*/
     methods: {
       // 向父组件传值
       setPageStatus(data) {
         this.$emit('listenPage', data)
       },
-      toAppraise(id) {
-        this.$router.push({path: '/appraise' + (param ? '/' + param : '')})
-      },
       refresh(done) {
         console.log('下拉加载')
         setTimeout(function () {
-          vm.getCart()
-          vm.$refs.orderScroller.finishPullToRefresh()
+          vm.getCart(false, true)
+          vm.$refs.goodsScroller.finishPullToRefresh()
         }, 1200)
       },
       infinite(done) {
         console.log('无限滚动')
         setTimeout(function () {
-          vm.getCart(true)
-          vm.$refs.orderScroller.finishInfinite(true)
+          vm.getCart(true, true)
+          vm.$refs.goodsScroller.finishInfinite(true)
         }, 1000)
       },
-      onItemClick(type) {
-        if (type === 'undefined') {
-          vm.params.type = ''
+      selectGoods(data) {
+        var obj=data.linedata
+        setTimeout(function(){
+        // 整理当前选择的商品信息（有则跟新，无则追加，相同则删除）
+        if (vm.curCartData.length) {
+          console.error(vm.curCartData)
+          for (let i = 0; i < vm.curCartData.length; i++) {
+            let cur = vm.curCartData[i]
+            if (cur.goodsId === obj.id) {
+              if (obj.value === cur.goodsNum) {
+                vm.curCartData.splice(i, 1)
+              } else {
+                cur.goodsNum = obj.value
+              }
+            } else {
+              vm.curCartData.push({
+                goodsId: obj.id,
+                goodsNum: obj.value,
+                goodsImage: obj.image,
+                goodsName: obj.name,
+                price: obj.price,
+              })
+            }
+          }
         } else {
-          vm.params.type = type
+          console.error(3)
+          vm.curCartData.push({
+            goodsId: obj.id,
+            goodsNum: obj.value,
+            goodsImage: obj.image,
+            goodsName: obj.name,
+            price: obj.price,
+          })
         }
-        vm.getOrders()
-      },
-      selectGoods(obj) {
-        console.log(arguments,9985557)
-        /*if (type === 'undefined') {
-          vm.params.type = ''
+        let allChecker = window.document.querySelectorAll('.demo2-item')
+        let allCheckedChecker = window.document.querySelectorAll('.demo2-item.demo2-item-selected')
+        let checkerAll = window.document.querySelector('.demo3-item')
+        if (allCheckedChecker.length === allChecker.length) {
+          checkerAll.classList.add('demo2-item-selected')
         } else {
-          vm.params.type = type
+          checkerAll.classList.remove('demo2-item-selected')
         }
-        vm.getOrders()*/
+        console.log(JSON.stringify(vm.curCartData, null, 2), 85)
+        },0)
       },
-      filterTicket(type, isMine) {
-        vm.curTicketFilter = type
-        vm.getOrders()
+      selectAll() {
+        // 整理当前选择的商品信息
+        setTimeout(function () {
+          let allChecker = window.document.querySelectorAll('.vux-checker-item')
+          if (allChecker.length && (!vm.curCartData.length || vm.curCartData.length < allChecker.length - 1)) {
+            for (let i = 0; i < vm.goods.goodsList.length; i++) {
+              let cur = vm.goods.goodsList[i]
+              vm.curCartData.push({
+                goodsId: cur.goodsId,
+                goodsNum: cur.goodsNum,
+                goodsImage: cur.image,
+                goodsName: cur.name,
+                price: cur.price,
+              })
+            }
+            for (let j = 0; j < allChecker.length; j++) {
+              allChecker[j].classList.add('demo2-item-selected')
+            }
+          } else {
+            vm.curCartData = []
+            for (let j = 0; j < allChecker.length; j++) {
+              allChecker[j].classList.remove('demo2-item-selected')
+            }
+          }
+          console.log(vm.curCartData, '最后的购物车数据')
+        }, 0)
       },
-      getCart(isLoadMore) {
-        vm.params.type = vm.$route.params.id
+      getCart(isLoadMore, isFirst) {
         if (vm.onFetching) return false
         vm.processing()
         vm.onFetching = true
         vm.loadData(cartApi.view, vm.params, 'POST', function (res) {
           var resD = res.data
-          /*for (var i = 0; i < resD.length; i++) {
-            switch (resD[i].status) {
-              case -1:
-                resD[i].statusName = '已取消'
-                break
-              case 0:
-                resD[i].statusName = '待支付'
-                break
-              case 1:
-                resD[i].statusName = '待派送'
-                break
-              case 2:
-                resD[i].statusName = '派送中'
-                break
-              case 3:
-                resD[i].statusName = '待评价'
-                break
-              case 4:
-                resD[i].statusName = '已完成'
-                break
-            }
-          }*/
 //          if (!isLoadMore) {
           vm.goods = resD
 //          } else {
 //            vm.goods.push(resD)
 //          }
           console.log(vm.goods, '购物车数据')
+//          isFirst ? vm.selectAll() : null
           vm.onFetching = false
           vm.processing(0, 1)
         }, function () {
@@ -215,7 +242,7 @@
           }*/
         }
       },
-      updateGoods(id,type) {
+      updateGoods(id, type) {
         if (vm.isPosting) return false
         vm.isPosting = true
         if (type === 'add') {
@@ -235,12 +262,12 @@
             vm.isPosting = false
           })
         }
-       /* vm.loadData(cartApi.update, {goodsId: id, goodsNum: num}, 'POST', function (res) {
-          vm.getCart()
-          vm.isPosting = false
-        }, function () {
-          vm.isPosting = false
-        })*/
+        /* vm.loadData(cartApi.update, {goodsId: id, goodsNum: num}, 'POST', function (res) {
+           vm.getCart()
+           vm.isPosting = false
+         }, function () {
+           vm.isPosting = false
+         })*/
       },
       delGoods(id) {
         if (vm.isPosting) return false
@@ -255,65 +282,25 @@
         }, function () {
         })
       },
-      generateOrder(id) {
-        if (vm.isPosting) return false
-          vm.isPosting = true
-          vm.loadData(orderApi.add, {
-            openid:'oEo51t1PTVGj7H6Ahdqr_kac-1vs',
-            sellerId:'285o5keqsqh8br81adrviu3bve',
-            goodsId	:'7aah4h26vaij4r8aemnfvhb59n',
-            goodsNum:9,
-            dispatchTime:'3周内',
-            addressId	:'武汉市',
-            userMessage:'something',
-            couponId:''
-          }, 'POST', function (res) {
-            vm.getCart()
-            vm.isPosting = false
-          }, function () {
-            vm.isPosting = false
+      goConfirm() {
+        // 带入当前选择的商品信息
+        if (vm.curCartData.length) {
+          var lastD={
+            sellerId:vm.goods.sellerId,
+            sellerName:vm.goods.sellerName,
+            totalPrice:vm.goods.totalPrice,
+            goods:vm.curCartData
+          }
+          vm.$router.push({
+            name: 'confirm_order',
+            query: {thedata: encodeURIComponent(JSON.stringify(lastD))}
           })
-      },
-      cancelOrder(id) {
-        if (vm.isPosting) return false
-        vm.confirm('确认取消？', '订单取消后不可恢复！', function () {
-          vm.isPosting = true
-          vm.loadData(orderApi.cancelOrder + '?id=' + id, vm.params, 'POST', function (res) {
-            vm.isPosting = false
-          }, function () {
-            vm.isPosting = false
-          })
-        }, function () {
-          // console.log('no')
-        })
-      },
-      pushOrder(id) {
-        if (vm.isPosting) return false
-        vm.confirm('确认催单？', '请不要频繁催单！', function () {
-          vm.isPosting = true
-          vm.loadData(orderApi.cancelOrder + '?id=' + id, vm.params, 'POST', function (res) {
-            vm.isPosting = false
-          }, function () {
-            vm.isPosting = false
-          })
-        }, function () {
-          // console.log('no')
-        })
-      },
-      payOrder(id) {
-        if (vm.isPosting) return false
-        vm.isPosting = true
-        vm.loadData(orderApi.payOrder + '?id=' + id, vm.params, 'POST', function (res) {
-          vm.isPosting = false
-        }, function () {
-          vm.isPosting = false
-        })
+        } else {
+          vm.toast('请选择商品！', 'warn')
+        }
       },
       change(val) {
         console.log('change', val)
-      },
-      curCheck(itemValue, itemDisabled) {
-        console.log('checkbox', itemValue)
       }
     }
   }
@@ -326,7 +313,7 @@
   .global-cart {
   }
 
-  .demo2-item {
+  .demo2-item, .demo3-item {
     &:before {
       font-family: 'weui';
       content: '\EA01';
@@ -487,31 +474,18 @@
       left: 16/@rem;
       z-index: 2;
       .fz(22);
-      .weui-cells {
-        &:before, &:after {
-          .none;
-        }
-        .no-bg;
-        .weui-cell {
-          padding: 0;
-          height: 88/@rem;
+      .vux-checker-box {
+        .rel;
+        padding-right: 88/@rem;
+        .vux-checker-item {
           line-height: 88/@rem;
-          .weui-cell__hd {
-            padding-right: .25em;
-            .weui-icon-checked {
-            }
-
-          }
-          .weui-cells_checkbox .weui-check:checked + .weui-icon-checked:before {
-            color: #666;
+          > label {
+            .abs;
+            left: 40/@rem;
+            top: 0;
+            padding-left: 5px;
           }
         }
-        p {
-          .fz(26);
-        }
-      }
-      .weui-cells_checkbox .weui-check:checked + .vux-checklist-icon-checked:before {
-        .cdiy(@c3) !important;
       }
     }
     .txt-total {

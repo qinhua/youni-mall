@@ -3717,6 +3717,11 @@ body {
   font-size: 14px!important;
   padding-bottom: 90px!important;
 }
+.weui-toast {
+  width: auto !important;
+  min-width: 6.25rem;
+  padding: 0 0.625rem;
+}
 /*左右滑动*/
 .slide-left-enter,
 .slide-right-leave-active {

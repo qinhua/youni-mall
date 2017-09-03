@@ -1,17 +1,17 @@
 <template>
   <div class="my-address">
     <ul class="address-list">
-      <li :class="item.isCurrent?'current':''" v-for="(item, index) in list" :key="index">
+      <li :class="item.defaultAddress?'current':''" v-for="(item, index) in list" :key="index">
         <div class="top">
           <h2>{{item.name}}<span>{{item.phone}}</span></h2>
           <p>{{item.address}}</p>
         </div>
         <div class="operates">
-          <span class="btn btn-set" v-if="item.isCurrent">默认收货地址&nbsp;<i class="fa fa-check-circle"></i></span>
-          <span class="btn btn-set" v-else @click="setDefault(item.id)">设为默认</span>
+          <span class="btn btn-set" v-if="item.defaultAddress">默认收货地址&nbsp;<i class="fa fa-check-circle"></i></span>
+          <span class="btn btn-set" v-else @click="setDefault(item.addressId)">设为默认</span>
           <div class="right">
-            <span :data-id="item.id" v-jump="['edit_address',['id'],3]"><i class="fa fa-pencil-square-o"></i>&nbsp;编辑</span>
-            <span @click.stop="delAddress(item.id)"><i class="fa fa-bitbucket"></i>&nbsp;删除</span>
+            <span :data-id="item.addressId" @click="updateAddress(item.addressId)"><i class="fa fa-pencil-square-o"></i>&nbsp;编辑</span>
+            <span @click.stop="delAddress(item.addressId)"><i class="fa fa-bitbucket"></i>&nbsp;删除</span>
           </div>
         </div>
       </li>
@@ -30,6 +30,7 @@
     name: 'my-address',
     data () {
       return {
+        lastPage: null,
         onFetching: false,
         isPosting: false,
         userId: null,
@@ -43,6 +44,7 @@
     mounted () {
       vm = this
       vm.userId = vm.$route.query.userId
+      vm.lastPage = vm.$route.query.from||''
       // me.attachClick()
       this.$nextTick(function () {
         vm.getAddress()
@@ -57,19 +59,15 @@
     methods: {
       getAddress () {
         vm.list = vm.$store.state.global.address
-        /* if (vm.isPosting) return false
-        vm.isPosting = true
-        vm.processing()
+        /*vm.processing()
         vm.loadData(userApi.addressList, {userId: vm.userId}, 'POST', function (res) {
           vm.list = res.data.itemList
           vm.$store.state.global.address = vm.list
           console.log(vm.list, '地址数据')
-          vm.isPosting = false
           vm.processing(0, 1)
         }, function () {
-          vm.isPosting = false
           vm.processing(0, 1)
-        }) */
+        })*/
       },
       setDefault (id) {
         if (vm.isPosting) return false
@@ -79,14 +77,18 @@
         }
         /* vm.isPosting = true
         vm.processing()
-        vm.loadData(userApi.setDefaultAddress, {id: id}, 'POST', function (res) {
+        vm.loadData(userApi.setDefaultAddress, {addressId: id,defaultAddress:1}, 'POST', function (res) {
           console.log(res.data)
+          vm.getAddress()
           vm.isPosting = false
           vm.processing(0, 1)
         }, function () {
           vm.isPosting = false
           vm.processing(0, 1)
         }) */
+        if(vm.lastPage){
+          vm.$router.push({name:vm.lastPage})
+        }
       },
       addAddress () {
         if (vm.isPosting) return false
@@ -102,6 +104,11 @@
         })
       },
       updateAddress (id) {
+        for (let i = 0; i < vm.list.length; i++) {
+          if(id===vm.list[i].addressId){
+            vm.$router.push({name: 'edit_address', query: {linedata: encodeURIComponent(JSON.stringify(vm.list[i]))}})
+          }
+        }
       },
       delAddress (id) {
         if (vm.isPosting) return false

@@ -23,18 +23,20 @@ export default {
     dict: null,
     address: [
       {
-        id: 1,
+        addressId: 1,
         name: '七灵',
         phone: 13260610021,
         address: '在武汉光谷软件园十万八千里深的坑里，遥望月球上两个小姐姐',
-        isCurrent: true
+        houseCode: 12,
+        defaultAddress: 1
       },
       {
-        id: 3,
+        addressId: 3,
         name: '天启2',
-        phone: 13260610021,
+        phone: 15852528888,
         address: '爱情对我来说就像龙卷风，像大多数人一样从来没见过',
-        isCurrent: false
+        houseCode: 20,
+        defaultAddress: 0
       }
     ],
     direction: 'forward',

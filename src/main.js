@@ -209,7 +209,7 @@ Vue.prototype.jump = function (name, params) {
   }
 }
 /* ----- 封装一些指令 -------- */
-// 自定义跳转指令(eg: v-jump="[pathName,paramArr,type]" ,[param是个参数名的数组];[type=2] 1:'path'2:'name',3:'query')
+// 自定义跳转指令(eg: v-jump="[pathName,paramArr,type]" ,[paramArr是个参数名的数组];[type=2] 1:'path'2:'name',3:'query')
 Vue.directive('jump', {
   // el: 指令绑定的元素
   // vm: 拥有该指令的上下文 ViewModel
@@ -289,6 +289,10 @@ Vue.filter('couponType', function (type) {
     case 4:
       return '其它'
   }
+})
+/* 保留小数位 */
+Vue.filter('toFixed', function (data,num) {
+  return data ? data.toFixed(num ||2 ) : ''
 })
 // main.js
 new Vue({

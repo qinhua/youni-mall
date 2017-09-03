@@ -9,6 +9,7 @@ import Order from '@/pages/Order'
 import Map from '@/pages/Map'
 import My from '@/pages/My'
 import Cart from '@/pages/cart/Cart'
+import ConfirmOrder from '@/pages/cart/Confirm'
 import EditUser from '@/pages/my/EditUser'
 import EditAddress from '@/pages/my/EditAddress'
 import MyCoupons from '@/pages/my/Coupons'
@@ -194,6 +195,15 @@ export default new Router({
       component: Cart,
       meta: {
         title: '购物车',
+        keepAlive: false
+      }
+    },
+    {
+      path: '/confirm_order',
+      name: 'confirm_order',
+      component: ConfirmOrder,
+      meta: {
+        title: '确认订单',
         keepAlive: false
       }
     },
