@@ -292,7 +292,8 @@ Vue.filter('couponType', function (type) {
 })
 /* 保留小数位 */
 Vue.filter('toFixed', function (data,num) {
-  return data ? data.toFixed(num ||2 ) : ''
+  // return data ? data.toFixed(num ||2 ) : ''
+  return data.toFixed(num ||2 )
 })
 // main.js
 new Vue({

@@ -3669,6 +3669,32 @@ body {
   -webkit-background-size: 100% 100%;
   background-size: 100% 100%;
 }
+.location-chooser {
+  position: relative;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  padding: 0 1.25rem 0 0.625rem;
+  height: 2.5rem;
+  line-height: 2.5rem;
+  background-color: #fff;
+}
+.location-chooser p {
+  font-size: 0.75rem;
+  color: #666;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.location-chooser p span {
+  color: #f34c18;
+}
+.location-chooser .right-arrow {
+  position: absolute;
+  top: 50%;
+  white-space: nowrap;
+  -webkit-transform: translate3d(0, -50%, 0);
+  transform: translate3d(0, -50%, 0);
+}
 /*过渡类*/
 .vux-pop-out-enter-active,
 .vux-pop-out-leave-active,

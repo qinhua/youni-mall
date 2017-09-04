@@ -13,7 +13,7 @@
     </div>
     <div class="goods-info">
       <section class="v-items">
-        <h4 class="item-top" v-if="curCartData.goods&&curCartData.goods.length"><i
+        <h4 class="item-top" v-if="curCartData.goods"><i
           class="ico-store"></i>&nbsp;{{curCartData.sellerName}}&nbsp;&nbsp;<i
           class="fa fa-angle-right cc"></i><!--<span>{{isEdit ? '完成' : '编辑'}}</span>-->
         </h4>
@@ -56,7 +56,7 @@
         <div class="txt-total">
           <h4>合计：<span>￥{{theTotalPrice | toFixed}}</span><!--<i></i>--></h4>
         </div>
-        <div class="btn btn-toPay">提交订单</div>
+        <div class="btn btn-toPay" @click="generateOrder">提交订单</div>
       </div>
     </div>
   </div>
@@ -67,7 +67,7 @@
   let me
   let vm
   import {Tab, TabItem, XButton, Group, XInput, Selector, PopupPicker, XTextarea, Datetime} from 'vux'
-  import {orderApi, cartApi} from '../../service/main.js'
+  import {orderApi, userApi} from '../../service/main.js'
 
   export default {
     name: 'confirm-order',
@@ -83,11 +83,15 @@
           userMessage: '',
           couponId: null
         },
-        curCartData: null,
+        curCartData: {},
         isPosting: false,
         onFetching: false,
         tmpCoupon: [],
         coupons: [{
+          key: '',
+          value: '不使用',
+          name: '不使用'
+        },{
           key: '028283447c4311e7aa18d8cb8a971933',
           value: '满减20元',
           name: '满减20元'
@@ -99,7 +103,7 @@
           key: '018283447c4311e7aa18d8cb8a941930',
           value: '首单7折',
           name: '首单7折'
-        }],
+        }]
       }
     },
     components: {Tab, TabItem, XButton, Group, XInput, Selector, PopupPicker, XTextarea, Datetime},
@@ -108,15 +112,19 @@
     },
     mounted() {
       vm = this
-      vm.curCartData = vm.$route.query.thedata ? JSON.parse(decodeURIComponent(vm.$route.query.thedata)) : null
+      vm.curCartData = vm.$route.query.thedata ? JSON.parse(decodeURIComponent(vm.$route.query.thedata)) : {}
+      vm.params.goods=vm.curCartData.goods
+      vm.params.sellerId=vm.curCartData.sellerId
       console.log(vm.curCartData)
       vm.getAddress ()
     },
     computed: {
       theTotalPrice () {
         let tmp=0
-        for (let i = 0; i < vm.curCartData.goods.length; i++) {
-          tmp += (vm.curCartData.goods[i].price*vm.curCartData.goods[i].goodsNum)
+        if(this.curCartData.goods){
+          for (let i = 0; i < vm.curCartData.goods.length; i++) {
+            tmp += (vm.curCartData.goods[i].price*vm.curCartData.goods[i].goodsNum)
+          }
         }
         return tmp
       }
@@ -162,29 +170,24 @@
         console.log('change', val)
       },
       getAddress () {
-        let tmp = vm.$store.state.global.address
-        if(tmp.length){
-          for (let i = 0; i < tmp.length; i++) {
-            if (tmp[i].defaultAddress===1) {
-              vm.address=tmp[i]
-              vm.params.addressId=tmp[i].addressId
+        vm.processing()
+        vm.loadData(userApi.addressList, null, 'POST', function (res) {
+          var resD = res.data.itemList
+          if(resD.length){
+            for (let i = 0; i < resD.length; i++) {
+              if (resD[i].defaultAddress) {
+                vm.address=resD[i]
+                vm.params.addressId=resD[i].id
+              }
             }
           }
-        }
-        console.log(vm.address)
-        /* if (vm.isPosting) return false
-        vm.isPosting = true
-        vm.processing()
-        vm.loadData(userApi.addressList, {userId: vm.userId}, 'POST', function (res) {
-          vm.list = res.data.itemList
-          vm.$store.state.global.address = vm.list
-          console.log(vm.list, '地址数据')
+          console.log(vm.address, '地址数据')
           vm.isPosting = false
           vm.processing(0, 1)
         }, function () {
           vm.isPosting = false
           vm.processing(0, 1)
-        }) */
+        })
       },
       getCart(isLoadMore) {
         vm.params.type = vm.$route.params.id
@@ -202,29 +205,21 @@
           vm.processing(0, 1)
         })
       },
-      generateOrder(id) {
+      generateOrder() {
         if (vm.isPosting) return false
         vm.isPosting = true
-        vm.loadData(orderApi.add, {
-          openid: 'oEo51t1PTVGj7H6Ahdqr_kac-1vs',
-          sellerId: '285o5keqsqh8br81adrviu3bve',
-          goodsId: '7aah4h26vaij4r8aemnfvhb59n',
-          goodsNum: 9,
-          dispatchTime: '3周内',
-          addressId: '武汉市',
-          userMessage: 'something',
-          couponId: ''
-        }, 'POST', function (res) {
-          vm.getCart()
+        vm.loadData(orderApi.add, vm.params, 'POST', function (res) {
+          // vm.payOrder()
           vm.isPosting = false
         }, function () {
+          vm.toast('提交失败！')
           vm.isPosting = false
         })
       },
       payOrder(id) {
         if (vm.isPosting) return false
         vm.isPosting = true
-        vm.loadData(orderApi.payOrder + '?id=' + id, vm.params, 'POST', function (res) {
+        vm.loadData(orderApi.payOrder , vm.params, 'POST', function (res) {
           vm.isPosting = false
         }, function () {
           vm.isPosting = false
@@ -244,8 +239,9 @@
 
   .pick-address{
     .rel;
-    margin-bottom:15/@rem;
+    margin-bottom:10/@rem;
     .bf;
+    .bor-b;
     .wrap{
       padding:20/@rem 0;
     }

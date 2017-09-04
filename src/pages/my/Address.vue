@@ -8,10 +8,10 @@
         </div>
         <div class="operates">
           <span class="btn btn-set" v-if="item.defaultAddress">默认收货地址&nbsp;<i class="fa fa-check-circle"></i></span>
-          <span class="btn btn-set" v-else @click="setDefault(item.addressId)">设为默认</span>
+          <span class="btn btn-set" v-else @click="setDefault(item.id)">设为默认</span>
           <div class="right">
-            <span :data-id="item.addressId" @click="updateAddress(item.addressId)"><i class="fa fa-pencil-square-o"></i>&nbsp;编辑</span>
-            <span @click.stop="delAddress(item.addressId)"><i class="fa fa-bitbucket"></i>&nbsp;删除</span>
+            <span :data-id="item.addressId" @click="updateAddress(item.id)"><i class="fa fa-pencil-square-o"></i>&nbsp;编辑</span>
+            <span @click.stop="delAddress(item.id)"><i class="fa fa-bitbucket"></i>&nbsp;删除</span>
           </div>
         </div>
       </li>
@@ -58,37 +58,32 @@
     },
     methods: {
       getAddress () {
-        vm.list = vm.$store.state.global.address
-        /*vm.processing()
-        vm.loadData(userApi.addressList, {userId: vm.userId}, 'POST', function (res) {
+        vm.processing()
+        vm.loadData(userApi.addressList, null, 'POST', function (res) {
           vm.list = res.data.itemList
           vm.$store.state.global.address = vm.list
           console.log(vm.list, '地址数据')
           vm.processing(0, 1)
         }, function () {
           vm.processing(0, 1)
-        })*/
+        })
       },
       setDefault (id) {
         if (vm.isPosting) return false
-        for (let i = 0; i < vm.list.length; i++) {
-          vm.list[i].isCurrent = false
-          id === vm.list[i].id ? vm.list[i].isCurrent = true : null
-        }
-        /* vm.isPosting = true
+        vm.isPosting = true
         vm.processing()
-        vm.loadData(userApi.setDefaultAddress, {addressId: id,defaultAddress:1}, 'POST', function (res) {
-          console.log(res.data)
+        vm.loadData(userApi.setDefaultAddress, {addressId: id, defaultAddress:1}, 'POST', function (res) {
+          if(vm.lastPage){
+            vm.$router.push({name:vm.lastPage})
+          }
           vm.getAddress()
           vm.isPosting = false
           vm.processing(0, 1)
         }, function () {
           vm.isPosting = false
           vm.processing(0, 1)
-        }) */
-        if(vm.lastPage){
-          vm.$router.push({name:vm.lastPage})
-        }
+        })
+
       },
       addAddress () {
         if (vm.isPosting) return false
@@ -105,7 +100,7 @@
       },
       updateAddress (id) {
         for (let i = 0; i < vm.list.length; i++) {
-          if(id===vm.list[i].addressId){
+          if(id===vm.list[i].id){
             vm.$router.push({name: 'edit_address', query: {linedata: encodeURIComponent(JSON.stringify(vm.list[i]))}})
           }
         }
@@ -113,20 +108,17 @@
       delAddress (id) {
         if (vm.isPosting) return false
         vm.confirm('确认删除？', '删除后只能重新添加了！', function () {
-          for (let i = 0; i < vm.list.length; i++) {
-            if (id === vm.list[i].id) {
-              vm.list.splice(i, 1)
-              vm.$store.commit('updateAddress', {data: vm.list})
-            }
-          }
-          /* vm.isPosting = true
-          vm.loadData(userApi.delAddress, {id: id}, 'POST', function (res) {
+          vm.processing()
+          vm.isPosting = true
+          vm.loadData(userApi.delAddress, {addressId: id}, 'POST', function (res) {
+            vm.getAddress()
             vm.isPosting = false
+            vm.processing(0, 1)
           }, function () {
             vm.isPosting = false
-          }) */
-        }, function () {
-          // console.log('no')
+            vm.processing(0, 1)
+            vm.toast('删除失败！')
+          })
         })
       }
     }

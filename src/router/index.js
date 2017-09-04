@@ -7,6 +7,7 @@ import NearBy from '@/pages/NearBy'
 import Ticket from '@/pages/Ticket'
 import Order from '@/pages/Order'
 import Map from '@/pages/Map'
+import Amap from '@/components/Amap'
 import My from '@/pages/My'
 import Cart from '@/pages/cart/Cart'
 import ConfirmOrder from '@/pages/cart/Confirm'
@@ -181,9 +182,9 @@ export default new Router({
       }
     },
     {
-      path: '/map',
-      name: 'map',
-      component: Map,
+      path: '/amap',
+      name: 'amap',
+      component: Amap,
       meta: {
         title: '地图',
         keepAlive: false

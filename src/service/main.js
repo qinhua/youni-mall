@@ -50,7 +50,8 @@ const cartApi = {
   del: host + '/cart/del'
 }
 const commonApi = {
-  dict: host + '/common/dictList'
+  dict: host + '/common/dictList',
+  addUser: host + '/user/add'
 }
 console.log('当前域名：%c' + host, 'color:red;font-size:14px;font-weight:bold')
 console.log('当前API：%c' + JSON.stringify(homeApi, null, 2), 'color:orange;font-size:14px')

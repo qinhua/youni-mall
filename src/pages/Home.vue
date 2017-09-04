@@ -1,121 +1,121 @@
 <template>
   <div class="home" ref="home" v-cloak @scroll="scrollHandler">
-    <!--定位组件-->
-    <div class="location-chooser">
-      <p><span><i class="fa fa-map-marker"></i>&nbsp;您的位置：</span>{{location}}</p>
-      <a @click.prevent="toMap"><i class="right-arrow"></i></a>
-    </div>
-
-    <!--banner-->
-    <div class="swiper-home">
-      <swiper ref="slider01" skey="s01" :slides="banner" autoPlay="2500"></swiper>
-    </div>
-
-    <!--中间入口-->
-    <div class="middle-entry">
-      <grid :rows="4">
-        <grid-item label="订水" link="/home" @on-item-click="setPageStatus(1)">
-          <img slot="icon" src="../../static/img/item_water.png">
-        </grid-item>
-        <grid-item label="订奶" link="/nearby" @on-item-click="setPageStatus(2)">
-          <img slot="icon" src="../../static/img/item_milk.png">
-        </grid-item>
-        <grid-item label="购物车" link="/cart">
-          <img slot="icon" src="../../static/img/item_cart.png">
-        </grid-item>
-        <grid-item label="红包" link="/coupons">
-          <img slot="icon" src="../../static/img/item_redpacket.png">
-        </grid-item>
-      </grid>
-      <div class="top-notice" v-if="notice.length">
-        <div class="inner">
-          <div class="ico ico-toutiao"></div>
-          <marquee>
-            <marquee-item v-for="(news, i) in notice" :key="i" :data-id="news.noticeId"
-                          @click.native="toTopic(news.url)"
-                          class="align-middle">{{news.name}}
-            </marquee-item>
-          </marquee>
-        </div>
+    <!--地图组件-->
+      <div class="location-chooser">
+        <p><span><i class="fa fa-map-marker"></i>&nbsp;您的位置：</span>{{address||geoAddress}}</p>
+        <a @click.prevent="toMap"><i class="right-arrow"></i></a>
       </div>
-    </div>
 
-    <!--过滤条-->
-    <div class="goods-filter" ref="filters01">
-      <div class="v-filter-tabs">
-        <ul class="v-f-tabs">
-          <li :class="factive==='goods'?'mfilterActive':''" @click="showFilter('goods',$event)">商品类目<i
-            class="ico-arr-down"></i>
-          </li>
-          <li :class="factive==='brands'?'mfilterActive':''" @click="showFilter('brands',$event)">品牌<i
-            class="ico-arr-down"></i>
-          </li>
-          <li :class="factive==='specials'?'mfilterActive':''" @click="showFilter('specials',$event)">筛选<i
-            class="ico-arr-down"></i></li>
-        </ul>
-        <div class="filter-data" v-if="showFilterCon" :class="showFilterCon?'show':''">
-          <ul class="filter-tags" v-show="currentFilter">
-            <li v-for="(data,idx) in currentFilter" :class="subActive==idx?'sfilterActive':''" :data-key="data.key"
-                :data-value="data.value" @click="chooseFilter(idx,data.key,data.value,$event)">{{data.value}}
-            </li>
-          </ul>
-        </div>
+      <!--banner-->
+      <div class="swiper-home">
+        <swiper ref="slider01" skey="s01" :slides="banner" autoPlay="2500"></swiper>
       </div>
-    </div>
 
-    <!--商品列表-->
-    <div class="goods-list" ref="goodsList">
-      <scroller class="inner-scroller" lock-x scrollbarY use-pullup use-pulldown :pullup-config="pullupConfig"
-                :pulldown-config="pulldownConfig"
-                @on-scroll="onScroll"
-                @on-pulldown-loading="onPullDown" @on-pullup-loading="onPullUp" @on-scroll-bottom="" ref="myScroll"
-                :scroll-bottom-offst="300">
-        <div class="box">
-          <section class="v-items" v-for="(item, index) in goods" :data-id="item.id">
-            <section class="wrap">
-              <div class="click-wrap" :data-id="item.id" @click="toDetail(item.id)">
-                <img :src="item.imgurl">
-                <section class="infos">
-                  <h3>{{item.name}}</h3>
-                  <section class="middle">
-                    <span class="price">￥{{item.price}}</span>
-                    <span class="hasSell">已售{{item.saleCount}}单</span>
-                  </section>
-                  <ul class="tags" v-if="item.label">
-                    <li v-for="t in item.label.split(',')">{{t}}</li>
-                  </ul>
-                  <label></label>
-                </section>
-              </div>
-              <group class="buy-count">
-                <x-number button-style="round" :min="0" :max="50" align="right" :dataId="item.id"
-                          @on-change="changeCount"></x-number>
-              </group>
-            </section>
-          </section>
-          <div class="noMoreData" v-if="noMore">就这么多了</div>
-          <!--<load-more tip="loading"></load-more>-->
-        </div>
-        <!--<div class="iconNoData" @click="beContinue(curNumber)"><i></i><p>暂无内容</p></div>-->
-      </scroller>
-    </div>
-
-    <!--购物车效果-->
-    <div class="ball-container">
-      <!--小球-->
-      <div v-for="ball in balls">
-        <transition name="drop" @before-enter="beforeDrop" @enter="dropping" @after-enter="afterDrop">
-          <div class="ball" v-show="ball.show">
-            <div class="inner inner-hook"></div>
+      <!--中间入口-->
+      <div class="middle-entry">
+        <grid :rows="4">
+          <grid-item label="订水" link="/home" @on-item-click="setPageStatus(1)">
+            <img slot="icon" src="../../static/img/item_water.png">
+          </grid-item>
+          <grid-item label="订奶" link="/nearby" @on-item-click="setPageStatus(2)">
+            <img slot="icon" src="../../static/img/item_milk.png">
+          </grid-item>
+          <grid-item label="购物车" link="/cart">
+            <img slot="icon" src="../../static/img/item_cart.png">
+          </grid-item>
+          <grid-item label="红包" link="/coupons">
+            <img slot="icon" src="../../static/img/item_redpacket.png">
+          </grid-item>
+        </grid>
+        <div class="top-notice" v-if="notice.length">
+          <div class="inner">
+            <div class="ico ico-toutiao"></div>
+            <marquee>
+              <marquee-item v-for="(news, i) in notice" :key="i" :data-id="news.noticeId"
+                            @click.native="toTopic(news.url)"
+                            class="align-middle">{{news.name}}
+              </marquee-item>
+            </marquee>
           </div>
-        </transition>
+        </div>
       </div>
-    </div>
-    <!--悬浮购物车-->
-    <div class="float-cart" ref="floatCart" v-show="curCount && ($route.name==='home'||$route.name==='shops_detail')"
-         v-jump="['cart']">
-      <div class="cart-wrap"><i class="cur-count" v-if="curCount">{{curCount}}</i></div>
-    </div>
+
+      <!--过滤条-->
+      <div class="goods-filter" ref="filters01">
+        <div class="v-filter-tabs">
+          <ul class="v-f-tabs">
+            <li :class="factive==='goods'?'mfilterActive':''" @click="showFilter('goods',$event)">商品类目<i
+              class="ico-arr-down"></i>
+            </li>
+            <li :class="factive==='brands'?'mfilterActive':''" @click="showFilter('brands',$event)">品牌<i
+              class="ico-arr-down"></i>
+            </li>
+            <li :class="factive==='specials'?'mfilterActive':''" @click="showFilter('specials',$event)">筛选<i
+              class="ico-arr-down"></i></li>
+          </ul>
+          <div class="filter-data" v-if="showFilterCon" :class="showFilterCon?'show':''">
+            <ul class="filter-tags" v-show="currentFilter">
+              <li v-for="(data,idx) in currentFilter" :class="subActive==idx?'sfilterActive':''" :data-key="data.key"
+                  :data-value="data.value" @click="chooseFilter(idx,data.key,data.value,$event)">{{data.value}}
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!--商品列表-->
+      <div class="goods-list" ref="goodsList">
+        <scroller class="inner-scroller" lock-x scrollbarY use-pullup use-pulldown :pullup-config="pullupConfig"
+                  :pulldown-config="pulldownConfig"
+                  @on-scroll="onScroll"
+                  @on-pulldown-loading="onPullDown" @on-pullup-loading="onPullUp" @on-scroll-bottom="" ref="myScroll"
+                  :scroll-bottom-offst="300">
+          <div class="box">
+            <section class="v-items" v-for="(item, index) in goods" :data-id="item.id">
+              <section class="wrap">
+                <div class="click-wrap" :data-id="item.id" @click="toDetail(item.id)">
+                  <img :src="item.imgurl">
+                  <section class="infos">
+                    <h3>{{item.name}}</h3>
+                    <section class="middle">
+                      <span class="price">￥{{item.price}}</span>
+                      <span class="hasSell">已售{{item.saleCount}}单</span>
+                    </section>
+                    <ul class="tags" v-if="item.label">
+                      <li v-for="t in item.label.split(',')">{{t}}</li>
+                    </ul>
+                    <label></label>
+                  </section>
+                </div>
+                <group class="buy-count">
+                  <x-number button-style="round" :min="0" :max="50" align="right" :dataId="item.id"
+                            @on-change="changeCount"></x-number>
+                </group>
+              </section>
+            </section>
+            <div class="noMoreData">{{noMore?'就这么多了':'上拉加载'}}</div>
+            <!--<load-more tip="loading"></load-more>-->
+          </div>
+          <!--<div class="iconNoData" @click="beContinue(curNumber)"><i></i><p>暂无内容</p></div>-->
+        </scroller>
+      </div>
+
+      <!--购物车效果-->
+      <div class="ball-container">
+        <!--小球-->
+        <div v-for="ball in balls">
+          <transition name="drop" @before-enter="beforeDrop" @enter="dropping" @after-enter="afterDrop">
+            <div class="ball" v-show="ball.show">
+              <div class="inner inner-hook"></div>
+            </div>
+          </transition>
+        </div>
+      </div>
+      <!--悬浮购物车-->
+      <div class="float-cart" ref="floatCart" v-show="curCount && ($route.name==='home'||$route.name==='shops_detail')"
+           v-jump="['cart']">
+        <div class="cart-wrap"><i class="cur-count" v-if="curCount">{{curCount}}</i></div>
+      </div>
   </div>
 </template>
 
@@ -133,7 +133,8 @@
     name: 'home',
     data() {
       return {
-        location: '',
+        geoData:null,
+        address:'',
         banner: [],
         notice: [],
         goods: [],
@@ -268,6 +269,7 @@
             show: false
           }, {
             show: false
+
           }, {
             show: false
           }
@@ -275,6 +277,7 @@
         dropBalls: []
       }
     },
+    props:['geoAddress'],
     components: {
       Swiper,
       Group,
@@ -294,7 +297,7 @@
       vm = this
       // me.attachClick()
       this.count = this.$store.state.cart.count
-      vm.getPos()
+      vm.getMap()
       vm.getBanner()
       vm.getNotice()
       vm.getGoods()
@@ -307,9 +310,7 @@
           return false
         }
       }
-    },
-      false
-    )
+    }, false)
       vm.$nextTick(function () {
         setTimeout(() => {
           vm.filterOffset = vm.$refs.filters01.offsetTop
@@ -336,142 +337,26 @@
     },
     watch: {
       '$route'(to, from) {
-        vm.getPos()
         vm.viewCart()
+        vm.getMap()
       }
     },
     methods: {
       // 全局定位
-      getPos() {
-        var lp = me.sessions.get('cur5656Position')
-        setTimeout(function () {
-          if (lp) {
-            vm.location = JSON.parse(lp).address || ''
-          } else {
-            try {
-              vm.location = '定位中…'
-              var map, geolocation, citysearch
-              // 加载地图，调用定位服务
-              map = new AMap.Map('mapContainer', {
-                resizeEnable: true
-              })
-
-              /* 浏览器定位 */
-              function geoByBrowser() {
-                // 解析定位结果
-                var onComplete = function (data) {
-                  if (!data.formattedAddress) {
-                    geoByIp()
-                    return
-                  }
-                  console.log(data, '来自浏览器定位')
-                  var tmp = {
-                    source: 'browser',
-                    address: data.formattedAddress,
-                    province: data.addressComponent.province,
-                    city: data.addressComponent.city,
-                    provinceCode: data.addressComponent.citycode,
-                    cityCode: data.addressComponent.adcode,
-                    lng: data.position.lng,
-                    lat: data.position.lat
-                  }
-                  me.sessions.set('cur5656Position', JSON.stringify(tmp))
-                  vm.location = data.formattedAddress || '为获取到城市'
-                  var str = ['定位成功']
-                  str.push('经度：' + data.position.getLng())
-                  str.push('纬度：' + data.position.getLat())
-                  if (data.accuracy) {
-                    str.push('精度：' + data.accuracy + ' 米')
-                  }
-                  // 如为IP精确定位结果则没有精度信息
-                  str.push('是否经过偏移：' + (data.isConverted ? '是' : '否'))
-                }
-
-                // 解析定位错误信息
-                var onError = function (data) {
-                  vm.location = '定位失败'
-                }
-
-                map.plugin('AMap.Geolocation', function () {
-                  geolocation = new AMap.Geolocation({
-                    enableHighAccuracy: true, // 是否使用高精度定位，默认:true
-                    timeout: 8000, // 超过10秒后停止定位，默认：无穷大
-                    buttonOffset: new AMap.Pixel(10, 20),// 定位按钮与设置的停靠位置的偏移量，默认：Pixel(10, 20)
-                    zoomToAccuracy: true, // 定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
-                    buttonPosition: 'RB'
-                  })
-                  map.addControl(geolocation)
-                  geolocation.getCurrentPosition()
-                  AMap.event.addListener(geolocation, 'complete', onComplete)//返回定位信息
-                  AMap.event.addListener(geolocation, 'error', onError)      //返回定位出错信息
-                })
-              }
-
-              /* ip定位 */
-              function geoByIp() {
-                // 解析定位结果
-                var onComplete = function (data) {
-                  // console.log(data,'来自ip定位')
-                  // 取出经纬度
-                  var tmpLnglat = []
-                  for (var i in data.bounds) {
-                    if (data.bounds.hasOwnProperty(i)) {
-                      tmpLnglat = [data.bounds[i].lng, data.bounds[i].lat]
-                    }
-                  }
-                  var tmp = {
-                    source: 'ip',
-                    address: data.province + data.city,
-                    province: data.province,
-                    city: data.city,
-                    provinceCode: null,
-                    cityCode: data.adcode,
-                    lng: tmpLnglat[0],
-                    lat: tmpLnglat[1]
-                  }
-                  me.sessions.set('cur5656Position', JSON.stringify(tmp))
-                  vm.location = data.address
-                }
-
-                // 解析定位错误信息
-                var onError = function (data) {
-                  vm.location = '定位失败'
-                }
-
-                map.plugin('AMap.CitySearch', function () {
-                  citysearch = new AMap.CitySearch({
-                    enableHighAccuracy: true, // 是否使用高精度定位，默认:true
-                    timeout: 8000, // 超过10秒后停止定位，默认：无穷大
-                    buttonOffset: new AMap.Pixel(10, 20), // 定位按钮与设置的停靠位置的偏移量，默认：Pixel(10, 20)
-                    zoomToAccuracy: true, // 定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
-                    buttonPosition: 'RB'
-                  })
-                  map.addControl(citysearch)
-                  // 自动获取用户IP，返回当前城市
-                  citysearch.getLocalCity(function (status, result) {
-                    if (status === 'complete' && result.info === 'OK') {
-                      if (result && result.city && result.bounds) {
-                        var cityinfo = result.city
-                        var citybounds = result.bounds
-                        vm.location = cityinfo
-                        // 地图显示当前城市
-                        map.setBounds(citybounds)
-                      }
-                    } else {
-                      vm.location = result.info
-                    }
-                  })
-                  AMap.event.addListener(citysearch, 'complete', onComplete) // 返回定位信息
-                  AMap.event.addListener(citysearch, 'error', onError) //返回定位出错信息
-                })
-              }
-
-              geoByBrowser()
-            } catch (e) {
-              console.log(e)
-            }
+      getMap(data) {
+        var tmp=me.locals.get('cur5656Position')
+        // this.$store.commit('storeData',{key:'userPositionData',data:data})
+        if(tmp){
+          var data=JSON.parse(tmp)
+          console.log(data, 'home amap info')
+          if(data){
+            vm.geoData = data
+            vm.address = data.name
           }
-        }, 200)
+        }
+      },
+      toMap() {
+        vm.$router.push({name: 'amap', query: {path: vm.$route.path.replace(/\//g, '')}})
       },
       // 向父组件传值
       setPageStatus(data) {
@@ -494,9 +379,6 @@
             list.classList.remove('fixed')
           }
         }, 300)
-      },
-      toMap() {
-        vm.$router.push({name: 'map', params: {path: vm.$route.path.replace(/\//g, '_')}})
       },
       toTopic(url) {
         if (vm.showFilterCon) return
@@ -748,26 +630,6 @@
   .home {
     height: 100%;
     overflow: scroll; // 此两个属性至关重要，不写@scroll监听不到滚动
-  }
-
-  .location-chooser {
-    .rel;
-    .borBox;
-    padding: 0 40/@rem 0 20/@rem;
-    height: 80/@rem;
-    line-height: 80/@rem;
-    .bf5;
-    p {
-      .fz(24);
-      .c6;
-      .ellipsis;
-      span {
-        .cdiy(#f34c18);
-      }
-    }
-    .right-arrow {
-      .abs-center-vertical;
-    }
   }
 
   .swiper-home {

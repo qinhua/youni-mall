@@ -1,7 +1,8 @@
 <template>
   <div class="container">
-    <!--地图容器-->
-    <div id="mapContainer"></div>
+    <!--定位组件-->
+    <geo :visible="false" :cache="true" @on-geo-end="getMap"></geo>
+
     <!--标签栏-->
     <tabbar v-if="showTabbar" style="position:fixed">
       <tabbar-item :selected="(curSelected===1||$route.path=='/home')?true:false" link="/home">
@@ -35,14 +36,14 @@
     <!--<transition :name="'vux-pop-' + (direction === 'forward' ? 'in' : 'out')">-->
     <transition>
       <keep-alive v-if="$route.meta.keepAlive">
-        <router-view v-wechat-title="$route.meta.title" v-on:listenPage="getPageStatus"></router-view>
+        <router-view v-wechat-title="$route.meta.title" :geoAddress="geoData.address" v-on:listenPage="getPageStatus"></router-view>
       </keep-alive>
     </transition>
     <!-- 这里是不被缓存的视图组件，比如 Edit！ -->
     <!--<transition :name="'vux-pop-' + (direction === 'forward' ? 'in' : 'out')">-->
     <transition>
       <keep-alive v-if="!$route.meta.keepAlive">
-        <router-view v-wechat-title="$route.meta.title" v-on:listenPage="getPageStatus"></router-view>
+        <router-view v-wechat-title="$route.meta.title" :geoAddress="geoData.address" v-on:listenPage="getPageStatus"></router-view>
       </keep-alive>
     </transition>
   </div>
@@ -56,11 +57,13 @@
   import {commonApi} from './service/main.js'
   import {Tabbar, TabbarItem} from 'vux'
   import {mapState, mapActions} from 'vuex'
+  import Geo from './components/Geo'
 
   export default {
     name: 'app',
     data() {
       return {
+        geoData: {}, // 定位数据
         transitionName: 'fade', // 默认动态路由过渡
         // showTabbar: false, // 是否显示标签栏
         curSelected: 1, // 当前选中的tab
@@ -68,7 +71,7 @@
         curCount: 0 // 当前购物车中商品数
       }
     },
-    components: {Tabbar, TabbarItem},
+    components: {Geo,Tabbar, TabbarItem},
     beforeMount() {
       // console.log(window.me)
     },
@@ -76,7 +79,8 @@
       // me.attachClick()
       vm = this
       window.youniMall.userAuth = vm.$store.state.global.wxInfo
-      !vm.$store.state.global.wxInfo.dict ? vm.getDict() : null
+      !vm.$store.state.global.dict ? vm.getDict() : null
+      vm.addUser()
     },
     computed: {
       'showTabbar'() {
@@ -88,6 +92,12 @@
       }
     },
     methods: {
+      // 全局定位
+      getMap(data) {
+        console.log(data, 'home geo info')
+        this.geoData = data
+        this.$store.commit('storeData',{key:'geoData',data:data})
+      },
       // 从子组件获取数据
       getPageStatus(data) {
         vm.curSelected = data
@@ -95,6 +105,13 @@
       getDict() {
         vm.loadData(commonApi.dict, {}, 'POST', function (res) {
           vm.$store.commit('storeData', {key: 'dict', data: res.data.itemList})
+        }, function () {
+        })
+      },
+      addUser() {
+        let info=vm.$store.state.global.wxInfo
+        console.log(info)
+        vm.loadData(commonApi.addUser, info, 'POST', function (res) {
         }, function () {
         })
       }

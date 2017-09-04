@@ -64,9 +64,9 @@
           </checker>
         </div>
         <div class="txt-total">
-          <h4>合计：<span>￥{{goods.totalPrice | toFixed}}</span><i>&nbsp;不含配送费用</i></h4>
+          <h4>合计：<span>￥{{theTotal.price | toFixed}}</span><i>&nbsp;不含配送费用</i></h4>
         </div>
-        <div class="btn btn-toPay" @click="goConfirm">结算(2)</div>
+        <div class="btn btn-toPay" @click="goConfirm">结算{{theTotal.number?'('+theTotal.number+')':''}}</div>
       </div>
     </div>
   </div>
@@ -84,7 +84,10 @@
     data() {
       return {
         show: false,
-        curOrderFilter: '',
+        theTotal: {
+          price:0,
+          number:0
+        },
         goods: {},
         params: {
           /*pagerSize: 10,
@@ -110,12 +113,21 @@
         vm.$refs.goodsScroller.resize()
       })
     },
-    /*computed: {},*/
-    /*watch: {
-     $route'(to, from) {
+    computed: {
+    },
+    watch: {
+     /*$route'(to, from) {
        vm.getCart()
-     }
-    },*/
+     },*/
+      curCartData(oldVal,newVal) {
+        if(newVal.length){
+          for (let i = 0; i < newVal.length; i++) {
+            vm.theTotal.price += (newVal[i].price*newVal[i].goodsNum)
+            vm.theTotal.number += newVal[i].goodsNum
+          }
+        }
+      }
+    },
     methods: {
       // 向父组件传值
       setPageStatus(data) {

@@ -1,31 +1,33 @@
 <template>
   <div class="address-edit">
-    <group>
-      <x-input title="收货人：" placeholder="输入姓名" required v-model="params.name"></x-input>
-      <x-input title="联系电话：" placeholder="输入电话号码" required v-model="params.phone"></x-input>
-      <x-address class="address-area" title="所在地区" @on-hide="logHide" @on-shadow-change="changeArea" :list="addressData"
-                 placeholder="请选择地区">
-        <template slot="title" scope="props">
+    <div class="f-wrap" v-show="!showMap">
+      <group>
+        <x-input title="收货人：" placeholder="输入姓名" required v-model="params.name"></x-input>
+        <x-input title="联系电话：" placeholder="输入电话号码" required v-model="params.phone"></x-input>
+        <x-address class="address-area" title="所在地区" @on-hide="logHide" @on-shadow-change="changeArea"
+                   :list="addressData" placeholder="请选择地区">
+          <template slot="title" scope="props">
         <span :class="props.labelClass" :style="props.labelStyle" style="height:24px;">
           <span style="vertical-align:middle;">所在地区：</span>
         </span>
-        </template>
-      </x-address>
-      <x-input title="详细地址：" placeholder="输入详细地址" required v-model="detailAddress"></x-input>
-      <x-input title="门牌号：" placeholder="门牌号" v-model="params.houseCode"></x-input>
-      <div class="checker-group">
-        <label>设为默认地址：</label>
-        <checker v-model="params.defaultAddress" default-item-class="demo-item"
-                 selected-item-class="demo-item-selected">
-          <checker-item :value="item.key" v-for="(item, index) in status" :key="index" @on-item-click="changeStatus">
-            {{item.value}}
-          </checker-item>
-        </checker>
-      </div>
-    </group>
-    <group>
-    </group>
-    <div class="add-address" @click="updateAddress"><i class="fa fa-save"></i>&nbsp;保存</div>
+          </template>
+        </x-address>
+        <x-input title="详细地址：" placeholder="输入详细地址" v-model="detailAddress" required readonly text-align="right"
+                 @click.native="choosePoint"></x-input>
+        <x-input title="门牌号：" placeholder="门牌号" v-model="params.houseCode"></x-input>
+        <div class="checker-group">
+          <label>设为默认地址：</label>
+          <checker v-model="params.defaultAddress" default-item-class="demo-item"
+                   selected-item-class="demo-item-selected">
+            <checker-item :value="item.key" v-for="(item, index) in status" :key="index" @on-item-click="changeStatus">
+              {{item.value}}
+            </checker-item>
+          </checker>
+        </div>
+      </group>
+      <div class="add-address" @click="updateAddress"><i class="fa fa-save"></i>&nbsp;保存</div>
+    </div>
+    <amap @on-receive-data="getMap" v-if="showMap"></amap>
   </div>
 </template>
 
@@ -34,13 +36,15 @@
   let me
   let vm
   import {Group, Cell, XAddress, ChinaAddressV3Data, XInput, Checker, CheckerItem} from 'vux'
-  import {userApi} from '../../service/main.js'
+  import Amap from '../../components/Amap.vue'
+  import {commonApi,userApi} from '../../service/main.js'
 
   export default {
     name: 'address-edit',
     data() {
       return {
         lastPage: null,
+        showMap: false,
         lineData: null,
         onFetching: false,
         isPosting: false,
@@ -54,11 +58,13 @@
           phone: '',
           address: '',
           houseCode: '',
+          lat: '',
+          lon: '',
           defaultAddress: 0
         }
       }
     },
-    components: {Group, Cell, XAddress, XInput, Checker, CheckerItem},
+    components: {Amap, Group, Cell, XAddress, XInput, Checker, CheckerItem},
     beforeMount() {
       me = window.me
     },
@@ -71,11 +77,22 @@
     watch: {
       '$route'(to, from) {
         vm.getAddress()
+        vm.showMap = false
       }
     },
     methods: {
       logHide(str) {
         console.log('on-hide', str)
+      },
+      choosePoint() {
+        vm.showMap = true
+      },
+      getMap(data) {
+        vm.showMap = false
+        console.log(data, 'home amap info')
+        vm.params.lon = data.lng
+        vm.params.lat = data.lat
+        vm.detailAddress = data.name
       },
       switchData(data, value, target, isUpdate) {
         let tmp
@@ -100,40 +117,34 @@
       getAddress() {
         vm.lastPage = vm.$route.query.from || null
         vm.lineData = vm.$route.query.linedata ? JSON.parse(decodeURIComponent(vm.$route.query.linedata)) : null
-        console.log(vm.lineData)
-        if (vm.lineData&&vm.lineData.addressId) {
+        if (vm.lineData && vm.lineData.id) {
+          vm.detailAddress = vm.lineData.address
           vm.params = {
-            addressId: vm.lineData.addressId,
+            addressId: vm.lineData.id,
             name: vm.lineData.name,
             phone: vm.lineData.phone,
             address: vm.lineData.address,
             houseCode: vm.lineData.houseCode,
-            defaultAddress: vm.lineData.defaultAddress
+            defaultAddress: vm.lineData.defaultAddress ? 1 : 0
+          }
+        } else {
+          vm.params = {
+            name: '',
+            phone: '',
+            address: '',
+            houseCode: '',
+            lat: '',
+            lon: '',
+            defaultAddress: 0
           }
         }
-        /*if (vm.onFetching) return false
-        vm.onFetching = true
-        vm.loadData(userApi.addressList, {id: vm.params.id}, 'POST', function (res) {
-          if (res) {
-            let resD = res.data.itemList
-            /!*此处转换一些字段类型*!/
-            // a.比如把type和goodsCategory转换成数组
-            vm.switchData(vm.types, vm.params.type, 'tmpType')
-            vm.switchData(vm.categories, vm.params.category, 'tmpCat')
-            vm.renderTags(resD.label)
-            vm.goods = resD
-            console.log(vm.goods)
-          }
-          vm.onFetching = false
-        }, function () {
-          vm.onFetching = false
-        })*/
       },
       changeArea(ids, names) {
         console.log(ids, names)
         /*vm.params.province = ids[0]
-        vm.params.city = ids[1]*/
+         vm.params.city = ids[1]*/
         vm.area = names[0] + (names[1].indexOf('市辖区') === -1 ? names[1] : '') + names[2]
+        vm.detailAddress=''
         console.log(vm.area)
       },
       changeStatus(value, disabled) {
@@ -165,18 +176,20 @@
       updateAddress() {
         if (vm.isPosting) return false
         if (vm.validate()) {
-          /*vm.$store.commit('updateAddress', {data: vm.param, type: 'push'})
-          vm.$router.back()*/
-          vm.params.address = vm.area + vm.detailAddress
+          if (vm.detailAddress.indexOf('省') === -1 && vm.detailAddress.indexOf('市') === -1) {
+            vm.params.address = vm.area + vm.detailAddress
+          } else {
+            vm.params.address = vm.detailAddress
+          }
           vm.isPosting = true
           vm.processing()
           console.log('最后选择的数据：', vm.params)
           // 更新还是新增
           vm.loadData(userApi.setAddress, vm.params, 'POST', function (res) {
             console.log(res, '新增/更新地址')
-            if(vm.lastPage){
-              vm.$router.push({name:vm.lastPage})
-            }else{
+            if (vm.lastPage) {
+              vm.$router.push({name: vm.lastPage})
+            } else {
               vm.$router.back()
             }
             vm.isPosting = false
@@ -196,6 +209,11 @@
   @import '../../../static/css/tools.less';
 
   .address-edit {
+    height: 100%;
+    overflow-x: hidden;
+    .f-wrap {
+      height: 100%;
+    }
     .vux-no-group-title {
       margin-top: 0;
       .vux-x-input {
