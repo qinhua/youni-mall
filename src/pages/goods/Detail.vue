@@ -2,11 +2,13 @@
   <div class="goods-detail">
     <div class="top">
       <div class="banner-goods-detail">
-        <div class="swiper-container" v-show="imgs.length">
+        <div class="swiper-container" v-show="details.imgurl">
           <div class="swiper-wrapper">
-            <div class="swiper-slide" v-for="(item, index) in imgs" :key="index" :data-id="item.id">
-              <a :href="item.linkUrl" target="blank">
-                <img class="wd-img" :src="item.image" alt="">
+            <!--<div class="swiper-slide" v-for="(item, index) in details.imgurl" :key="index" :data-id="item.id">-->
+            <div class="swiper-slide">
+              <!--<a :href="item.linkUrl" target="blank">-->
+              <a href="#" target="blank">
+                <img class="wd-img" :src="details.imgurl" alt="">
               </a>
             </div>
           </div>
@@ -16,18 +18,18 @@
       <div class="buy-con">
         <div class="wrap">
           <div class="txt-con">
-            <h3>白塔山冰泉20L</h3>
-            <p class="middle"><span>￥18.00</span><sub>已售206单</sub></p>
-            <p>￥10（新用户专享，首单6折）</p>
+            <h3>{{details.goodsName}}</h3>
+            <p class="middle"><span>￥18.00</span><sub>已售{{details.saleCount}}单</sub></p>
+            <p>{{details.label}}<!--￥10（新用户专享，首单6折）--></p>
           </div>
           <div class="right-con">
             <div class="inner">
-              <div class="number-con" v-if="goodsNum">
+              <div class="number-con" v-if="curCount">
                 <group>
-                  <x-number :value="goodsNum" :min="0" :max="50" @on-change="changeNum"></x-number>
+                  <x-number :value="curCount" :dataId="details.goodsId" :min="0" :max="50" @on-change="changeNum"></x-number>
                 </group>
               </div>
-              <button v-else type="button" class="btn btn-addcart" @click="addToCart">加入购物车</button>
+              <button v-else type="button" class="btn btn-addcart" @click="changeNum({id:details.id,sellerId:details.sellserId,number:details.curCount})">加入购物车</button>
             </div>
           </div>
         </div>
@@ -39,7 +41,7 @@
                   @click.native="chooseCol(index)" :key="index">{{item}}
         </tab-item>
       </tab>
-      <div class="swiper-container swiper-goods-detail" v-show="imgs.length">
+      <div class="swiper-container swiper-goods-detail" v-show="details.imgurl">
         <div class="swiper-wrapper">
           <div class="swiper-slide">
             <div class="detail-con">
@@ -114,14 +116,14 @@
     </div>
     <div class="cart-model">
       <div class="wrap">
-        <div class="cur-cart" ref="curCart" :hasgood="goodsNum>0"><i v-if="goodsNum">{{goodsNum}}</i></div>
+        <div class="cur-cart" ref="curCart" :hasgood="curCount>0"><i v-if="curCount">{{curCount}}</i></div>
         <div class="left">
-          <div class="txt" v-if="goodsNum">
-            <h4>当前共{{goodsNum}}件</h4>
-            <p>合计：{{total}}.00元</p>
+          <div class="txt" v-if="curCount">
+            <h4>当前共{{curCount}}件</h4>
+            <p>合计：{{total|toFixed}}元</p>
           </div>
         </div>
-        <div class="right">
+        <div class="right" @click="goConfirm">
           去结算
         </div>
       </div>
@@ -135,7 +137,7 @@
   let vm
   import Swiper from 'swiper'
   import {Tab, TabItem, XNumber, Group} from 'vux'
-  import {goodsApi} from '../../service/main.js'
+  import {homeApi,goodsApi,cartApi} from '../../service/main.js'
 
   export default {
     name: 'goods-detail',
@@ -144,7 +146,7 @@
         id: null,
         show: false,
         curOrderFilter: '',
-        imgs: [],
+        details: [],
         tablist: ['商品详情', '规格', '评论'],
         balls: [ //小球 设为3个
           {
@@ -158,7 +160,8 @@
         dropBalls: [],
         isPosting: false,
         onFetching: false,
-        goodsNum: 0,
+        cartData: null,
+        curCount: 0,
         unitPrice: 10,
         detailSwiper: null,
         curIndex: 0,
@@ -174,7 +177,8 @@
     mounted() {
       vm = this
       vm.id = vm.$route.query.id
-      // vm.goodsNum = this.$store.state.cart.count
+      // vm.curCount = this.$store.state.cart.count
+      vm.viewCart()
       vm.getDetail(function () {
         vm.mySwiper()
         vm.swiperDetail()
@@ -187,7 +191,7 @@
     },
     computed: {
       total() {
-        return vm.goodsNum * vm.unitPrice
+        return vm.curCount * vm.details.price
       }
     },
     watch: {
@@ -241,9 +245,6 @@
           }
         })
       },
-      addToCart(id) {
-        vm.goodsNum++
-      },
       refresh(done) {
         console.log('下拉加载')
         setTimeout(function () {
@@ -263,14 +264,13 @@
         vm.getOrders()
       },
       getDetail(cb) {
-        vm.id = vm.$route.params.id
         if (vm.onFetching) return false
         vm.processing()
         vm.onFetching = true
-        vm.loadData(goodsApi.detail, {id: vm.id}, 'POST', function (res) {
+        vm.loadData(homeApi.goodsList, {id: vm.id}, 'POST', function (res) {
           // var resD = res.data.itemList
-          vm.imgs = res.data.itemList
-          console.log(vm.imgs, '商品图片数据')
+          vm.details = res.data.pager.itemList[4]
+          console.log(vm.details, '商品图片数据')
           cb ? cb() : null
           vm.onFetching = false
           vm.processing(0, 1)
@@ -307,19 +307,55 @@
           vm.getAppraise()
         }
       },
-      changeNum(obj) {
-        // this.goodsNum=this.$store.state.cart.count
-        console.log(arguments)
-        if (obj.type === 'add') {
-          this.additem(obj.event)
-          this.goodsNum++
-        } else if (obj.type === 'sub') {
-          this.goodsNum--
+      goConfirm() {
+        // 带入当前选择的商品信息
+        if (vm.cartData.length) {
+          var lastD={
+            sellerId:vm.goods.sellerId,
+            sellerName:vm.goods.sellerName,
+            totalPrice:vm.goods.totalPrice,
+            goods:vm.curCartData
+          }
+          vm.$router.push({
+            name: 'confirm_order',
+            query: {thedata: encodeURIComponent(JSON.stringify(lastD))}
+          })
         } else {
-          this.goodsNum = obj.value
+          vm.toast('请选择商品！', 'warn')
         }
-        vm.$store.commit('updateCart', this.goodsNum)
-        console.log(vm.$store.state.cart.count)
+      },
+      viewCart(cb) {
+        vm.loadData(cartApi.view, null, 'POST', function (res) {
+          var resD = res.data
+          console.log(resD, '购物车数据')
+          vm.cartData = resD
+          vm.curCount = resD.totalNum
+          cb ? cb() : null
+        }, function () {
+        })
+      },
+      changeNum(obj) {
+        console.log(obj)
+        if (obj.type === 'add') {
+          if (vm.cartData && vm.cartData.sellerId !== obj.sellerId) {
+            vm.toast('购物车中已有其他店铺商品，请先清空')
+            return
+          }
+          vm.loadData(cartApi.add, {goodsId: obj.id}, 'POST', function (res) {
+            if (res.success) {
+              vm.additem(obj.event)
+              vm.viewCart()
+            } else {
+              vm.toast(res.message || '购物车中已有其他店铺商品，请先清空')
+            }
+          }, function () {
+          })
+        } else {
+          vm.loadData(cartApi.minus, {goodsId: obj.id}, 'POST', function (res) {
+            vm.viewCart()
+          }, function () {
+          })
+        }
       },
       /* 购物车 */
       additem(event) {

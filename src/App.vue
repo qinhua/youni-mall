@@ -63,7 +63,9 @@
     name: 'app',
     data() {
       return {
-        geoData: {}, // 定位数据
+        geoData: {
+          address:'定位中…'
+        }, // 定位数据
         transitionName: 'fade', // 默认动态路由过渡
         // showTabbar: false, // 是否显示标签栏
         curSelected: 1, // 当前选中的tab

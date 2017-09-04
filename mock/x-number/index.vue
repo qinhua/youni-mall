@@ -61,9 +61,14 @@
         default: 0
       },
       dataId: String,
+      dataSellerId: String,
       name: String,
       title: String,
       fillable: {
+        type: Boolean,
+        default: false
+      },
+      disabled: {
         type: Boolean,
         default: false
       },
@@ -114,7 +119,7 @@
           }
         }
         this.$emit('input', {id: this.dataId, type: 'input', value: this.currentValue, event: this.event})
-        this.$emit('on-change', {id: this.dataId, type: this.type, value: this.currentValue, event: this.event})
+        //this.$emit('on-change', {id: this.dataId, type: this.type, value: this.currentValue, event: this.event})
       },
       value (newValue) {
         this.currentValue = newValue
@@ -126,8 +131,9 @@
         this.event = e
         if (!this.disabledMax) {
           const x = new Big(this.currentValue)
-          this.currentValue = x.plus(this.step) * 1
+          !this.disabled?this.currentValue = x.plus(this.step) * 1:null
         }
+        this.$emit('on-change', {id: this.dataId, sellerId: this.dataSellerId, type: this.type, value: this.currentValue, event: this.event})
       },
       sub (e) {
         this.type = 'sub'
@@ -136,6 +142,7 @@
           const x = new Big(this.currentValue)
           this.currentValue = x.minus(this.step) * 1
         }
+        this.$emit('on-change', {id: this.dataId, sellerId: this.dataSellerId, type: this.type, value: this.currentValue, event: this.event})
       },
       blur () {
         if (this.currentValue === '') {

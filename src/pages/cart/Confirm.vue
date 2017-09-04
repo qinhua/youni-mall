@@ -81,16 +81,16 @@
           addressId: null,
           dispatchTime: '',
           userMessage: '',
-          couponId: null
+          couponId: ''
         },
         curCartData: {},
         isPosting: false,
         onFetching: false,
-        tmpCoupon: [],
+        tmpCoupon: ['未选择'],
         coupons: [{
           key: '',
-          value: '不使用',
-          name: '不使用'
+          value: '未选择',
+          name: '未选择'
         },{
           key: '028283447c4311e7aa18d8cb8a971933',
           value: '满减20元',
@@ -116,6 +116,7 @@
       vm.params.goods=vm.curCartData.goods
       vm.params.sellerId=vm.curCartData.sellerId
       console.log(vm.curCartData)
+      vm.switchData(vm.coupons, vm.tmpCoupon, 'couponId')
       vm.getAddress ()
     },
     computed: {
@@ -139,8 +140,20 @@
       setPageStatus(data) {
         this.$emit('listenPage', data)
       },
-      toAppraise(id) {
-        this.$router.push({path: '/appraise' + (param ? '/' + param : '')})
+      validate() {
+        if (!vm.params.addressId) {
+          vm.toast('请添加收货地址！', 'warn')
+          return false
+        }
+        if (!vm.params.dispatchTime) {
+          vm.toast('请选择配送时间！', 'warn')
+          return false
+        }
+        /*if (!vm.params.couponId) {
+          vm.toast('请选择优惠券！', 'warn')
+          return false
+        } */
+        return true
       },
       switchData(data, value, target, isUpdate) {
         let tmp
@@ -190,7 +203,6 @@
         })
       },
       getCart(isLoadMore) {
-        vm.params.type = vm.$route.params.id
         if (vm.onFetching) return false
         vm.processing()
         vm.onFetching = true
@@ -207,14 +219,16 @@
       },
       generateOrder() {
         if (vm.isPosting) return false
-        vm.isPosting = true
-        vm.loadData(orderApi.add, vm.params, 'POST', function (res) {
-          // vm.payOrder()
-          vm.isPosting = false
-        }, function () {
-          vm.toast('提交失败！')
-          vm.isPosting = false
-        })
+        if(vm.validate()){
+          vm.isPosting = true
+          vm.loadData(orderApi.add, vm.params, 'POST', function (res) {
+            // vm.payOrder()
+            vm.isPosting = false
+          }, function () {
+            vm.toast('提交失败！')
+            vm.isPosting = false
+          })
+        }
       },
       payOrder(id) {
         if (vm.isPosting) return false
@@ -260,7 +274,7 @@
     }
     .txt-con{
       .borBox;
-      padding:0 50/@rem 0 70/@rem;
+      padding:0 55/@rem 0 70/@rem;
       h3{
         .fz(24);
         .c3;

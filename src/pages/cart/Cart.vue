@@ -7,7 +7,7 @@
         <section class="v-items" :data-sellerid="goods.sellerId">
           <h4 class="item-top" v-if="goods.goodsList&&goods.goodsList.length"><i
             class="ico-store"></i>&nbsp;{{goods.sellerName}}&nbsp;&nbsp;<i
-            class="fa fa-angle-right cc"></i><span @click="editGoods(goods.sellerId)">{{isEdit ? '完成' : '编辑'}}</span>
+            class="fa fa-angle-right cc"></i><span @click="editGoods(goods.sellerId)">{{isEdit ? '完成' : '编辑'}}</span><span @click="emptyCart" v-show="!isEdit">清空</span>
           </h4>
           <ul class="has-list">
             <swipeout>
@@ -116,9 +116,9 @@
     computed: {
     },
     watch: {
-     /*$route'(to, from) {
+     '$route'(to, from) {
        vm.getCart()
-     },*/
+     },
       curCartData(oldVal,newVal) {
         if(newVal.length){
           for (let i = 0; i < newVal.length; i++) {
@@ -239,6 +239,19 @@
           vm.processing(0, 1)
         })
       },
+      emptyCart(){
+        if (vm.isPosting) return false
+        vm.confirm('确认清空？', '清空后不可恢复！', function () {
+          vm.isPosting = true
+          vm.loadData(cartApi.del, {goodsId: id}, 'POST', function (res) {
+            vm.getCart()
+            vm.isPosting = false
+          }, function () {
+            vm.isPosting = false
+          })
+        }, function () {
+        })
+      },
       editGoods(id) {
         if (vm.isEdit) {
           vm.isEdit = false
@@ -352,7 +365,7 @@
         .item-top {
           .rel;
           .borBox;
-          padding: 14/@rem 60/@rem 14/@rem 20/@rem;
+          padding: 14/@rem 20/@rem 14/@rem 20/@rem;
           .txt-normal;
           .c3;
           .fz(24);
@@ -368,8 +381,7 @@
             .ele-base;
           }
           span {
-            .abs-center-vertical;
-            right: 20/@rem;
+            .fr;
             padding-left: 40/@rem;
             .fz(22);
             .cdiy(@c2);

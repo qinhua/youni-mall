@@ -119,7 +119,7 @@
     data() {
       return {
         geoData:null,
-        address: '',
+        address:'',
         banner: [],
         notice: [],
         shops: [],

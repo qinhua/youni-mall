@@ -1,121 +1,122 @@
 <template>
   <div class="home" ref="home" v-cloak @scroll="scrollHandler">
     <!--地图组件-->
-      <div class="location-chooser">
-        <p><span><i class="fa fa-map-marker"></i>&nbsp;您的位置：</span>{{address||geoAddress}}</p>
-        <a @click.prevent="toMap"><i class="right-arrow"></i></a>
-      </div>
+    <div class="location-chooser">
+      <p><span><i class="fa fa-map-marker"></i>&nbsp;您的位置：</span>{{address || geoAddress}}</p>
+      <a @click.prevent="toMap"><i class="right-arrow"></i></a>
+    </div>
 
-      <!--banner-->
-      <div class="swiper-home">
-        <swiper ref="slider01" skey="s01" :slides="banner" autoPlay="2500"></swiper>
-      </div>
+    <!--banner-->
+    <div class="swiper-home">
+      <swiper ref="slider01" skey="s01" :slides="banner" autoPlay="2500"></swiper>
+    </div>
 
-      <!--中间入口-->
-      <div class="middle-entry">
-        <grid :rows="4">
-          <grid-item label="订水" link="/home" @on-item-click="setPageStatus(1)">
-            <img slot="icon" src="../../static/img/item_water.png">
-          </grid-item>
-          <grid-item label="订奶" link="/nearby" @on-item-click="setPageStatus(2)">
-            <img slot="icon" src="../../static/img/item_milk.png">
-          </grid-item>
-          <grid-item label="购物车" link="/cart">
-            <img slot="icon" src="../../static/img/item_cart.png">
-          </grid-item>
-          <grid-item label="红包" link="/coupons">
-            <img slot="icon" src="../../static/img/item_redpacket.png">
-          </grid-item>
-        </grid>
-        <div class="top-notice" v-if="notice.length">
-          <div class="inner">
-            <div class="ico ico-toutiao"></div>
-            <marquee>
-              <marquee-item v-for="(news, i) in notice" :key="i" :data-id="news.noticeId"
-                            @click.native="toTopic(news.url)"
-                            class="align-middle">{{news.name}}
-              </marquee-item>
-            </marquee>
-          </div>
+    <!--中间入口-->
+    <div class="middle-entry">
+      <grid :rows="4">
+        <grid-item label="订水" link="/home" @on-item-click="setPageStatus(1)">
+          <img slot="icon" src="../../static/img/item_water.png">
+        </grid-item>
+        <grid-item label="订奶" link="/nearby" @on-item-click="setPageStatus(2)">
+          <img slot="icon" src="../../static/img/item_milk.png">
+        </grid-item>
+        <grid-item label="购物车" link="/cart">
+          <img slot="icon" src="../../static/img/item_cart.png">
+        </grid-item>
+        <grid-item label="红包" link="/coupons">
+          <img slot="icon" src="../../static/img/item_redpacket.png">
+        </grid-item>
+      </grid>
+      <div class="top-notice" v-if="notice.length">
+        <div class="inner">
+          <div class="ico ico-toutiao"></div>
+          <marquee>
+            <marquee-item v-for="(news, i) in notice" :key="i" :data-id="news.noticeId"
+                          @click.native="toTopic(news.url)"
+                          class="align-middle">{{news.name}}
+            </marquee-item>
+          </marquee>
         </div>
       </div>
+    </div>
 
-      <!--过滤条-->
-      <div class="goods-filter" ref="filters01">
-        <div class="v-filter-tabs">
-          <ul class="v-f-tabs">
-            <li :class="factive==='goods'?'mfilterActive':''" @click="showFilter('goods',$event)">商品类目<i
-              class="ico-arr-down"></i>
+    <!--过滤条-->
+    <div class="goods-filter" ref="filters01">
+      <div class="v-filter-tabs">
+        <ul class="v-f-tabs">
+          <li :class="factive==='goods'?'mfilterActive':''" @click="showFilter('goods',$event)">商品类目<i
+            class="ico-arr-down"></i>
+          </li>
+          <li :class="factive==='brands'?'mfilterActive':''" @click="showFilter('brands',$event)">品牌<i
+            class="ico-arr-down"></i>
+          </li>
+          <li :class="factive==='specials'?'mfilterActive':''" @click="showFilter('specials',$event)">筛选<i
+            class="ico-arr-down"></i></li>
+        </ul>
+        <div class="filter-data" v-if="showFilterCon" :class="showFilterCon?'show':''">
+          <ul class="filter-tags" v-show="currentFilter">
+            <li v-for="(data,idx) in currentFilter" :class="subActive==idx?'sfilterActive':''" :data-key="data.key"
+                :data-value="data.value" @click="chooseFilter(idx,data.key,data.value,$event)">{{data.value}}
             </li>
-            <li :class="factive==='brands'?'mfilterActive':''" @click="showFilter('brands',$event)">品牌<i
-              class="ico-arr-down"></i>
-            </li>
-            <li :class="factive==='specials'?'mfilterActive':''" @click="showFilter('specials',$event)">筛选<i
-              class="ico-arr-down"></i></li>
           </ul>
-          <div class="filter-data" v-if="showFilterCon" :class="showFilterCon?'show':''">
-            <ul class="filter-tags" v-show="currentFilter">
-              <li v-for="(data,idx) in currentFilter" :class="subActive==idx?'sfilterActive':''" :data-key="data.key"
-                  :data-value="data.value" @click="chooseFilter(idx,data.key,data.value,$event)">{{data.value}}
-              </li>
-            </ul>
-          </div>
         </div>
       </div>
+    </div>
 
-      <!--商品列表-->
-      <div class="goods-list" ref="goodsList">
-        <scroller class="inner-scroller" lock-x scrollbarY use-pullup use-pulldown :pullup-config="pullupConfig"
-                  :pulldown-config="pulldownConfig"
-                  @on-scroll="onScroll"
-                  @on-pulldown-loading="onPullDown" @on-pullup-loading="onPullUp" @on-scroll-bottom="" ref="myScroll"
-                  :scroll-bottom-offst="300">
-          <div class="box">
-            <section class="v-items" v-for="(item, index) in goods" :data-id="item.id">
-              <section class="wrap">
-                <div class="click-wrap" :data-id="item.id" @click="toDetail(item.id)">
-                  <img :src="item.imgurl">
-                  <section class="infos">
-                    <h3>{{item.name}}</h3>
-                    <section class="middle">
-                      <span class="price">￥{{item.price}}</span>
-                      <span class="hasSell">已售{{item.saleCount}}单</span>
-                    </section>
-                    <ul class="tags" v-if="item.label">
-                      <li v-for="t in item.label.split(',')">{{t}}</li>
-                    </ul>
-                    <label></label>
+    <!--商品列表-->
+    <div class="goods-list" ref="goodsList">
+      <scroller class="inner-scroller" lock-x scrollbarY use-pullup use-pulldown :pullup-config="pullupConfig"
+                :pulldown-config="pulldownConfig"
+                @on-scroll="onScroll"
+                @on-pulldown-loading="onPullDown" @on-pullup-loading="onPullUp" @on-scroll-bottom="" ref="myScroll"
+                :scroll-bottom-offst="300">
+        <div class="box">
+          <section class="v-items" v-for="(item, index) in goods" :data-id="item.id">
+            <section class="wrap">
+              <div class="click-wrap" :data-id="item.id" @click="toDetail(item.id)">
+                <img :src="item.imgurl">
+                <section class="infos">
+                  <h3>{{item.name}}</h3>
+                  <section class="middle">
+                    <span class="price">￥{{item.price}}</span>
+                    <span class="hasSell">已售{{item.saleCount}}单</span>
                   </section>
-                </div>
-                <group class="buy-count">
-                  <x-number button-style="round" :min="0" :max="50" align="right" :dataId="item.id"
-                            @on-change="changeCount"></x-number>
-                </group>
-              </section>
+                  <ul class="tags" v-if="item.label">
+                    <li v-for="t in item.label.split(',')">{{t}}</li>
+                  </ul>
+                  <label></label>
+                </section>
+              </div>
+              <group class="buy-count">
+                <x-number button-style="round" :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0" :max="50" :value="item.number" align="right" :dataId="item.id"
+                          :dataSellerId="item.sellerId"
+                          @on-change="changeCount"></x-number>
+              </group>
             </section>
-            <div class="noMoreData">{{noMore?'就这么多了':'上拉加载'}}</div>
-            <!--<load-more tip="loading"></load-more>-->
-          </div>
-          <!--<div class="iconNoData" @click="beContinue(curNumber)"><i></i><p>暂无内容</p></div>-->
-        </scroller>
-      </div>
-
-      <!--购物车效果-->
-      <div class="ball-container">
-        <!--小球-->
-        <div v-for="ball in balls">
-          <transition name="drop" @before-enter="beforeDrop" @enter="dropping" @after-enter="afterDrop">
-            <div class="ball" v-show="ball.show">
-              <div class="inner inner-hook"></div>
-            </div>
-          </transition>
+          </section>
+          <div class="noMoreData">{{noMore ? '就这么多了' : '上拉加载'}}</div>
+          <!--<load-more tip="loading"></load-more>-->
         </div>
+        <!--<div class="iconNoData" @click="beContinue(curNumber)"><i></i><p>暂无内容</p></div>-->
+      </scroller>
+    </div>
+
+    <!--购物车效果-->
+    <div class="ball-container">
+      <!--小球-->
+      <div v-for="ball in balls">
+        <transition name="drop" @before-enter="beforeDrop" @enter="dropping" @after-enter="afterDrop">
+          <div class="ball" v-show="ball.show">
+            <div class="inner inner-hook"></div>
+          </div>
+        </transition>
       </div>
-      <!--悬浮购物车-->
-      <div class="float-cart" ref="floatCart" v-show="curCount && ($route.name==='home'||$route.name==='shops_detail')"
-           v-jump="['cart']">
-        <div class="cart-wrap"><i class="cur-count" v-if="curCount">{{curCount}}</i></div>
-      </div>
+    </div>
+    <!--悬浮购物车-->
+    <div class="float-cart" ref="floatCart" v-show="curCount && ($route.name==='home'||$route.name==='shops_detail')"
+         v-jump="['cart']">
+      <div class="cart-wrap"><i class="cur-count">{{curCount}}</i></div>
+    </div>
   </div>
 </template>
 
@@ -133,8 +134,9 @@
     name: 'home',
     data() {
       return {
-        geoData:null,
-        address:'',
+        geoData: null,
+        address: '',
+        cartData: '',
         banner: [],
         notice: [],
         goods: [],
@@ -155,19 +157,11 @@
             },
             {
               key: 1,
-              value: '瓶装水'
+              value: '水'
             },
             {
               key: 2,
-              value: '桶装水'
-            },
-            {
-              key: 3,
               value: '牛奶'
-            },
-            {
-              key: -1,
-              value: '其它'
             }
           ],
           brands: [
@@ -264,6 +258,7 @@
           loadingContent: '加载中…',
           clsPrefix: 'xs-plugin-pullup-'
         },
+        curCount: 0,
         balls: [ //小球 设为3个
           {
             show: false
@@ -277,7 +272,7 @@
         dropBalls: []
       }
     },
-    props:['geoAddress'],
+    props: ['geoAddress'],
     components: {
       Swiper,
       Group,
@@ -296,25 +291,23 @@
     mounted() {
       vm = this
       // me.attachClick()
-      this.count = this.$store.state.cart.count
       vm.getMap()
       vm.getBanner()
       vm.getNotice()
-      vm.getGoods()
-      vm.viewCart()
+      vm.viewCart(vm.getGoods)
       // 点击区域之外隐藏筛选栏
       document.addEventListener('click', (e) => {
-        if (e.target.offsetParent){
-        if (JSON.stringify(e.target.offsetParent.classList).indexOf('filter') === -1) {
-          vm.hideFilter()
-          return false
+        if (e.target.offsetParent) {
+          if (JSON.stringify(e.target.offsetParent.classList).indexOf('filter') === -1) {
+            vm.hideFilter()
+            return false
+          }
         }
-      }
-    }, false)
+      }, false)
       vm.$nextTick(function () {
         setTimeout(() => {
           vm.filterOffset = vm.$refs.filters01.offsetTop
-        },500)
+        }, 500)
         //获取筛选栏位置
         vm.$refs.myScroll.reset()
         vm.$refs.myScroll.donePullup()
@@ -326,30 +319,30 @@
      }),*/
     computed: {
       //如果要动态改变，必须有setter方法
-      curCount: {
+      /*curCount: {
         get: function () {
           return this.$store.state.cart.count
         },
         set: function (newValue) {
           this.$store.commit('updateCart', newValue)
         }
-      }
+      }*/
     },
     watch: {
       '$route'(to, from) {
-        vm.viewCart()
+        vm.viewCart(vm.getGoods)
         vm.getMap()
       }
     },
     methods: {
       // 全局定位
       getMap(data) {
-        var tmp=me.locals.get('cur5656Position')
+        var tmp = me.locals.get('cur5656Position')
         // this.$store.commit('storeData',{key:'userPositionData',data:data})
-        if(tmp){
-          var data=JSON.parse(tmp)
+        if (tmp) {
+          var data = JSON.parse(tmp)
           console.log(data, 'home amap info')
-          if(data){
+          if (data) {
             vm.geoData = data
             vm.address = data.name
           }
@@ -388,11 +381,6 @@
         if (vm.showFilterCon) return
         vm.$router.push({name: 'goods_detail', query: {id: id}})
       },
-      operateCart(id, num) {
-        vm.loadData(cartApi.add, {goodsId: id, goodsNum: num}, 'POST', function (res) {
-          console.log(res, '添加购物车xxxxx')
-        })
-      },
       /* 页面数据 */
       getBanner(cb) {
         vm.loadData(homeApi.banner, null, 'POST', function (res) {
@@ -420,22 +408,33 @@
         console.log(params)
         vm.loadData(homeApi.goodsList, params, 'POST', function (res) {
           var resD = res.data.pager
-          console.log(resD, '首页GoodsList')
 //          vm.pageCount = resD.pageCount
+          if (resD.itemList && resD.itemList.length) {
+            for (let i = 0; i < resD.itemList.length; i++) {
+              let cur01 = resD.itemList[i]
+              for (let j = 0; j < vm.cartData.goodsList.length; j++) {
+                let cur02 = vm.cartData.goodsList[j]
+                if (cur01.id === cur02.goodsId) {
+                  cur01['number'] = cur02.goodsNum
+                }
+              }
+            }
+          }
+          console.log(resD, '首页GoodsList')
           if (!isLoadMore) {
-            if (resD.totalCount<params.pageSize) {
+            if (resD.totalCount < params.pageSize) {
               vm.goods = resD.itemList
               vm.noMore = true
               /*vm.$nextTick(function () {
                vm.$refs.myScroll.disablePullup()
                })*/
-            }else{
+            } else {
               vm.goods = resD.itemList
               vm.noMore = false
             }
           } else {
-            console.log(vm.goods,resD.itemList,858552)
-            resD.itemList.length ? vm.goods=vm.goods.concat(resD.itemList) : vm.noMore = true
+            console.log(vm.goods, resD.itemList, 858552)
+            resD.itemList.length ? vm.goods = vm.goods.concat(resD.itemList) : vm.noMore = true
           }
           vm.onFetching = false
         }, function () {
@@ -539,29 +538,38 @@
         vm.showFilterCon ? vm.showFilterCon = false : null
       },
       /* 购物车 */
-      viewCart() {
+      viewCart(cb) {
         vm.loadData(cartApi.view, null, 'POST', function (res) {
           var resD = res.data
           console.log(resD, '购物车数据')
-          vm.$store.commit('updateCart', resD.totalNum)
+          vm.cartData = resD
+          vm.curCount = resD.totalNum
+          cb ? cb() : null
         }, function () {
         })
       },
       changeCount(obj) {
-        console.log(obj, vm.curCount)
+        console.log(obj)
         if (obj.type === 'add') {
-          this.additem(obj.event)
-          vm.curCount++
+          if (vm.cartData && vm.cartData.sellerId !== obj.sellerId) {
+            vm.toast('购物车中已有其他店铺商品，请先清空')
+            return
+          }
           vm.loadData(cartApi.add, {goodsId: obj.id}, 'POST', function (res) {
+            if (res.success) {
+              vm.additem(obj.event)
+              vm.viewCart()
+            } else {
+              vm.toast(res.message || '购物车中已有其他店铺商品，请先清空')
+            }
           }, function () {
           })
         } else {
-          vm.curCount--
           vm.loadData(cartApi.minus, {goodsId: obj.id}, 'POST', function (res) {
+            vm.viewCart()
           }, function () {
           })
         }
-        console.log(vm.$store.state.cart.count)
       },
       additem(event) {
         this.drop(event.target);
@@ -609,7 +617,7 @@
         cartCls.toggle('bulbing')
         setTimeout(() => {
           cartCls.remove('bulbing')
-        },800)
+        }, 800)
       },
       /*初始化小球*/
       afterDrop(el) {
