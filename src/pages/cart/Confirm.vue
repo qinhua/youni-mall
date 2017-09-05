@@ -76,8 +76,7 @@
         address: null,
         goods: null,
         params: {
-          sellerId: null,
-          goods: null,
+          goods: [],
           addressId: null,
           dispatchTime: '',
           userMessage: '',
@@ -113,8 +112,10 @@
     mounted() {
       vm = this
       vm.curCartData = vm.$route.query.thedata ? JSON.parse(decodeURIComponent(vm.$route.query.thedata)) : {}
-      vm.params.goods=vm.curCartData.goods
-      vm.params.sellerId=vm.curCartData.sellerId
+      for (var i = 0; i < vm.curCartData.goods.length; i++) {
+        vm.params.goods.push({goodsId:vm.curCartData.goods[i].goodsId})
+      }
+//      vm.params.sellerId=vm.curCartData.sellerId
       console.log(vm.curCartData)
       vm.switchData(vm.coupons, vm.tmpCoupon, 'couponId')
       vm.getAddress ()

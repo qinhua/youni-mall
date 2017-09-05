@@ -102,8 +102,9 @@
 
               // 解析定位错误信息
               var onError = function (data) {
-                tips.innerHTML = '定位失败'
-                vm.$emit('on-geo-end', data)
+                geoByIp()
+                // tips.innerHTML = '定位失败'
+                // vm.$emit('on-geo-end', data)
               }
 
               map.plugin('AMap.Geolocation', function () {

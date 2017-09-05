@@ -30,7 +30,7 @@ const ticketApi = {
 const orderApi = {
   add: host + '/order/add',
   score: host + '/order/score',
-  orders: host + '/home/order',
+  list: host + '/order/list',
   updateOrder: host + '/home/updateOrder'
 }
 const userApi = {
@@ -47,7 +47,8 @@ const cartApi = {
   add: host + '/cart/add',
   minus: host + '/cart/subtract',
   update: host + '/cart/udpateNum',
-  del: host + '/cart/del'
+  del: host + '/cart/del',
+  clear: host + '/cart/clear'
 }
 const commonApi = {
   dict: host + '/common/dictList',

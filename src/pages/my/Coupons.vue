@@ -115,6 +115,14 @@
         vm.onFetching = true
         vm.loadData(userApi.couponList, vm.params, 'POST', function (res) {
           var resD = res.data.itemList
+          resD=[{
+            "id":"id",
+            "type":"优惠类型",
+            "couponName":"优惠名称",
+            "amount":"优惠金额",
+            "expireTime":"有效期限（为空一直有效）",
+            "couponNote":"优惠券说明（如水票买20送1）"
+          }]
           /* for (var i = 0; i < resD.length; i++) {
             switch (resD[i].status) {
               case -1:

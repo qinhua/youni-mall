@@ -31,8 +31,8 @@
           <div class="ico ico-toutiao"></div>
           <marquee>
             <marquee-item v-for="(news, i) in notice" :key="i" :data-id="news.noticeId"
-                          @click.native="toTopic(news.linkUrl)"
-                          class="align-middle">{{news.content}}
+                          @click.native="toTopic(news.url)"
+                          class="align-middle">{{news.name}}
             </marquee-item>
           </marquee>
         </div>
@@ -68,23 +68,23 @@
                 @on-pulldown-loading="onPullDown" @on-pullup-loading="onPullUp" @on-scroll-bottom="" ref="myScroll"
                 :scroll-bottom-offst="300">
         <div class="box">
-          <section class="v-items" v-for="(item, index) in shops" :data-id="item.id" @click="toDetail(item.id)">
+          <section class="v-items" v-for="(item, index) in sellers" :data-id="item.id" @click="toDetail(item.id)">
             <section class="wrap">
-              <img :src="item.imgurl">
+              <img :src="item.logo">
               <section class="infos">
-                <h3>{{item.name}}<span class="distance">{{item.distance}}km</span></h3>
+                <h3>{{item.name}}<span class="distance">{{item.distance | toFixed}}km</span></h3>
                 <section class="middle">
                   <ol class="star">
                     <li v-for="star in item.score">★</li>
                   </ol>
                   <span class="hasSell"><i>{{item.score}}.0分</i>已售{{item.saleCount}}单</span>
                 </section>
-                <ul>
-                  <li v-for="(label,idx) in item.labels" :class="'c'+(idx+1)">{{label}}</li>
+                <ul v-if="item.label">
+                  <li v-for="(label,idx) in item.label.split(',')" :class="'c'+(idx+1)">{{label}}</li>
                 </ul>
               </section>
               <div class="bottom">
-                <label class="note" v-if="item.note"><i class="ico-hui"></i>{{item.note}}</label>
+                <label class="note" v-if="item.ticket"><i class="ico-hui"></i>{{item.ticket}}</label>
                 <span class="dispatchTime">平均{{item.dispatchTime}}分钟送达</span>
               </div>
             </section>
@@ -122,7 +122,7 @@
         address:'',
         banner: [],
         notice: [],
-        shops: [],
+        sellers: [],
         filters: {
           shop: [
             {
@@ -238,7 +238,7 @@
       vm.getMap()
       vm.getBanner()
       vm.getNotice()
-      vm.getShops()
+      vm.getSeller()
       // 点击区域之外隐藏筛选栏
       document.addEventListener('click', (e) => {
         if (e.target.offsetParent) {
@@ -327,9 +327,9 @@
           vm.notice = res.data.itemList
         })
       },
-      getShops(isLoadMore) {
+      getSeller(isLoadMore) {
         if (vm.onFetching) return false
-        var params = vm.filterData || {
+        var params = {
           pagerSize: 10,
           pageNo: 1,
           goodsType: 'XXX',
@@ -337,17 +337,18 @@
           brandId: '',
           filter: ''
         }
-        vm.loadData(nearbyApi.shopsList, params, 'POST', function (res) {
-          console.log(res.data, '首页shopsList')
+        vm.loadData(nearbyApi.sellerList, params, 'POST', function (res) {
+          var resD= res.data.pager.itemList
+          console.log(resD, '附近卖家')
           if (!isLoadMore) {
-            vm.shops = res.data.itemList
+            vm.sellers = resD
             if (res.data.noMore) {
               vm.$nextTick(function () {
                 vm.$refs.myScroll.disablePullup()
               })
             }
           } else {
-            vm.shops.push(res.data.itemList)
+            vm.sellers.push(resD)
           }
           vm.onFetching = false
         }, function () {
@@ -420,7 +421,7 @@
           // this.onFetching = true
           setTimeout(function () {
             // vm.bottomCount += 10
-            vm.getShops()
+            vm.getSeller()
             vm.$nextTick(function () {
               vm.$refs.myScroll.reset({top: 0})
               vm.$refs.myScroll.donePullup()
@@ -437,7 +438,7 @@
           // vm.onFetching = true
           setTimeout(function () {
             // vm.bottomCount += 10
-            vm.getShops(true)
+            vm.getSeller(true)
             vm.$nextTick(function () {
               vm.$refs.myScroll.reset({bottom: 0})
               vm.$refs.myScroll.donePullup()
@@ -465,17 +466,20 @@
   }
 
   .swiper-home {
+    min-height: 320/@rem;
     margin-bottom: 10/@rem;
-    /*p {
-      padding: 10/@rem 20/@rem;
-      .b3;
-      .cf;
-    }*/
-    .swiper-pagination {
-      bottom: 5px;
-    }
-    .swiper-pagination-bullet-active {
-      background: #eee;
+    .swiper-container {
+      /*p {
+        padding: 10/@rem 20/@rem;
+        .b3;
+        .cf;
+      }*/
+      .swiper-pagination {
+        bottom: 5px;
+      }
+      .swiper-pagination-bullet-active {
+        background: #eee;
+      }
     }
   }
 

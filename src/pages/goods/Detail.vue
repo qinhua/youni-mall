@@ -36,11 +36,11 @@
       </div>
     </div>
     <div class="bottom">
-      <tab :line-width=2 active-color="#f34c18" v-model="curIndex">
+      <!--<tab :line-width=2 active-color="#f34c18" v-model="curIndex">
         <tab-item class="vux-center" :selected="curIndex === index" v-for="(item, index) in tablist"
                   @click.native="chooseCol(index)" :key="index">{{item}}
         </tab-item>
-      </tab>
+      </tab>-->
       <div class="swiper-container swiper-goods-detail" v-show="details.imgurl">
         <div class="swiper-wrapper">
           <div class="swiper-slide">
@@ -48,7 +48,7 @@
               <img src="../../../static/img/detail/s01.jpg" class="wd-img" alt="">
             </div>
           </div>
-          <div class="swiper-slide">
+          <!--<div class="swiper-slide">
             <ul class="goods-param">
               <li>规格：4L*6</li>
               <li>产地：由于农夫山泉采取的是“水源地建厂，水源地灌装”、“水源地就近区域销售”的策略，各地购买到的农夫山泉水源地不尽相同，具体以瓶身标注为准 </li>
@@ -98,7 +98,7 @@
                 </ol>
               </div>
             </div>
-          </div>
+          </div>-->
         </div>
       </div>
     </div>
@@ -116,7 +116,7 @@
     </div>
     <div class="cart-model">
       <div class="wrap">
-        <div class="cur-cart" ref="curCart" :hasgood="curCount>0"><i v-if="curCount">{{curCount}}</i></div>
+        <div class="cur-cart" ref="curCart" :hasgood="curCount>0" v-jump="['cart']"><i v-if="curCount">{{curCount}}</i></div>
         <div class="left">
           <div class="txt" v-if="curCount">
             <h4>当前共{{curCount}}件</h4>
@@ -124,7 +124,7 @@
           </div>
         </div>
         <div class="right" @click="goConfirm">
-          去结算
+          立即购买
         </div>
       </div>
     </div>
@@ -182,7 +182,7 @@
       vm.getDetail(function () {
         vm.mySwiper()
         vm.swiperDetail()
-        vm.getAppraise()
+        //vm.getAppraise()
       })
 //      vm.$nextTick(function() {
 //        vm.$refs.orderScroller.finishInfinite(true)

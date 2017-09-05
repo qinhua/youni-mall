@@ -128,6 +128,7 @@
             defaultAddress: vm.lineData.defaultAddress ? 1 : 0
           }
         } else {
+          vm.detailAddress = ''
           vm.params = {
             name: '',
             phone: '',

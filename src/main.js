@@ -77,10 +77,11 @@ window.loadData = Vue.prototype.loadData = function (url, params, type, sucCb, e
   params = params || {}
   setTimeout(function () {
     $.extend(params, window.youniMall.userAuth)
-    var localGeo = me.sessions.get('cur5656Position') ? JSON.parse(me.sessions.get('cur5656Position')) : {}
+    var localGeo = me.sessions.get('cur5656Geo') ? JSON.parse(me.sessions.get('cur5656Geo')) : {}
+    var localIps = me.sessions.get('cur5656Ips') ? JSON.parse(me.sessions.get('cur5656Ips')) : {}
     var localParams = {
-      ip: me.sessions.get('cur5656Ips'),
-      cityCode: localGeo.cityCode,
+      ip: localIps.cip,
+      cityCode: localGeo.cityCode||localIps.cid,
       lon: localGeo.lng,
       lat: localGeo.lat
     }
@@ -128,12 +129,14 @@ Vue.prototype.alert = function (title, content, showCb, hideCb) {
   })
 }
 /* confirm */
-Vue.prototype.confirm = function (title, content, confirmCb, cancelCb) {
+Vue.prototype.confirm = function (title, content, confirmCb, cancelCb, confirmtext, canelText) {
   const _this = this
   _this.$vux.confirm.show({
     theme: 'ios',
     title: title || '',
     content: content || '',
+    confirmText: confirmtext ||'确定',
+    cancelText: canelText ||'取消',
     onCancel() {
       cancelCb ? cancelCb() : null
     },

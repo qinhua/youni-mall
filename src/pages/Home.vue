@@ -551,14 +551,25 @@
       changeCount(obj) {
         console.log(obj)
         if (obj.type === 'add') {
-          if (vm.cartData && vm.cartData.sellerId !== obj.sellerId) {
-            vm.toast('购物车中已有其他店铺商品，请先清空')
+          if (vm.cartData.sellerId && vm.cartData.sellerId !== obj.sellerId) {
+            //vm.toast('购物车中已有其他店铺商品，请先清空')
+
+            vm.confirm('温馨提示', '当前购物车中已有其他店铺商品，请先清空！', function () {
+              vm.isPosting = true
+              vm.loadData(cartApi.clear, null, 'POST', function (res) {
+                vm.getCart()
+                vm.isPosting = false
+              }, function () {
+                vm.isPosting = false
+              })
+            }, function () {
+            })
             return
           }
           vm.loadData(cartApi.add, {goodsId: obj.id}, 'POST', function (res) {
             if (res.success) {
-              vm.additem(obj.event)
               vm.viewCart()
+              vm.additem(obj.event)
             } else {
               vm.toast(res.message || '购物车中已有其他店铺商品，请先清空')
             }
@@ -570,6 +581,19 @@
           }, function () {
           })
         }
+      },
+      emptyCart(){
+        if (vm.isPosting) return false
+        vm.confirm('确认清空？', '清空后不可恢复！', function () {
+          vm.isPosting = true
+          vm.loadData(cartApi.clear, null, 'POST', function (res) {
+            vm.getCart()
+            vm.isPosting = false
+          }, function () {
+            vm.isPosting = false
+          })
+        }, function () {
+        })
       },
       additem(event) {
         this.drop(event.target);

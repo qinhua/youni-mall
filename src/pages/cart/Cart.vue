@@ -243,7 +243,7 @@
         if (vm.isPosting) return false
         vm.confirm('确认清空？', '清空后不可恢复！', function () {
           vm.isPosting = true
-          vm.loadData(cartApi.del, {goodsId: id}, 'POST', function (res) {
+          vm.loadData(cartApi.clear, null, 'POST', function (res) {
             vm.getCart()
             vm.isPosting = false
           }, function () {

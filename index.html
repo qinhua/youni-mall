@@ -38,7 +38,7 @@
   <script type="text/javascript" src="http://pv.sohu.com/cityjson/getip.aspx" charset="utf-8"></script>
   <script>
     console.log(returnCitySN,'外部ip定位')
-    sessionStorage.setItem('cur5656Ips',returnCitySN.cip)
+    sessionStorage.setItem('cur5656Ips',JSON.stringify(returnCitySN))
     // 百度统计
   </script>
   <!--<script src="static/js/vconsole.min.js"></script>-->

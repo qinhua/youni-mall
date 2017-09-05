@@ -611,7 +611,7 @@ import $ from 'jquery'
      * @param time
      * @param ele
      */
-    verCodeBtn: function (time, ele) {
+    verCodeBtn: function (time, ele, cb) {
       var timer = null;
       var secs = parseInt(time) || 60;
       var btn = typeof ele !== "string" ? ele : $(ele);
@@ -626,6 +626,7 @@ import $ from 'jquery'
           beginCount();
           if (secs < 0) {
             btn.removeClass("disabled").text('获取验证码').prop("disabled", false);
+            cb? cb() : null
             clearTimeout(timer);
             return;
           }
@@ -636,6 +637,7 @@ import $ from 'jquery'
       //myMixin.lightPop("已发送，注意查收短信！");
       //setTimeout(function () {
       //    btn.removeClass("disabled").text('获取验证码').prop("disabled", false);
+      //    cb? cb() : null
       //}, secs * 1000);
     },
 

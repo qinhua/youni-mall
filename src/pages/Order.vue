@@ -1,40 +1,42 @@
 <template>
   <div class="order" v-cloak>
     <tab class="order-tab" active-color="#f34c18">
-      <tab-item :selected="params.type==0?true:false" @on-item-click="onItemClick">全部</tab-item>
-      <tab-item :selected="params.type==1?true:false" @on-item-click="onItemClick(1)">待支付</tab-item>
-      <tab-item :selected="params.type==2?true:false" @on-item-click="onItemClick(2)">待派送</tab-item>
-      <tab-item :selected="params.type==3?true:false" @on-item-click="onItemClick(3)">待评价</tab-item>
-      <tab-item :selected="params.type==4?true:false" @on-item-click="onItemClick(4)">已完成</tab-item>
+      <tab-item :selected="!params.status?true:false" @on-item-click="onItemClick">全部</tab-item>
+      <tab-item :selected="params.status==1?true:false" @on-item-click="onItemClick(1)">待支付</tab-item>
+      <tab-item :selected="params.status==2?true:false" @on-item-click="onItemClick(2)">待派送</tab-item>
+      <tab-item :selected="params.status==3?true:false" @on-item-click="onItemClick(3)">派送中</tab-item>
+      <tab-item :selected="params.status==4?true:false" @on-item-click="onItemClick(4)">已完成</tab-item>
     </tab>
     <div class="order-list">
-      <scroller class="inner-scroller" ref="orderScroller" :on-refresh="refresh" :on-infinite="infinite" refreshText="下拉刷新" noDataText="没有更多数据" snapping>
+      <scroller class="inner-scroller" ref="orderScroller" :on-refresh="refresh" :on-infinite="infinite"
+                refreshText="下拉刷新" noDataText="没有更多数据" snapping>
         <!-- content goes here -->
-        <section class="v-items" v-for="(item, index) in orders" :data-id="item.id" :data-orderNumber="item.orderNumber">
-          <h4 class="item-top"><i class="ico-store"></i>&nbsp;{{item.sellerName}}&nbsp;&nbsp;<i
-            class="fa fa-angle-right cc"></i><span>{{item.statusName}}</span></h4>
+        <section class="v-items" v-for="(item, index) in orders" :data-id="item.orderId"
+                 :data-orderNumber="item.appOrderNumber" :data-itemId="item.orderItemId">
+          <!--<h4 class="item-top"><i class="ico-store"></i>&nbsp;{{item.sellerName}}&nbsp;&nbsp;<i class="fa fa-angle-right cc"></i><span>{{item.statusName}}</span></h4>-->
           <section class="item-middle">
             <div class="img-con">
-              <img :src="item.imgurl">
+              <img :src="item.goodsImage">
             </div>
             <div class="info-con">
-              <h3>{{item.productName}}</h3>
+              <h3>{{item.goodsName}}</h3>
               <section class="middle">
-                <span class="unit-price">￥{{item.unitPrice}}</span>
+                <span class="unit-price">￥{{item.goodsPrice}}</span>
                 <span class="order-info">{{item.info}}</span>
               </section>
               <label>{{item.label}}</label>
             </div>
             <div class="price-con">
-              <p class="price">￥{{item.price}}</p>
-              <p class="buy-count">x{{item.buyCount}}</p>
+              <p class="price">￥{{item.goodsPrice * item.goodsAmount}}</p>
+              <p class="buy-count">x{{item.goodsAmount}}</p>
             </div>
           </section>
           <section class="item-bottom">
-            <div class="extra-info">
+            <!--<div class="extra-info">
               <p v-for="(ext, idx) in item.extras">{{ext.name}}<span>￥{{ext.type ? '-' : ''}}{{ext.value}}.00</span></p>
+            </div>-->
+            <div class="total-price">共{{item.goodsAmount}}件商品&nbsp;合计：<span>￥{{(item.goodsPrice * item.goodsAmount)|toFixed}}</span>（含上楼费）
             </div>
-            <div class="total-price">共{{item.buyCount}}件商品&nbsp;合计：<span>￥{{item.total}}</span>.00（含上楼费）</div>
             <div class="btns" v-if="item.status===-1">
               <a class="btn btn-del" @click="delOrder(item.orderId||2)">删除订单</a>
             </div>
@@ -74,16 +76,11 @@
     data () {
       return {
         show: false,
-        curOrderFilter: '',
         orders: [],
         params: {
-          type: 0,
+          userType: 1,
           pagerSize: 10,
-          pageNo: 1,
-          goodsType: 'XXX',
-          goodsCategory: '',
-          brandId: '',
-          filter: ''
+          pageNo: 1
         },
         isPosting: false,
         onFetching: false
@@ -101,8 +98,7 @@
         vm.$refs.orderScroller.resize()
       })
     },
-    computed: {
-    },
+    computed: {},
     watch: {
       '$route' (to, from) {
         vm.getOrders()
@@ -130,25 +126,16 @@
           vm.$refs.orderScroller.finishInfinite(true)
         }, 1000)
       },
-      onItemClick (type) {
-        if (type === 'undefined') {
-          vm.params.type = ''
-        } else {
-          vm.params.type = type
-        }
-        vm.getOrders()
-      },
-      filterTicket (type, isMine) {
-        vm.curTicketFilter = type
+      onItemClick (status) {
+        status ? vm.params.status = status : delete vm.params.status
         vm.getOrders()
       },
       getOrders (isLoadMore) {
-        vm.params.type = vm.$route.params.id
         if (vm.onFetching) return false
         vm.processing()
         vm.onFetching = true
-        vm.loadData(orderApi.orders, vm.params, 'POST', function (res) {
-          var resD = res.data.itemList
+        vm.loadData(orderApi.list, vm.params, 'POST', function (res) {
+          var resD = res.data.pager.itemList
           for (var i = 0; i < resD.length; i++) {
             switch (resD[i].status) {
               case -1:
@@ -178,10 +165,10 @@
           }
           console.log(vm.orders, '订单数据')
           vm.onFetching = false
-          vm.processing(0,1)
+          vm.processing(0, 1)
         }, function () {
           vm.onFetching = false
-          vm.processing(0,1)
+          vm.processing(0, 1)
         })
       },
       delOrder (id) {
@@ -193,7 +180,7 @@
           }, function () {
             vm.isPosting = false
           })
-        }, function(){
+        }, function () {
         })
       },
       cancelOrder (id) {
@@ -205,7 +192,7 @@
           }, function () {
             vm.isPosting = false
           })
-        }, function(){
+        }, function () {
           // console.log('no')
         })
       },
@@ -218,18 +205,18 @@
           }, function () {
             vm.isPosting = false
           })
-        }, function(){
+        }, function () {
           // console.log('no')
         })
       },
       payOrder (id) {
         if (vm.isPosting) return false
-          vm.isPosting = true
-          vm.loadData(orderApi.payOrder + '?id=' + id, vm.params, 'POST', function (res) {
-            vm.isPosting = false
-          }, function () {
-            vm.isPosting = false
-          })
+        vm.isPosting = true
+        vm.loadData(orderApi.payOrder + '?id=' + id, vm.params, 'POST', function (res) {
+          vm.isPosting = false
+        }, function () {
+          vm.isPosting = false
+        })
       }
     }
   }
@@ -251,7 +238,7 @@
   }
 
   .order-list {
-    .inner-scroller{
+    .inner-scroller {
       .borBox;
       padding: 44px 0 50px;
       .v-items {
@@ -259,19 +246,20 @@
         margin-bottom: 20/@rem;
         /*padding: 0 20/@rem 20/@rem;*/
         .bf;
-        .bsd(0, 2px, 10px, 0, #ccc);
+        .bor-t;
+        /*.bsd(0, 2px, 10px, 0, #ccc);*/
         .item-top {
           padding: 14/@rem 20/@rem;
           .txt-normal;
           .c3;
           .fz(24);
           .bor-b;
-          .ico-store{
+          .ico-store {
             .fl;
             display: inline-block;
             margin-top: 2/@rem;
             font-size: inherit;
-            .size(30,30);
+            .size(30, 30);
             background: url(../../static/img/ico_store.png);
             .ele-base;
           }
