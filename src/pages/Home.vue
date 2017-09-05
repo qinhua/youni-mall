@@ -88,7 +88,8 @@
                 </section>
               </div>
               <group class="buy-count">
-                <x-number button-style="round" :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0" :max="50" :value="item.number" align="right" :dataId="item.id"
+                <x-number button-style="round" :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0"
+                          :max="50" :value="item.number" align="right" :dataId="item.id"
                           :dataSellerId="item.sellerId"
                           @on-change="changeCount"></x-number>
               </group>
@@ -143,9 +144,9 @@
         params: {
           pageSize: 5,
           pageNo: 1,
-          goodsType: 'goods_type.1',
+          /*goodsType: 'goods_type.1',
           goodsCategory: 'goods_category.1',
-          brandId: '038283447c4311e7aa18d8cb8a971936'
+          brandId: '038283447c4311e7aa18d8cb8a971936'*/
         },
         /* filter start */
         filterOffset: 0,
@@ -225,7 +226,6 @@
             }
           ]
         },
-        curPage: 1,
         curFilterType: '',
         currentFilter: null,
         filterData: [],
@@ -234,10 +234,10 @@
         subActive: 0,
         /* filter end */
         showList: true,
+        curPage: 1,
         noMore: false,
         scrollTop: 0,
         pageCount: 0,
-        onFetching: false,
         isPosting: false,
         pulldownConfig: {
           content: '下拉刷新',
@@ -294,7 +294,8 @@
       vm.getMap()
       vm.getBanner()
       vm.getNotice()
-      vm.viewCart(vm.getGoods)
+      vm.getGoods()
+      vm.viewCart()
       // 点击区域之外隐藏筛选栏
       document.addEventListener('click', (e) => {
         if (e.target.offsetParent) {
@@ -330,8 +331,18 @@
     },
     watch: {
       '$route'(to, from) {
-        vm.viewCart(vm.getGoods)
         vm.getMap()
+        vm.getGoods()
+        vm.viewCart()
+      },
+      goods() {
+        vm.syncList()
+      },
+      cartData() {
+        vm.syncList()
+      },
+      curCount() {
+        vm.syncList()
       }
     },
     methods: {
@@ -396,49 +407,28 @@
         })
       },
       getGoods(isLoadMore) {
-        if (vm.onFetching) return
-        !isLoadMore ? vm.curPage = 1 : vm.curPage++
-        var params = {
-          pageSize: 5,
-          pageNo: vm.curPage,
-          /*goodsType: 'goods_type.1',
-           goodsCategory: 'goods_category.1',
-           brandId: '038283447c4311e7aa18d8cb8a971936'*/
-        }
-        console.log(params)
-        vm.loadData(homeApi.goodsList, params, 'POST', function (res) {
+        if (vm.isPosting) return
+        vm.isPosting = true
+        !isLoadMore ? vm.params.pageNo = 1 : vm.params.pageNo++
+        vm.loadData(homeApi.goodsList, vm.params, 'POST', function (res) {
           var resD = res.data.pager
-//          vm.pageCount = resD.pageCount
-          if (resD.itemList && resD.itemList.length) {
-            for (let i = 0; i < resD.itemList.length; i++) {
-              let cur01 = resD.itemList[i]
-              for (let j = 0; j < vm.cartData.goodsList.length; j++) {
-                let cur02 = vm.cartData.goodsList[j]
-                if (cur01.id === cur02.goodsId) {
-                  cur01['number'] = cur02.goodsNum
-                }
-              }
-            }
-          }
-          console.log(resD, '首页GoodsList')
           if (!isLoadMore) {
-            if (resD.totalCount < params.pageSize) {
-              vm.goods = resD.itemList
+            if (resD.totalCount < vm.params.pageSize) {
               vm.noMore = true
               /*vm.$nextTick(function () {
                vm.$refs.myScroll.disablePullup()
                })*/
             } else {
-              vm.goods = resD.itemList
               vm.noMore = false
             }
+            vm.goods = resD.itemList
           } else {
-            console.log(vm.goods, resD.itemList, 858552)
-            resD.itemList.length ? vm.goods = vm.goods.concat(resD.itemList) : vm.noMore = true
+            resD.itemList.length ? vm.goods.concat(resD.itemList) : vm.noMore = true
           }
-          vm.onFetching = false
+          console.log(vm.goods, '首页GoodsList')
+          vm.isPosting = false
         }, function () {
-          vm.onFetching = false
+          vm.isPosting = false
         })
       },
       /* 商品筛选 */
@@ -521,7 +511,6 @@
           // do nothing
           return false
         } else {
-          // vm.onFetching = true
           setTimeout(function () {
             vm.getGoods(true)
             vm.$nextTick(function () {
@@ -538,6 +527,23 @@
         vm.showFilterCon ? vm.showFilterCon = false : null
       },
       /* 购物车 */
+      syncList() {
+        if (vm.goods && vm.goods.length) {
+          for (let i = 0; i < vm.goods.length; i++) {
+            let cur01 = vm.goods[i]
+            if (vm.cartData && vm.cartData.goodsList.length) {
+              for (let j = 0; j < vm.cartData.goodsList.length; j++) {
+                let cur02 = vm.cartData.goodsList[j]
+                if (cur01.id === cur02.goodsId) {
+                  cur01['number'] = cur02.goodsNum
+                }
+              }
+            }else{
+              cur01['number'] = 0
+            }
+          }
+        }
+      },
       viewCart(cb) {
         vm.loadData(cartApi.view, null, 'POST', function (res) {
           var resD = res.data
@@ -545,24 +551,25 @@
           vm.cartData = resD
           vm.curCount = resD.totalNum
           cb ? cb() : null
+          vm.isPosting = false
         }, function () {
+          vm.isPosting = false
         })
       },
       changeCount(obj) {
-        console.log(obj)
+        if (vm.isPosting) return
+        vm.isPosting = true
         if (obj.type === 'add') {
           if (vm.cartData.sellerId && vm.cartData.sellerId !== obj.sellerId) {
             //vm.toast('购物车中已有其他店铺商品，请先清空')
-
             vm.confirm('温馨提示', '当前购物车中已有其他店铺商品，请先清空！', function () {
               vm.isPosting = true
               vm.loadData(cartApi.clear, null, 'POST', function (res) {
-                vm.getCart()
+                vm.viewCart()
                 vm.isPosting = false
               }, function () {
                 vm.isPosting = false
               })
-            }, function () {
             })
             return
           }
@@ -573,27 +580,18 @@
             } else {
               vm.toast(res.message || '购物车中已有其他店铺商品，请先清空')
             }
+            vm.isPosting = false
           }, function () {
+            vm.isPosting = false
           })
         } else {
           vm.loadData(cartApi.minus, {goodsId: obj.id}, 'POST', function (res) {
             vm.viewCart()
+            vm.isPosting = false
           }, function () {
+            vm.isPosting = false
           })
         }
-      },
-      emptyCart(){
-        if (vm.isPosting) return false
-        vm.confirm('确认清空？', '清空后不可恢复！', function () {
-          vm.isPosting = true
-          vm.loadData(cartApi.clear, null, 'POST', function (res) {
-            vm.getCart()
-            vm.isPosting = false
-          }, function () {
-            vm.isPosting = false
-          })
-        }, function () {
-        })
       },
       additem(event) {
         this.drop(event.target);

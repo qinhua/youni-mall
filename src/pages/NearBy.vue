@@ -123,27 +123,37 @@
         banner: [],
         notice: [],
         sellers: [],
-        filters: {
+        filters: {/*
           shop: [
             {
-              key: 0,
+              key: '',
               value: '全部'
             },
             {
-              key: 1,
-              value: '瓶装水'
+              key: 'seller_level.1',
+              value: '普通店'
             },
             {
-              key: 2,
-              value: '桶装水'
+              key: 'seller_level.2',
+              value: '官方认证'
             },
             {
-              key: 3,
-              value: '认证卖家'
+              key: 'seller_level.3',
+              value: '金牌店'
+            }
+          ],*/
+          shop: [
+            {
+              key: 'seller_level.3',
+              value: '全部'
             },
             {
-              key: 4,
-              value: '金牌卖家'
+              key: 'seller_level.1',
+              value: '水'
+            },
+            {
+              key: 'seller_level.2',
+              value: '奶'
             }
           ],
           sort: [
@@ -158,10 +168,6 @@
             {
               key: 2,
               value: '销量最高'
-            },
-            {
-              key: 3,
-              value: '好评最多'
             }
           ],
           specials: [
@@ -186,6 +192,11 @@
         curFilterType: '',
         currentFilter: null,
         filterData: [],
+        params:{
+          pageSize:10,
+          sellerType:'',
+          sortType:''
+        },
         showFilterCon: false,
         factive: '',
         subActive: 0,

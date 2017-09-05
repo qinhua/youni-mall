@@ -26,10 +26,12 @@
             <div class="inner">
               <div class="number-con" v-if="curCount">
                 <group>
-                  <x-number :value="curCount" :dataId="details.goodsId" :min="0" :max="50" @on-change="changeNum"></x-number>
+                 <!-- <x-number button-style="round" :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0"
+                            :max="50" :value="item.number" align="right" :dataId="item.id" @on-change="changeCount"></x-number>-->
+                  <x-number :value="curCount" :dataId="details.goodsId" :dataSellerId="item.sellerId" :min="0" :max="50" @on-change="changeCount"></x-number>
                 </group>
               </div>
-              <button v-else type="button" class="btn btn-addcart" @click="changeNum({id:details.id,sellerId:details.sellserId,number:details.curCount})">加入购物车</button>
+              <button v-else type="button" class="btn btn-addcart" @click="changeCount({type:'add',id:details.id,sellerId:details.sellserId,number:details.curCount})">加入购物车</button>
             </div>
           </div>
         </div>
@@ -162,7 +164,6 @@
         onFetching: false,
         cartData: null,
         curCount: 0,
-        unitPrice: 10,
         detailSwiper: null,
         curIndex: 0,
         appIdx: 0,
@@ -177,7 +178,6 @@
     mounted() {
       vm = this
       vm.id = vm.$route.query.id
-      // vm.curCount = this.$store.state.cart.count
       vm.viewCart()
       vm.getDetail(function () {
         vm.mySwiper()
@@ -259,10 +259,6 @@
           vm.$refs.orderScroller.finishInfinite(true)
         }, 1000)
       },
-      filterTicket(type, isMine) {
-        vm.curTicketFilter = type
-        vm.getOrders()
-      },
       getDetail(cb) {
         if (vm.onFetching) return false
         vm.processing()
@@ -308,20 +304,43 @@
         }
       },
       goConfirm() {
-        // 带入当前选择的商品信息
-        if (vm.cartData.length) {
-          var lastD={
-            sellerId:vm.goods.sellerId,
-            sellerName:vm.goods.sellerName,
-            totalPrice:vm.goods.totalPrice,
-            goods:vm.curCartData
+        // 判断当前是否填写了数量
+        var lastD
+        if (vm.cartData&&vm.cartData.goodsList.length) {
+          for (var i = 0; i < vm.cartData.goodsList.length; i++) {
+            var cur = vm.cartData.goodsList[i];
+            if(cur.sellerId===vm.details.sellerId){
+              lastD={
+                sellerId:vm.details.sellerId,
+                sellerName:vm.details.sellerName,
+                totalPrice:vm.details.totalPrice,
+                goods:cur
+              }
+            }
           }
           vm.$router.push({
             name: 'confirm_order',
             query: {thedata: encodeURIComponent(JSON.stringify(lastD))}
           })
         } else {
-          vm.toast('请选择商品！', 'warn')
+          vm.toast('至少选一件哦！', 'warn')
+        }
+      },
+      syncList() {
+        if (vm.goods && vm.goods.length) {
+          for (let i = 0; i < vm.goods.length; i++) {
+            let cur01 = vm.goods[i]
+            if (vm.cartData && vm.cartData.goodsList.length) {
+              for (let j = 0; j < vm.cartData.goodsList.length; j++) {
+                let cur02 = vm.cartData.goodsList[j]
+                if (cur01.id === cur02.goodsId) {
+                  cur01['number'] = cur02.goodsNum
+                }
+              }
+            }else{
+              cur01['number'] = 0
+            }
+          }
         }
       },
       viewCart(cb) {
@@ -330,30 +349,52 @@
           console.log(resD, '购物车数据')
           vm.cartData = resD
           vm.curCount = resD.totalNum
+          for (var i = 0; i < vm.cartData.goodsList.length; i++) {
+            var cur = vm.cartData.goodsList[i];
+            if(cur.sellerId===vm.details.sellerId){
+              vm.curCount=cur.goodsNum
+            }
+          }
           cb ? cb() : null
+          vm.isPosting = false
         }, function () {
+          vm.isPosting = false
         })
       },
-      changeNum(obj) {
-        console.log(obj)
+      changeCount(obj) {
+        if (vm.isPosting) return
+        vm.isPosting = true
         if (obj.type === 'add') {
-          if (vm.cartData && vm.cartData.sellerId !== obj.sellerId) {
-            vm.toast('购物车中已有其他店铺商品，请先清空')
+          if (vm.cartData.sellerId && vm.cartData.sellerId !== obj.sellerId) {
+            //vm.toast('购物车中已有其他店铺商品，请先清空')
+            vm.confirm('温馨提示', '当前购物车中已有其他店铺商品，请先清空！', function () {
+              vm.isPosting = true
+              vm.loadData(cartApi.clear, null, 'POST', function (res) {
+                vm.viewCart()
+                vm.isPosting = false
+              }, function () {
+                vm.isPosting = false
+              })
+            })
             return
           }
           vm.loadData(cartApi.add, {goodsId: obj.id}, 'POST', function (res) {
             if (res.success) {
-              vm.additem(obj.event)
               vm.viewCart()
+              vm.additem(obj.event)
             } else {
               vm.toast(res.message || '购物车中已有其他店铺商品，请先清空')
             }
+            vm.isPosting = false
           }, function () {
+            vm.isPosting = false
           })
         } else {
           vm.loadData(cartApi.minus, {goodsId: obj.id}, 'POST', function (res) {
             vm.viewCart()
+            vm.isPosting = false
           }, function () {
+            vm.isPosting = false
           })
         }
       },

@@ -15,10 +15,6 @@
           <p>{{count}}</p>
           <label>待支付</label>
         </grid-item>
-        <grid-item @on-item-click="jumpTo('order', null, 2)">
-          <p>0</p>
-          <label>待接单</label>
-        </grid-item>
         <grid-item @on-item-click="jumpTo('order', {id:2}, 2)">
           <p>0</p>
           <label>待派送</label>
@@ -30,6 +26,10 @@
         <grid-item @on-item-click="jumpTo('order', {id:3}, 2)">
           <p>2</p>
           <label>待评价</label>
+        </grid-item>
+        <grid-item @on-item-click="jumpTo('order', {id:3}, 2)">
+          <p>2</p>
+          <label>已完成</label>
         </grid-item>
       </grid>
     </div>

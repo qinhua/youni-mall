@@ -62,7 +62,7 @@
           brandId: '',
           filter: ''
         },
-        onFetching: false,
+        noMore: false,
         isPosting: false
       }
     },
@@ -125,19 +125,26 @@
       },
       getTickets (isLoadMore) {
         vm.params.type = this.$route.params.type || 0
-        if (vm.onFetching) return false
+        if (vm.isPosting) return false
         // 根据isMine判断不同的水票类型
-        vm.onFetching = true
-        vm.loadData(ticketApi.tickets, vm.params, 'POST', function (res) {
+        vm.isPosting = true
+        vm.loadData(ticketApi.list, vm.params, 'POST', function (res) {
+          var resD = res.data.pager
           if (!isLoadMore) {
             vm.tickets = res.data.itemList
+            if (resD.totalCount < vm.params.pageSize) {
+              vm.noMore = true
+            }else{
+              vm.noMore = false
+            }
+            vm.tickets = resD.itemList
           } else {
-            vm.tickets.push(res.data.itemList, '水票数据')
+            resD.itemList.length ? vm.tickets.concat(resD.itemList) : vm.noMore = true
           }
-          console.log(vm.tickets)
-          vm.onFetching = false
+          console.log(vm.tickets, '水票数据')
+          vm.isPosting = false
         }, function () {
-          vm.onFetching = false
+          vm.isPosting = false
         })
       }
     }

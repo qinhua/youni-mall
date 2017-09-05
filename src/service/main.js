@@ -25,7 +25,7 @@ const nearbyApi = {
 }
 const ticketApi = {
   tickets: host + '/home/list',
-  list: host + '/ticket/list'
+  list: host + '/waterTicket/list',
 }
 const orderApi = {
   add: host + '/order/add',

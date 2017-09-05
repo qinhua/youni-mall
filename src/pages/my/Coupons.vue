@@ -1,28 +1,29 @@
 <template>
   <div class="my-coupons">
     <tab class="order-tab" active-color="#f34c18">
-        <tab-item :selected="params.type==0?true:false" @on-item-click="onItemClick">全部</tab-item>
-        <tab-item :selected="params.type==1?true:false" @on-item-click="onItemClick(1)">优惠券</tab-item>
-        <tab-item :selected="params.type==1?true:false" @on-item-click="onItemClick(1)">水票券</tab-item>
-        <tab-item :selected="params.type==2?true:false" @on-item-click="onItemClick(2)">红包</tab-item>
-        <tab-item :selected="params.type==3?true:false" @on-item-click="onItemClick(3)">其它</tab-item>
-      </tab>
+      <tab-item :selected="!tmpType?true:false" @on-item-click="onItemClick">全部</tab-item>
+      <tab-item :selected="tmpType==1?true:false" @on-item-click="onItemClick(2)">现金券</tab-item>
+      <tab-item :selected="tmpType==2?true:false" @on-item-click="onItemClick(1)">红包</tab-item>
+      <tab-item :selected="tmpType==3?true:false" @on-item-click="onItemClick(3)">满减</tab-item>
+      <tab-item :selected="tmpType==4?true:false" @on-item-click="onItemClick(4)">水票</tab-item>
+    </tab>
     <div class="coupon-list">
-      <scroller class="inner-scroller" ref="couponScroller" :on-refresh="refresh" :on-infinite="infinite" refreshText="下拉刷新" noDataText="没有更多数据" snapping>
+      <scroller class="inner-scroller" ref="couponScroller" :on-refresh="refresh" :on-infinite="infinite"
+                refreshText="下拉刷新" noDataText="没有更多数据" snapping>
         <!-- content goes here -->
         <section class="v-items" v-for="(item, index) in coupons" :data-id="item.id">
-          <div :class="('stamp type0'+item.type) + (!item.status?' expired':'')">
+          <div :class="('stamp type0'+item.id) + (!item.status?' expired':'')">
             <div class="wrap">
               <div class="par">
-                <p>{{item.sellerName}}</p>
+                <p>{{item.couponName}}</p>
                 <div class="value">
                   <sub class="sign">￥</sub>
-                  <span>{{item.value}}.00</span>
+                  <span>{{item.amount}}.00</span>
                   <sub class="type">{{item.type | couponType(item.type)}}</sub>
                 </div>
                 <p class="info">{{item.info}}</p>
               </div>
-              <div class="copy" v-if="item.status">{{item.label}}<p>{{item.startTime}}<br>{{item.endTime}}</p></div>
+              <div class="copy" v-if="item.status">{{item.couponNote}}<p>{{item.expireTime}}{{item.startTime}}<br>{{item.endTime}}</p></div>
               <div class="copy" v-else><span class="exp">已过期</span></div>
             </div>
             <i></i>
@@ -39,23 +40,21 @@
   let vm
   import {Tab, TabItem} from 'vux'
   import {orderApi, userApi} from '../../service/main.js'
+
   export default {
     name: 'my-coupons',
-    data () {
+    data() {
       return {
         show: false,
-        curOrderFilter: '',
+        tmpType: '',
+        types: ['coupon_type.2','coupon_type.1','coupon_type.3','coupon_type.4'],
         coupons: [],
         params: {
-          type: 0,
+          type: '',
           pagerSize: 10,
-          pageNo: 1,
-          goodsType: 'XXX',
-          goodsCategory: '',
-          brandId: '',
-          filter: ''
+          pageNo: 1
         },
-        onFetching: false,
+        noMore: false,
         isPosting: false,
       }
     },
@@ -63,7 +62,7 @@
     beforeMount() {
       me = window.me
     },
-    mounted () {
+    mounted() {
       vm = this
       vm.getCoupons()
       vm.$nextTick(() => {
@@ -73,56 +72,46 @@
     },
     computed: {},
     watch: {
-      '$route' (to, from) {
+      '$route'(to, from) {
         vm.getCoupons()
       }
     },
     methods: {
       // 向父组件传值
-      setPageStatus (data) {
+      setPageStatus(data) {
         this.$emit('listenPage', data)
       },
-      refresh (done) {
+      refresh(done) {
         console.log('下拉加载')
         setTimeout(function () {
           vm.getCoupons()
           vm.$refs.couponScroller.finishPullToRefresh()
         }, 1200)
       },
-      infinite (done) {
+      infinite(done) {
         console.log('无限滚动')
         setTimeout(function () {
           vm.getCoupons(true)
           vm.$refs.couponScroller.finishInfinite(true)
         }, 1000)
       },
-      onItemClick (type) {
-        if (type === 'undefined') {
-          vm.params.type = ''
-        } else {
-          vm.params.type = type
-        }
+      onItemClick(type) {
+        vm.tmpType = type
+        !type ? vm.params.type = '' : vm.params.type = vm.types[vm.tmpType]
         vm.getCoupons()
       },
-      filterTicket (type, isMine) {
+      filterTicket(type, isMine) {
         vm.curTicketFilter = type
         vm.getCoupons()
       },
-      getCoupons (isLoadMore) {
+      getCoupons(isLoadMore) {
         vm.params.type = vm.$route.params.type
-        if (vm.onFetching) return false
+        if (vm.isPosting) return false
         vm.processing()
-        vm.onFetching = true
+        vm.isPosting = true
         vm.loadData(userApi.couponList, vm.params, 'POST', function (res) {
-          var resD = res.data.itemList
-          resD=[{
-            "id":"id",
-            "type":"优惠类型",
-            "couponName":"优惠名称",
-            "amount":"优惠金额",
-            "expireTime":"有效期限（为空一直有效）",
-            "couponNote":"优惠券说明（如水票买20送1）"
-          }]
+          var resD = res.data.pager
+
           /* for (var i = 0; i < resD.length; i++) {
             switch (resD[i].status) {
               case -1:
@@ -146,19 +135,24 @@
             }
           } */
           if (!isLoadMore) {
-            vm.coupons = resD
+            if (resD.totalCount < vm.params.pageSize) {
+              vm.noMore = true
+            }else{
+              vm.noMore = false
+            }
+            vm.coupons = resD.itemList
           } else {
-            vm.coupons.push(resD)
+            resD.itemList.length ? vm.coupons.concat(resD.itemList) : vm.noMore = true
           }
           console.log(vm.coupons, '优惠券数据')
-          vm.onFetching = false
+          vm.isPosting = false
           vm.processing(0, 1)
         }, function () {
-          vm.onFetching = false
+          vm.isPosting = false
           vm.processing(0, 1)
         })
       },
-      delOrder (id) {
+      delOrder(id) {
         vm.confirm('确认删除？', '订单删除后不可恢复！', function () {
           vm.loadData(orderApi.delOrder + '?id=' + id, vm.params, 'POST', function (res) {
             vm.isPosting = true
@@ -169,7 +163,7 @@
         }, function () {
         })
       },
-      cancelOrder (id) {
+      cancelOrder(id) {
         if (vm.isPosting) return false
         vm.confirm('确认删除？', '订单删除后不可恢复！', function () {
           vm.loadData(orderApi.delOrder, vm.params, 'POST', function (res) {
@@ -189,10 +183,11 @@
 <style scoped lang='less'>
   @import '../../../static/css/tools.less';
 
-  .my-coupons{
+  .my-coupons {
     height: 100%;
     overflow: auto;
   }
+
   .order-tab {
     z-index: 10;
     .vux-tab-item {
@@ -205,58 +200,58 @@
   }
 
   .coupon-list {
-    .inner-scroller{
+    .inner-scroller {
       .borBox;
-      padding:50px 0 20px 0;
+      padding: 50px 0 20px 0;
       .v-items {
         .borBox;
-        width:100%;
+        width: 100%;
         margin-bottom: 20/@rem;
         .stamp {
           .rel;
           .borBox;
-          width:94%;
-          min-height:200/@rem;
-          padding:0 30/@rem;
+          width: 94%;
+          min-height: 200/@rem;
+          padding: 0 30/@rem;
           margin: 0 auto 16/@rem;
           overflow: hidden;
-          &:before{
+          &:before {
             .abs;
             .block;
             top: 0;
             left: 0;
             width: 20px;
             height: 100%;
-            content:'';
+            content: '';
           }
-          &:after{
+          &:after {
             .abs;
             .block;
             top: 0;
             right: 0;
             width: 20px;
             height: 100%;
-            content:'';
+            content: '';
           }
           .wrap {
             .flex;
             .borBox;
             .abs;
-            padding:20/@rem 0 20/@rem 20/@rem;
+            padding: 20/@rem 0 20/@rem 20/@rem;
             content: '';
-            top:0;
-            bottom:0;
-            left:10px;
-            right:10px;
+            top: 0;
+            bottom: 0;
+            left: 10px;
+            right: 10px;
             z-index: -1;
-            background-color:#e0552e;
+            background-color: #e0552e;
           }
           i {
             position: absolute;
             right: -20%;
             top: 120/@rem;
             height: 300/@rem;
-            width:320px;
+            width: 320px;
             z-index: 5;
             .fz(24);
             background-color: rgba(255, 255, 255, .15);
@@ -265,29 +260,29 @@
           .par {
             .rel;
             .flex-r(3);
-            z-index:5;
+            z-index: 5;
             .left;
-            border-right:2px dashed rgba(255, 255, 255, .3);
+            border-right: 2px dashed rgba(255, 255, 255, .3);
             p {
-              padding-top:5/@rem;
-              color:#fff;
+              padding-top: 5/@rem;
+              color: #fff;
               .fz(24);
             }
-            .value{
-              padding:10/@rem 0;
+            .value {
+              padding: 10/@rem 0;
               span {
                 .fz(48);
-                color:#fff;
+                color: #fff;
                 margin-right: 14/@rem;
                 line-height: 60/@rem;
               }
               .sign, .type {
                 position: relative;
-                top:0;
+                top: 0;
                 .fz(24);
-                color:rgba(255, 255, 255, .8);
+                color: rgba(255, 255, 255, .8);
               }
-              .info{
+              .info {
                 .cdiy(#ffe041);
               }
             }
@@ -297,11 +292,11 @@
             .flex-r(1);
             .rel;
             z-index: 5;
-            padding:30/@rem;
+            padding: 30/@rem;
             .fz(32);
             .center;
-            color:rgb(255,255,255);
-            .exp{
+            color: rgb(255, 255, 255);
+            .exp {
               .abs-center-vh;
             }
             p {
@@ -312,90 +307,90 @@
           /*&.type-coupon {*/
           &.type01 {
             &:before {
-              background: -webkit-radial-gradient(transparent 0, transparent 5px,#f1a83f 5px) repeat-y;
+              background: -webkit-radial-gradient(transparent 0, transparent 5px, #f1a83f 5px) repeat-y;
               background: radial-gradient(transparent 0, transparent 5px, #f1a83f 5px) repeat-y;
               background-size: 20px 18px;
               background-position: -10px 3px;
             }
             &:after {
-              background: -webkit-radial-gradient(transparent 0, transparent 5px,#f1a83f 5px) repeat-y;
+              background: -webkit-radial-gradient(transparent 0, transparent 5px, #f1a83f 5px) repeat-y;
               background: radial-gradient(transparent 0, transparent 5px, #f1a83f 5px) repeat-y;
               background-size: 20px 18px;
               background-position: 10px 3px;
             }
             .wrap {
-              background-color:#f1a83f;
+              background-color: #f1a83f;
             }
           }
           /*&.type-ticket {*/
           &.type02 {
             &:before {
-              background: -webkit-radial-gradient(transparent 0, transparent 5px,#3fa1f1 5px) repeat-y;
+              background: -webkit-radial-gradient(transparent 0, transparent 5px, #3fa1f1 5px) repeat-y;
               background: radial-gradient(transparent 0, transparent 5px, #3fa1f1 5px) repeat-y;
               background-size: 20px 18px;
               background-position: -10px 3px;
             }
             &:after {
-              background: -webkit-radial-gradient(transparent 0, transparent 5px,#3fa1f1 5px) repeat-y;
+              background: -webkit-radial-gradient(transparent 0, transparent 5px, #3fa1f1 5px) repeat-y;
               background: radial-gradient(transparent 0, transparent 5px, #3fa1f1 5px) repeat-y;
               background-size: 20px 18px;
               background-position: 10px 3px;
             }
             .wrap {
-              background-color:#3fa1f1;
+              background-color: #3fa1f1;
             }
           }
           /*&.type-redpacket {*/
           &.type03 {
             &:before {
-              background: -webkit-radial-gradient(transparent 0, transparent 5px,#e0552e 5px) repeat-y;
+              background: -webkit-radial-gradient(transparent 0, transparent 5px, #e0552e 5px) repeat-y;
               background: radial-gradient(transparent 0, transparent 5px, #e0552e 5px) repeat-y;
               background-size: 20px 18px;
               background-position: -10px 3px;
             }
             &:after {
-              background: -webkit-radial-gradient(transparent 0, transparent 5px,#e0552e 5px) repeat-y;
+              background: -webkit-radial-gradient(transparent 0, transparent 5px, #e0552e 5px) repeat-y;
               background: radial-gradient(transparent 0, transparent 5px, #e0552e 5px) repeat-y;
               background-size: 20px 18px;
               background-position: 10px 3px;
             }
             .wrap {
-              background-color:#e0552e;
+              background-color: #e0552e;
             }
           }
           &.type04 {
             &:before {
-              background: -webkit-radial-gradient(transparent 0, transparent 5px,#e0552e 5px) repeat-y;
+              background: -webkit-radial-gradient(transparent 0, transparent 5px, #e0552e 5px) repeat-y;
               background: radial-gradient(transparent 0, transparent 5px, #e0552e 5px) repeat-y;
               background-size: 20px 18px;
               background-position: -10px 3px;
             }
             &:after {
-              background: -webkit-radial-gradient(transparent 0, transparent 5px,#e0552e 5px) repeat-y;
+              background: -webkit-radial-gradient(transparent 0, transparent 5px, #e0552e 5px) repeat-y;
               background: radial-gradient(transparent 0, transparent 5px, #e0552e 5px) repeat-y;
               background-size: 20px 18px;
               background-position: 10px 3px;
             }
             .wrap {
-              background-color:#e0552e;
+              background-color: #e0552e;
             }
           }
           /*&.type-expired {*/
           &.expired {
             &:before {
-              background: -webkit-radial-gradient(transparent 0, transparent 5px,#bbb 5px) repeat-y;
+              background: -webkit-radial-gradient(transparent 0, transparent 5px, #bbb 5px) repeat-y;
               background: radial-gradient(transparent 0, transparent 5px, #bbb 5px) repeat-y;
               background-size: 20px 18px;
               background-position: -10px 3px;
             }
             &:after {
-              background: -webkit-radial-gradient(transparent 0, transparent 5px,#bbb 5px) repeat-y;
+              background: -webkit-radial-gradient(transparent 0, transparent 5px, #bbb 5px) repeat-y;
               background: radial-gradient(transparent 0, transparent 5px, #bbb 5px) repeat-y;
               background-size: 20px 18px;
               background-position: 10px 3px;
             }
             .wrap {
-              background-color:#bbb;
+              background-color: #bbb;
             }
           }
         }

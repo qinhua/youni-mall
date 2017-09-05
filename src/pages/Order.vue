@@ -82,6 +82,7 @@
           pagerSize: 10,
           pageNo: 1
         },
+        noMore: false,
         isPosting: false,
         onFetching: false
       }
@@ -132,10 +133,11 @@
       },
       getOrders (isLoadMore) {
         if (vm.onFetching) return false
+        !isLoadMore ? vm.params.pageNo = 1 : vm.params.pageNo++
         vm.processing()
         vm.onFetching = true
         vm.loadData(orderApi.list, vm.params, 'POST', function (res) {
-          var resD = res.data.pager.itemList
+          var resD = res.data.pager
           for (var i = 0; i < resD.length; i++) {
             switch (resD[i].status) {
               case -1:
@@ -159,9 +161,14 @@
             }
           }
           if (!isLoadMore) {
-            vm.orders = resD
+            if (resD.totalCount < vm.params.pageSize) {
+              vm.noMore = true
+            }else{
+              vm.noMore = false
+            }
+            vm.orders = resD.itemList
           } else {
-            vm.orders.push(resD)
+            resD.itemList.length ? vm.orders.concat(resD.itemList) : vm.noMore = true
           }
           console.log(vm.orders, '订单数据')
           vm.onFetching = false
