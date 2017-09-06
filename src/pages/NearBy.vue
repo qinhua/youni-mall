@@ -72,7 +72,7 @@
             <section class="wrap">
               <img :src="item.logo">
               <section class="infos">
-                <h3>{{item.name}}<span class="distance">{{item.distance | toFixed}}km</span></h3>
+                <h3>{{item.name}}<span class="distance">{{(item.distance)/1000 | toFixed}}km</span></h3>
                 <section class="middle">
                   <ol class="star">
                     <li v-for="star in item.score">★</li>
@@ -85,7 +85,8 @@
               </section>
               <div class="bottom">
                 <label class="note" v-if="item.ticket"><i class="ico-hui"></i>{{item.ticket}}</label>
-                <span class="dispatchTime">平均{{item.dispatchTime}}分钟送达</span>
+                <!--<span class="dispatchTime">平均{{item.dispatchTime}}分钟送达</span>-->
+                <span class="dispatchTime">{{item.label}}</span>
               </div>
             </section>
             <section class="sleep-tips" v-if="item.isSleep">
@@ -349,6 +350,7 @@
           filter: ''
         }
         vm.loadData(nearbyApi.sellerList, params, 'POST', function (res) {
+          vm.onFetching = false
           var resD= res.data.pager.itemList
           console.log(resD, '附近卖家')
           if (!isLoadMore) {
@@ -361,7 +363,6 @@
           } else {
             vm.sellers.push(resD)
           }
-          vm.onFetching = false
         }, function () {
           vm.onFetching = false
         })

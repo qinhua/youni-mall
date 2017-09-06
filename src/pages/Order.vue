@@ -35,28 +35,24 @@
             <!--<div class="extra-info">
               <p v-for="(ext, idx) in item.extras">{{ext.name}}<span>￥{{ext.type ? '-' : ''}}{{ext.value}}.00</span></p>
             </div>-->
-            <div class="total-price">共{{item.goodsAmount}}件商品&nbsp;合计：<span>￥{{(item.goodsPrice * item.goodsAmount)|toFixed}}</span>（含上楼费）
-            </div>
             <div class="btns" v-if="item.status===-1">
-              <a class="btn btn-del" @click="delOrder(item.orderId||2)">删除订单</a>
+              <a class="btn btn-del" @click="delOrder(item.orderId)">删除订单</a>
             </div>
-            <div class="btns" v-if="item.status===0">
-              <a class="btn btn-pay" @click="payOrder(item.orderId||2)">支付</a>
-              <a class="btn btn-cancel" @click="cancelOrder(item.orderId||2)">取消订单</a>
-            </div>
+            <!--<div class="btns" v-if="item.status===0">
+              <a class="btn btn-pay" @click="payOrder(item.orderId)">支付</a>
+              <a class="btn btn-cancel" @click="cancelOrder(item.orderId)">取消订单</a>
+            </div>-->
             <div class="btns" v-if="item.status===1">
-              <a class="btn btn-push" @click="pushOrder(item.orderId||2)">催单</a>
-              <a class="btn btn-cancel" @click="cancelOrder(item.orderId||2)">取消订单</a>
+              <a class="btn btn-cancel" @click="payOrder(item.orderId)">支付</a>
+              <a class="btn btn-del" @click="cancelOrder(item.orderId)">取消订单</a>
             </div>
             <div class="btns" v-if="item.status===2">
-              <a class="btn btn-cancel" @click="cancelOrder(item.orderId||2)">取消订单</a>
-            </div>
-            <div class="btns" v-if="item.status===3">
-              <a class="btn btn-appraise" @click="toAppraise(item.orderId||2)">评价</a>
-              <a class="btn btn-del" @click="delOrder(item.orderId||2)">删除订单</a>
+              <a class="btn btn-cancel" @click="pushOrder(item.orderId)">催单</a>
+              <a class="btn btn-del" @click="cancelOrder(item.orderId)">取消订单</a>
             </div>
             <div class="btns" v-if="item.status===4">
-              <a class="btn btn-del" @click="delOrder(item.orderId||2)">删除订单</a>
+              <!--<a class="btn btn-appraise" @click="toAppraise(item.orderId)">评价</a>-->
+              <a class="btn btn-del" @click="delOrder(item.orderId)">删除订单</a>
             </div>
           </section>
         </section>
@@ -83,8 +79,7 @@
           pageNo: 1
         },
         noMore: false,
-        isPosting: false,
-        onFetching: false
+        isPosting: false
       }
     },
     components: {Tab, TabItem},
@@ -132,32 +127,35 @@
         vm.getOrders()
       },
       getOrders (isLoadMore) {
-        if (vm.onFetching) return false
+        if (vm.isPosting) return false
         !isLoadMore ? vm.params.pageNo = 1 : vm.params.pageNo++
         vm.processing()
-        vm.onFetching = true
+        vm.isPosting = true
         vm.loadData(orderApi.list, vm.params, 'POST', function (res) {
           var resD = res.data.pager
-          for (var i = 0; i < resD.length; i++) {
-            switch (resD[i].status) {
-              case -1:
-                resD[i].statusName = '已取消'
-                break
-              case 0:
-                resD[i].statusName = '待支付'
-                break
-              case 1:
-                resD[i].statusName = '待派送'
-                break
-              case 2:
-                resD[i].statusName = '派送中'
-                break
-              case 3:
-                resD[i].statusName = '待评价'
-                break
-              case 4:
-                resD[i].statusName = '已完成'
-                break
+          if(resD.itemList.length){
+            for (var i = 0; i < resD.itemList.length; i++) {
+              var cur=resD.itemList[i]
+              switch (cur.status) {
+                case -1:
+                  cur.statusName = '已取消'
+                  break
+                case 1:
+                  cur.statusName = '待支付'
+                  break
+                case 2:
+                  cur.statusName = '待派送'
+                  break
+                case 3:
+                  cur.statusName = '派送中'
+                  break
+                /*case 3:
+                  cur.statusName = '待评价'
+                  break*/
+                case 4:
+                  cur.statusName = '已完成'
+                  break
+              }
             }
           }
           if (!isLoadMore) {
@@ -171,18 +169,18 @@
             resD.itemList.length ? vm.orders.concat(resD.itemList) : vm.noMore = true
           }
           console.log(vm.orders, '订单数据')
-          vm.onFetching = false
+          vm.isPosting = false
           vm.processing(0, 1)
         }, function () {
-          vm.onFetching = false
+          vm.isPosting = false
           vm.processing(0, 1)
         })
       },
-      delOrder (id) {
+      delOrder(id) {
         if (vm.isPosting) return false
         vm.confirm('确认删除？', '订单删除后不可恢复！', function () {
           vm.isPosting = true
-          vm.loadData(orderApi.delOrder + '?id=' + id, vm.params, 'POST', function (res) {
+          vm.loadData(orderApi.del, {id: id}, 'POST', function (res) {
             vm.isPosting = false
           }, function () {
             vm.isPosting = false
@@ -190,36 +188,37 @@
         }, function () {
         })
       },
-      cancelOrder (id) {
+      cancelOrder(id) {
         if (vm.isPosting) return false
         vm.confirm('确认取消？', '订单取消后不可恢复！', function () {
           vm.isPosting = true
-          vm.loadData(orderApi.cancelOrder + '?id=' + id, vm.params, 'POST', function (res) {
+          vm.loadData(orderApi.cancel, {id: id}, 'POST', function (res) {
             vm.isPosting = false
+            vm.toast('已取消')
           }, function () {
+            vm.toast('取消失败')
             vm.isPosting = false
           })
         }, function () {
           // console.log('no')
         })
       },
-      pushOrder (id) {
+      pushOrder(id) {
         if (vm.isPosting) return false
         vm.confirm('确认催单？', '请不要频繁催单！', function () {
           vm.isPosting = true
-          vm.loadData(orderApi.cancelOrder + '?id=' + id, vm.params, 'POST', function (res) {
+          vm.loadData(orderApi.push, {id: id}, 'POST', function (res) {
+            vm.toast('催单成功')
             vm.isPosting = false
           }, function () {
             vm.isPosting = false
           })
-        }, function () {
-          // console.log('no')
         })
       },
       payOrder (id) {
         if (vm.isPosting) return false
         vm.isPosting = true
-        vm.loadData(orderApi.payOrder + '?id=' + id, vm.params, 'POST', function (res) {
+        vm.loadData(orderApi.payOrder, {id: id}, 'POST', function (res) {
           vm.isPosting = false
         }, function () {
           vm.isPosting = false

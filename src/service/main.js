@@ -28,9 +28,12 @@ const ticketApi = {
   list: host + '/waterTicket/list',
 }
 const orderApi = {
+  list: host + '/order/list',
   add: host + '/order/add',
   score: host + '/order/score',
-  list: host + '/order/list',
+  del: host + '/order/del',
+  push: host + '/order/push',
+  cancel: host + '/order/cancel',
   updateOrder: host + '/home/updateOrder'
 }
 const userApi = {

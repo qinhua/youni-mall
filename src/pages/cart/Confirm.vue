@@ -208,11 +208,11 @@
         vm.processing()
         vm.onFetching = true
         vm.loadData(cartApi.view, vm.params, 'POST', function (res) {
+          vm.onFetching = false
+          vm.processing(0, 1)
           var resD = res.data
           vm.goods = resD
           console.log(vm.goods, '购物车数据')
-          vm.onFetching = false
-          vm.processing(0, 1)
         }, function () {
           vm.onFetching = false
           vm.processing(0, 1)

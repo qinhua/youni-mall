@@ -16,6 +16,9 @@
       <tab-item selected @on-item-click="filterTicket(0)">全部</tab-item>
       <tab-item @on-item-click="filterTicket(1)">买5送1</tab-item>
       <tab-item @on-item-click="filterTicket(2)">买10送2</tab-item>
+      <tab-item @on-item-click="filterTicket(2)">买100送30</tab-item>
+      <tab-item @on-item-click="filterTicket(2)">买100送35</tab-item>
+      <tab-item @on-item-click="filterTicket(2)">买100送40</tab-item>
     </tab>
     <div class="ticket-list">
       <scroller class="inner-scroller" ref="ticketScroller" height="100%" :on-refresh="refresh" :on-infinite="infinite" refreshText="下拉刷新"
@@ -129,6 +132,7 @@
         // 根据isMine判断不同的水票类型
         vm.isPosting = true
         vm.loadData(ticketApi.list, vm.params, 'POST', function (res) {
+          vm.isPosting = false
           var resD = res.data.pager
           if (!isLoadMore) {
             vm.tickets = res.data.itemList
@@ -142,7 +146,6 @@
             resD.itemList.length ? vm.tickets.concat(resD.itemList) : vm.noMore = true
           }
           console.log(vm.tickets, '水票数据')
-          vm.isPosting = false
         }, function () {
           vm.isPosting = false
         })

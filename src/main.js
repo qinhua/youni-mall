@@ -94,6 +94,18 @@ window.loadData = Vue.prototype.loadData = function (url, params, type, sucCb, e
       cache: false,
       headers: {token: window.youniMall.userAuth.openid},
       success: function (res) {
+        // 检测是否登录
+        if(res.message.indexOf('登录')>-1){
+          vm.processing(0, 1)
+          vm.confirm('温馨提示','请先登录！',function(){
+            vm.$router.push({path:'/login'})
+          })
+        }
+        try{
+          sucCb ? sucCb(res) : console.log(res, '接口的res')
+        }catch(e){
+          // console.log(e)
+        }
         sucCb ? sucCb(res) : console.log(res, '接口的res')
       },
       error: function (res) {
