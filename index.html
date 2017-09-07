@@ -42,53 +42,6 @@
     // 百度统计
   </script>
   <!--<script src="static/js/vconsole.min.js"></script>-->
-  <!--<script>-->
-    <!--//微信配置-->
-    <!--var Utils = window.mcShare.Utils;-->
-    <!--window.weixinAuthBase = function (callback, appId, store) {-->
-      <!--try {-->
-        <!--appId = 'wx7bc5c9daf377753a'; //appId || window.wxConfig.authAppId;-->
-        <!--var url = decodeURIComponent(window.location.href + (window.location.href.indexOf('?') > -1 ? '&' : '?') + '_=' + Math.random());-->
-        <!--var hashstr = decodeURIComponent(window.location.hash);-->
-        <!--var authObj = {-->
-          <!--appid: appId,-->
-          <!--redirect_uri: url.replace(hashstr, ''),-->
-          <!--response_type: 'code',-->
-          <!--//scope: 'snsapi_base',//静默授权-->
-          <!--scope: 'snsapi_userinfo',//用户确认授权-->
-          <!--state: hashstr.replace('#', '')-->
-        <!--};-->
-        <!--var code = Utils.request.getSearch('code');-->
-      <!--} catch (e) {-->
-        <!--alert(e.message);-->
-      <!--}-->
-
-      <!--if (!code || code == 'undefined') {-->
-        <!--document.write('正在授权，如果无响应请<a href="javascript:location.reload();">点击刷新</a>');-->
-        <!--location.href = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=' + authObj.appid + '&redirect_uri=' + encodeURIComponent(authObj.redirect_uri) + '&response_type=' + authObj.response_type + '&scope=' + authObj.scope + '&state=' + encodeURIComponent(authObj.state) + '#wechat_redirect';-->
-      <!--} else {-->
-        <!--window.location.hash = Utils.request.getSearch('state');-->
-        <!--Utils.ajax({-->
-          <!--method: 'get',-->
-          <!--data: {-->
-            <!--code: code,-->
-            <!--weixinApp: appId,-->
-            <!--_r: sign(1)-->
-          <!--},-->
-          <!--//url: store || window.location.protocol +'//api.share.m.kakamobi.com/api/open/sign/token.htm',-->
-          <!--url: store || window.location.protocol + '//api-share-m.kakamobi.com/api/open/sign/read-user-info.htm',-->
-          <!--dataType: 'json',-->
-          <!--async: true,-->
-          <!--success: function (ret) {-->
-            <!--callback(ret.data);-->
-          <!--},-->
-          <!--error: function () {-->
-            <!--callback('error');-->
-          <!--}-->
-        <!--})-->
-      <!--}-->
-    <!--}-->
-  <!--</script>-->
   <script>
     /*
      * 注意：
@@ -102,9 +55,9 @@
      * 邮件内容说明：用简明的语言描述问题所在，并交代清楚遇到该问题的场景，可附上截屏图片，微信团队会尽快处理你的反馈。
      */
     wx.config({
-      debug: false,
-      appId: 'wxf8b4f85f3a794e77',
-      timestamp: 1501306564,
+      debug: true,
+      appId: 'wxa92cd39da6d03d8f',
+      timestamp: new Date().getTime(),
       nonceStr: 'XZERdHFemWky56GT',
       signature: '176d6709e84d9f8dc2c41ee55cb427363b7d72bb',
       jsApiList: [
