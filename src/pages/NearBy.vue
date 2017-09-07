@@ -77,7 +77,7 @@
                   <ol class="star">
                     <li v-for="star in item.score">★</li>
                   </ol>
-                  <span class="hasSell"><i>{{item.score}}.0分</i>已售{{item.saleCount}}单</span>
+                  <span class="hasSell"><i>{{item.score||0}}分</i>已售{{item.saleCount}}单</span>
                 </section>
                 <ul v-if="item.label">
                   <li v-for="(label,idx) in item.label.split(',')" :class="'c'+(idx+1)">{{label}}</li>

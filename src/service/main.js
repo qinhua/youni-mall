@@ -54,6 +54,7 @@ const cartApi = {
   clear: host + '/cart/clear'
 }
 const commonApi = {
+  wxAuth: host + '/weixin/auth',
   dict: host + '/common/dictList',
   addUser: host + '/user/add'
 }

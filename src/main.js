@@ -26,6 +26,7 @@ Vue.use(VueScroller)
 
 Vue.config.productionTip = false
 let me = window.me
+let vm
 // 在路由路由跳转前判断一些东西
 router.beforeEach((to, from, next) => {
   /* 判断页面的方向 */

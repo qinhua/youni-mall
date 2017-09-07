@@ -12,16 +12,20 @@
       <tab-item @on-item-click="filterTicket(2,true)">买10送2</tab-item>
       <tab-item @on-item-click="filterTicket(3,true)">已失效</tab-item>
     </tab>
-    <tab class="ticket-tab" bar-active-color="transparent" v-show="!params.type">
+
+    <slide-tab ref="slidernav" skey="s01" :slides="navs" @on-select="selectCategory"></slide-tab>
+
+    <!--<tab class="ticket-tab" bar-active-color="transparent" v-show="!params.type">
       <tab-item selected @on-item-click="filterTicket(0)">全部</tab-item>
       <tab-item @on-item-click="filterTicket(1)">买5送1</tab-item>
       <tab-item @on-item-click="filterTicket(2)">买10送2</tab-item>
       <tab-item @on-item-click="filterTicket(2)">买100送30</tab-item>
       <tab-item @on-item-click="filterTicket(2)">买100送35</tab-item>
       <tab-item @on-item-click="filterTicket(2)">买100送40</tab-item>
-    </tab>
+    </tab>-->
     <div class="ticket-list">
-      <scroller class="inner-scroller" ref="ticketScroller" height="100%" :on-refresh="refresh" :on-infinite="infinite" refreshText="下拉刷新"
+      <scroller class="inner-scroller" ref="ticketScroller" height="100%" :on-refresh="refresh" :on-infinite="infinite"
+                refreshText="下拉刷新"
                 noDataText="没有更多数据"
                 snapping>
         <!-- content goes here -->
@@ -48,14 +52,36 @@
   /* eslint-disable no-unused-vars */
   let me
   let vm
+  import SlideTab from '../components/SlideTab'
   import {Tab, TabItem} from 'vux'
   import {ticketApi} from '../service/main.js'
+
   export default {
     name: 'ticket',
-    data () {
+    data() {
       return {
         curTicketFilter: '',
         tickets: [],
+        navs: [{
+          "value": "water_ticket_type.1",
+          "label": "买5送1"
+        },
+          {
+            "value": "water_ticket_type.2",
+            "label": "买10送2"
+          },
+          {
+            "value": "water_ticket_type.3",
+            "label": "买100送30"
+          },
+          {
+            "value": "water_ticket_type.4",
+            "label": "买100送35"
+          },
+          {
+            "value": "water_ticket_type.5",
+            "label": "买100送40"
+          }],
         params: {
           type: 0,
           pagerSize: 10,
@@ -69,11 +95,11 @@
         isPosting: false
       }
     },
-    components: {Tab, TabItem},
-    beforeMount () {
+    components: {Tab, TabItem,SlideTab},
+    beforeMount() {
       me = window.me
     },
-    mounted () {
+    mounted() {
       vm = this
       vm.getTickets()
       vm.$nextTick(() => {
@@ -87,33 +113,34 @@
      }
      }, */
     watch: {
-      '$route' (to, from) {
+      '$route'(to, from) {
         vm.getTickets()
       }
     },
     methods: {
       // 向父组件传值
-      setPageStatus (data) {
-        this.$emit('listenPage', data)
+      selectCategory(data) {
+        console.log(data,96969)
+//        this.$emit('listenPage', data)
       },
-      buy (id) {
+      buy(id) {
         vm.$router.push({path: '/detail/' + id})
       },
-      refresh (done) {
+      refresh(done) {
         console.log('下拉加载')
         setTimeout(function () {
           vm.getTickets()
           vm.$refs.ticketScroller.finishPullToRefresh()
         }, 1200)
       },
-      infinite (done) {
+      infinite(done) {
         console.log('无限滚动')
         setTimeout(function () {
           vm.getTickets(true)
           vm.$refs.ticketScroller.finishInfinite(true)
         }, 1000)
       },
-      onItemClick (type) {
+      onItemClick(type) {
         if (type) {
           vm.params.type = 2
         } else {
@@ -122,11 +149,11 @@
         }
         vm.getTickets()
       },
-      filterTicket (type, isMine) {
+      filterTicket(type, isMine) {
         vm.curTicketFilter = type
         vm.getTickets()
       },
-      getTickets (isLoadMore) {
+      getTickets(isLoadMore) {
         vm.params.type = this.$route.params.type || 0
         if (vm.isPosting) return false
         // 根据isMine判断不同的水票类型
@@ -138,7 +165,7 @@
             vm.tickets = res.data.itemList
             if (resD.totalCount < vm.params.pageSize) {
               vm.noMore = true
-            }else{
+            } else {
               vm.noMore = false
             }
             vm.tickets = resD.itemList
@@ -179,7 +206,7 @@
   }
 
   .ticket-list {
-    .inner-scroller{
+    .inner-scroller {
       .borBox;
       padding: 88px 0 150px;
       .v-items {

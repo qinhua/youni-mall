@@ -356,7 +356,7 @@ import $ from 'jquery'
       return bp;
     },
     // 对象转参数字符串
-    param: function (obj) {
+    param: function (obj, prefix) {
       var retData = [];
       for (var e in obj) {
         if (typeof obj[e] === 'object')
@@ -365,7 +365,7 @@ import $ from 'jquery'
         else
           retData.push(e + '=' + encodeURIComponent(obj[e]));
       }
-      return retData.join('&');
+      return ( prefix || '' ) + retData.join('&');
     },
     /**
      * url编码
@@ -611,7 +611,7 @@ import $ from 'jquery'
      * @param time
      * @param ele
      */
-    verCodeBtn: function (time, ele) {
+    verCodeBtn: function (time, ele, cb) {
       var timer = null;
       var secs = parseInt(time) || 60;
       var btn = typeof ele !== "string" ? ele : $(ele);
@@ -626,6 +626,7 @@ import $ from 'jquery'
           beginCount();
           if (secs < 0) {
             btn.removeClass("disabled").text('获取验证码').prop("disabled", false);
+            cb? cb() : null
             clearTimeout(timer);
             return;
           }
@@ -636,6 +637,7 @@ import $ from 'jquery'
       //myMixin.lightPop("已发送，注意查收短信！");
       //setTimeout(function () {
       //    btn.removeClass("disabled").text('获取验证码').prop("disabled", false);
+      //    cb? cb() : null
       //}, secs * 1000);
     },
 

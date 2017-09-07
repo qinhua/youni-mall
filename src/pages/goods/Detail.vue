@@ -28,10 +28,10 @@
                 <group>
                  <!-- <x-number button-style="round" :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0"
                             :max="50" :value="item.number" align="right" :dataId="item.id" @on-change="changeCount"></x-number>-->
-                  <x-number :value="curCount" :dataId="details.goodsId" :dataSellerId="item.sellerId" :min="0" :max="50" @on-change="changeCount"></x-number>
+                  <x-number :value="curCount" :dataId="details.goodsId" :dataSellerId="details.sellerId" :min="0" :max="50" @on-change="changeCount"></x-number>
                 </group>
               </div>
-              <button v-else type="button" class="btn btn-addcart" @click="changeCount({type:'add',id:details.id,sellerId:details.sellserId,number:details.curCount})">加入购物车</button>
+              <button v-else type="button" class="btn btn-addcart" @click="changeCount({type:'add',id:details.id,sellerId:details.sellerId,number:details.curCount})">加入购物车</button>
             </div>
           </div>
         </div>
@@ -105,6 +105,17 @@
       </div>
     </div>
 
+    <div v-transfer-dom>
+      <popup v-model="showPop" position="bottom" max-height="50%">
+        <group>
+          <cell v-for="i in 20" :key="i" :title="i"></cell>
+        </group>
+        <div style="padding: 15px;">
+          <x-button @click.native="showPop = false" plain type="primary"> Close Me </x-button>
+        </div>
+      </popup>
+    </div>
+
     <!--购物车-->
     <div class="ball-container">
       <!--小球-->
@@ -119,14 +130,15 @@
     <div class="cart-model">
       <div class="wrap">
         <div class="cur-cart" ref="curCart" :hasgood="curCount>0" v-jump="['cart']"><i v-if="curCount">{{curCount}}</i></div>
-        <div class="left">
+        <!--<div class="left">
           <div class="txt" v-if="curCount">
             <h4>当前共{{curCount}}件</h4>
             <p>合计：{{total|toFixed}}元</p>
           </div>
-        </div>
-        <div class="right" @click="goConfirm">
-          立即购买
+        </div>-->
+        <div class="right">
+          <div class="btn btn-buy" @click="goConfirm">立即购买</div>
+          <div class="btn btn-add" @click="swDialog">加入购物车</div>
         </div>
       </div>
     </div>
@@ -138,7 +150,7 @@
   let me
   let vm
   import Swiper from 'swiper'
-  import {Tab, TabItem, XNumber, Group} from 'vux'
+  import {Tab, TabItem, XNumber, Group,Cell,TransferDom,Popup,XButton} from 'vux'
   import {homeApi,goodsApi,cartApi} from '../../service/main.js'
 
   export default {
@@ -147,6 +159,10 @@
       return {
         id: null,
         show: false,
+        showPop: false,
+        title6: '默认空的',
+        value6: [],
+        show6: false,
         curOrderFilter: '',
         details: [],
         tablist: ['商品详情', '规格', '评论'],
@@ -171,7 +187,10 @@
         appraise: []
       }
     },
-    components: {Tab, TabItem, XNumber, Group},
+    directives: {
+      TransferDom
+    },
+    components: {Tab, TabItem, XNumber, Group,Cell,Popup,XButton},
     beforeMount() {
       me = window.me
     },
@@ -301,6 +320,14 @@
           }
         } else {
           vm.getAppraise()
+        }
+      },
+      swDialog(){
+        // vm.showPop = vm.showPop?false:true
+        if(3>2){
+          vm.showPop = true
+        }else{
+
         }
       },
       goConfirm() {
@@ -755,7 +782,7 @@
           box-shadow: 0 1px 10px 0 #fc6b01;
         }
       }
-      .left {
+      /*.left {
         .rel;
         .borBox;
         .fl;
@@ -769,15 +796,26 @@
             .fz(20);
           }
         }
-      }
+      }*/
       .right {
-        .fl;
-        width: 32%;
+        //.fl;
+        width: 100%;
         height: 100%;
         line-height: 100/@rem;
         .center;
-        background: -webkit-linear-gradient(90deg, #dc0404, #ff7600);
-        background: linear-gradient(90deg, #dc0404, #ff7600);
+        .btn{
+          .fr;
+          .iblock;
+          padding:0 26/@rem;
+        }
+        .btn-buy{
+          background: #ec3902;
+          /*background: -webkit-linear-gradient(90deg, #dc0404, #ff7600);
+          background: linear-gradient(90deg, #dc0404, #ff7600);*/
+        }
+        .btn-add{
+          background: #ff9627;
+        }
       }
     }
   }
