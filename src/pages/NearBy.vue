@@ -2,7 +2,7 @@
   <div class="nearby" ref="nearby" v-cloak @scroll="scrollHandler">
     <!--定位组件-->
     <div class="location-chooser">
-      <p><span><i class="fa fa-map-marker"></i>&nbsp;您的位置：</span>{{address||geoAddress}}</p>
+      <p><span><i class="fa fa-map-marker"></i>&nbsp;您的位置：</span>{{address || geoAddress}}</p>
       <a @click.prevent="toMap"><i class="right-arrow"></i></a>
     </div>
     <!--banner-->
@@ -61,7 +61,7 @@
       </div>
     </div>
     <!--店铺列表-->
-    <div class="shops-list" ref="shopsList">
+    <div class="shops-list" ref="sellerList">
       <scroller class="inner-scroller" lock-x scrollbarY use-pullup use-pulldown :pullup-config="pullupConfig"
                 :pulldown-config="pulldownConfig"
                 @on-scroll="onScroll"
@@ -70,20 +70,25 @@
         <div class="box">
           <section class="v-items" v-for="(item, index) in sellers" :data-id="item.id" @click="toDetail(item.id)">
             <section class="wrap">
-              <img :src="item.logo">
+              <img :src="item.headimgurl">
               <section class="infos">
-                <h3>{{item.name}}<span class="distance">{{(item.distance)/1000 | toFixed}}km</span></h3>
+                <h3>{{item.name}}<span
+                  class="distance">{{item.distance ? ((item.distance / 1000) | toFixed(1)) : item.distance}}km</span>
+                </h3>
                 <section class="middle">
                   <ol class="star">
-                    <li v-for="star in item.score">★</li>
+                    <li class="gray" v-for="star in 5" v-if="!item.score">★</li>
+                    <li v-for="star in 5" v-else>★</li>
                   </ol>
-                  <span class="hasSell"><i>{{item.score||0}}分</i>已售{{item.saleCount}}单</span>
+                  <span
+                    class="hasSell"><i>{{((item.score || 0) / 1000) | toFixed(1)}}分</i>已售{{item.sellerCount}}单</span>
                 </section>
-                <ul v-if="item.label">
-                  <li v-for="(label,idx) in item.label.split(',')" :class="'c'+(idx+1)">{{label}}</li>
-                </ul>
+                <div class="tags">
+                  <!--<label class="c2">{{item.authLevelName}}</label>-->
+                  <span class="dispatchTime">平均{{item.dispatchTime || 22}}分钟送达</span>
+                </div>
               </section>
-              <div class="bottom">
+              <div class="bottom" v-if="item.ticket">
                 <label class="note" v-if="item.ticket"><i class="ico-hui"></i>{{item.ticket}}</label>
                 <!--<span class="dispatchTime">平均{{item.dispatchTime}}分钟送达</span>-->
                 <span class="dispatchTime">{{item.label}}</span>
@@ -99,7 +104,9 @@
               </div>
             </section>
           </section>
+          <div class="noMoreData" v-if="sellers.length">{{noMore ? '就这么多了' : '上拉加载'}}</div>
         </div>
+        <div class="iconNoData" v-if="!sellers.length"><i></i><p>暂无商品</p></div>
         <!--<div class="iconNoData" @click="beContinue(curNumber)"><i></i><p>暂无内容</p></div>-->
       </scroller>
     </div>
@@ -119,30 +126,41 @@
     name: 'nearby',
     data() {
       return {
-        geoData:null,
-        address:'',
-        banner: [],
+        geoData: null,
+        address: '',
+        // banner: [],
+        banner: [{
+          image: 'static/img/banner/p01.jpg',
+          linkeUrl: ''
+        }, {
+          image: 'static/img/banner/p02.jpg',
+          linkeUrl: ''
+        }, {
+          image: 'static/img/banner/p03.jpg',
+          linkeUrl: ''
+        }],
         notice: [],
         sellers: [],
-        filters: {/*
-          shop: [
-            {
-              key: '',
-              value: '全部'
-            },
-            {
-              key: 'seller_level.1',
-              value: '普通店'
-            },
-            {
-              key: 'seller_level.2',
-              value: '官方认证'
-            },
-            {
-              key: 'seller_level.3',
-              value: '金牌店'
-            }
-          ],*/
+        filters: {
+          /*
+                    shop: [
+                      {
+                        key: '',
+                        value: '全部'
+                      },
+                      {
+                        key: 'seller_level.1',
+                        value: '普通店'
+                      },
+                      {
+                        key: 'seller_level.2',
+                        value: '官方认证'
+                      },
+                      {
+                        key: 'seller_level.3',
+                        value: '金牌店'
+                      }
+                    ],*/
           shop: [
             {
               key: 'seller_level.3',
@@ -193,10 +211,11 @@
         curFilterType: '',
         currentFilter: null,
         filterData: [],
-        params:{
-          pageSize:10,
-          sellerType:'',
-          sortType:''
+        params: {
+          pageSize: 10,
+          pageNo:1,
+          sellerType: '',
+          sortType: ''
         },
         showFilterCon: false,
         factive: '',
@@ -205,8 +224,8 @@
         showList: true,
         scrollTop: 0,
         roundValue: 0,
-        onFetching: false,
         isPosting: false,
+        noMore: false,
         pulldownConfig: {
           content: '下拉刷新',
           height: 60,
@@ -228,7 +247,7 @@
         },
       }
     },
-    props:['geoAddress'],
+    props: ['geoAddress'],
     components: {
       Swiper,
       Group,
@@ -248,7 +267,7 @@
       vm = this
       // me.attachClick()
       vm.getMap()
-      vm.getBanner()
+      // vm.getBanner()
       vm.getNotice()
       vm.getSeller()
       // 点击区域之外隐藏筛选栏
@@ -261,29 +280,32 @@
         }
       }, false)
       vm.$nextTick(function () {
+        //获取筛选栏位置
         setTimeout(() => {
           vm.filterOffset = vm.$refs.filters02.offsetTop
-        }, 500) //获取筛选栏位置
-        vm.$refs.myScroll.reset()
-        vm.$refs.myScroll.donePullup()
-        vm.$refs.myScroll.donePulldown()
+        }, 500)
+        vm.resetScroll()
       })
     },
     computed: {},
     watch: {
       '$route'(to, from) {
-        vm.getMap()
+        if (to.name === 'nearby') {
+          vm.resetScroll()
+          vm.getMap()
+          vm.getSeller()
+        }
       }
     },
     methods: {
       // 全局定位
       getMap(data) {
-        var tmp=me.locals.get('cur5656Position')
+        var tmp = me.locals.get('cur5656Position')
         // this.$store.commit('storeData',{key:'userPositionData',data:data})
-        if(tmp){
-          var data=JSON.parse(tmp)
+        if (tmp) {
+          var data = JSON.parse(tmp)
           console.log(data, 'home amap info')
-          if(data){
+          if (data) {
             vm.geoData = data
             vm.address = data.name
           }
@@ -296,12 +318,24 @@
       setPageStatus(data) {
         this.$emit('listenPage', data)
       },
+      resetScroll(){
+        setTimeout(function(){
+        vm.$refs.myScroll.reset()
+        vm.$refs.myScroll.donePullup()
+        vm.$refs.myScroll.donePulldown()
+        let target = vm.$refs.filters02
+        let list = vm.$refs.sellerList
+        target.classList.remove('fixed')
+        list.classList.remove('fixed')
+        vm.$refs.myScroll.reset()
+        },100)
+      },
       scrollHandler() {
         // 监听dom的scroll事件
         setTimeout(function () {
           let scrollTop = vm.$refs.nearby.scrollTop
           let target = vm.$refs.filters02
-          let list = vm.$refs.shopsList
+          let list = vm.$refs.sellerList
           if (vm.showFilterCon) {
             vm.hideFilter()
           }
@@ -320,7 +354,7 @@
       },
       toDetail(id) {
         if (vm.showFilterCon) return
-        vm.$router.push({name: 'shops_detail', query: {id: id}})
+        vm.$router.push({name: 'seller_detail', query: {id: id}})
       },
       preBook(id) {
         vm.$router.push({path: '/detail/' + id})
@@ -340,31 +374,42 @@
         })
       },
       getSeller(isLoadMore) {
-        if (vm.onFetching) return false
-        var params = {
-          pagerSize: 10,
-          pageNo: 1,
-          goodsType: 'XXX',
-          goodsCategory: '',
-          brandId: '',
-          filter: ''
-        }
-        vm.loadData(nearbyApi.sellerList, params, 'POST', function (res) {
-          vm.onFetching = false
-          var resD= res.data.pager.itemList
-          console.log(resD, '附近卖家')
-          if (!isLoadMore) {
-            vm.sellers = resD
-            if (res.data.noMore) {
-              vm.$nextTick(function () {
-                vm.$refs.myScroll.disablePullup()
-              })
+        if (vm.isPosting) return false
+        !isLoadMore ? vm.params.pageNo = 1 : vm.params.pageNo++
+        vm.processing()
+        vm.loadData(nearbyApi.sellerList, vm.params, 'POST', function (res) {
+          vm.isPosting = false
+          vm.processing(0, 1)
+          var resD = res.data.pager
+          /*if (resD.itemList.length) {
+            for (var i = 0; i < resD.itemList.length; i++) {
+              var cur = resD.itemList[i]
+              switch (cur.authLevel) {
+                case 'seller_level.1':
+                  cur.authLevelName = '普通店铺'
+                  break
+                case 'seller_level.2':
+                  cur.authLevelName = '官方认证'
+                  break
+                case 'seller_level.3':
+                  cur.authLevelName = '金牌店铺'
+                  break
+              }
             }
+          }*/
+          if (!isLoadMore) {
+            if (resD.totalCount < vm.params.pageSize) {
+              vm.noMore = true
+            }else{
+              vm.noMore = false
+            }
+            vm.sellers = resD.itemList
           } else {
-            vm.sellers.push(resD)
+            resD.itemList.length ? vm.sellers.concat(resD.itemList) : vm.noMore = true
           }
+          console.log(vm.sellers, '附近卖家')
         }, function () {
-          vm.onFetching = false
+          vm.isPosting = false
         })
       },
       /* 商品筛选 */
@@ -426,11 +471,11 @@
         vm.getShops(lastF)
       },
       onPullDown() {
-        if (vm.onFetching) {
+        if (vm.isPosting) {
           // do nothing
           return false
         } else {
-          // this.onFetching = true
+          // this.isPosting = true
           setTimeout(function () {
             // vm.bottomCount += 10
             vm.getSeller()
@@ -443,11 +488,11 @@
         }
       },
       onPullUp() {
-        if (vm.onFetching) {
+        if (vm.isPosting) {
           // do nothing
           return false
         } else {
-          // vm.onFetching = true
+          // vm.isPosting = true
           setTimeout(function () {
             // vm.bottomCount += 10
             vm.getSeller(true)
@@ -661,6 +706,11 @@
 
   .shops-list {
     height: auto;
+    &.fixed {
+      .xs-container{
+        margin-top: 90/@rem;
+      }
+    }
     .inner-scroller {
       .borBox;
       .static;
@@ -726,7 +776,7 @@
           padding-left: 170/@rem;
           h3 {
             .flex-r(1);
-            .fz(30);
+            .fz(28);
             .txt-normal;
             .c3;
             .ellipsis;
@@ -756,13 +806,16 @@
                 .fl;
                 margin-right: 10/@rem;
                 .cdiy(#ff9900);
-                .fz(22);
+                .fz(24);
+                &.gray {
+                  .c9;
+                }
               }
             }
           }
-          ul {
+          .tags {
             .flex-r(1);
-            li {
+            label {
               .fl;
               margin-right: 10/@rem;
               padding: 1px 8px;
@@ -779,6 +832,13 @@
               &.c3 {
                 .bdiy(#c77e25);
               }
+            }
+            .dispatchTime {
+              .fr;
+              padding-top: 10/@rem;
+              .c9;
+              .block;
+              .fz(20);
             }
           }
           .distance {
@@ -809,13 +869,6 @@
             background: url(../../static/img/ico_hui.png) center;
             .ele-base;
           }
-        }
-        .dispatchTime {
-          .fr;
-          padding-top: 10/@rem;
-          .c9;
-          .block;
-          .fz(20);
         }
       }
     }

@@ -37,16 +37,18 @@
   let vm
   import {Group, Cell, XAddress, ChinaAddressV3Data, XInput, Checker, CheckerItem} from 'vux'
   import Amap from '../../components/Amap.vue'
-  import {commonApi,userApi} from '../../service/main.js'
+  import {commonApi, userApi} from '../../service/main.js'
 
   export default {
     name: 'address-edit',
     data() {
       return {
-        lastPage: null,
+        lastPage: {
+          name: '',
+          data: null
+        },
         showMap: false,
         lineData: null,
-        onFetching: false,
         isPosting: false,
         addressData: ChinaAddressV3Data,
         status: [{key: 1, value: '是'}, {key: 0, value: '否'}],
@@ -69,15 +71,18 @@
       me = window.me
     },
     mounted() {
-      vm = this
       // me.attachClick()
-      // vm.params.id = vm.$route.query.id
-      vm.getAddress()
+      vm = this
+      this.$nextTick(function () {
+        vm.getAddress()
+      })
     },
     watch: {
       '$route'(to, from) {
-        vm.getAddress()
-        vm.showMap = false
+        if (to.name === 'edit_address') {
+          vm.getAddress()
+          vm.showMap = false
+        }
       }
     },
     methods: {
@@ -89,7 +94,7 @@
       },
       getMap(data) {
         vm.showMap = false
-        console.log(data, 'home amap info')
+        // console.log(data, 'home amap info')
         vm.params.lon = data.lng
         vm.params.lat = data.lat
         vm.detailAddress = data.name
@@ -115,8 +120,8 @@
         }
       },
       getAddress() {
-        vm.lastPage = vm.$route.query.from || null
-        vm.lineData = vm.$route.query.linedata ? JSON.parse(decodeURIComponent(vm.$route.query.linedata)) : null
+        var parms = vm.$route.query
+        vm.lineData = parms.linedata ? JSON.parse(decodeURIComponent(parms.linedata)) : null
         if (vm.lineData && vm.lineData.id) {
           vm.detailAddress = vm.lineData.address
           vm.params = {
@@ -138,14 +143,17 @@
             lon: '',
             defaultAddress: 0
           }
+          vm.lastPage.name = parms.from || ''
+          if (vm.lastPage.name === 'confirm_order') {
+            vm.params.defaultAddress = 1
+            vm.lastPage.data = me.sessions.get('ynTmpConfirm')
+          }
         }
       },
       changeArea(ids, names) {
         console.log(ids, names)
-        /*vm.params.province = ids[0]
-         vm.params.city = ids[1]*/
         vm.area = names[0] + (names[1].indexOf('市辖区') === -1 ? names[1] : '') + names[2]
-        vm.detailAddress=''
+        vm.detailAddress = ''
         console.log(vm.area)
       },
       changeStatus(value, disabled) {
@@ -174,27 +182,27 @@
         }
         return true
       },
+
       updateAddress() {
         if (vm.isPosting) return false
         if (vm.validate()) {
+          vm.isPosting = true
+          vm.processing()
           if (vm.detailAddress.indexOf('省') === -1 && vm.detailAddress.indexOf('市') === -1) {
             vm.params.address = vm.area + vm.detailAddress
           } else {
             vm.params.address = vm.detailAddress
           }
-          vm.isPosting = true
-          vm.processing()
           console.log('最后选择的数据：', vm.params)
           // 更新还是新增
           vm.loadData(userApi.setAddress, vm.params, 'POST', function (res) {
-            console.log(res, '新增/更新地址')
-            if (vm.lastPage) {
-              vm.$router.push({name: vm.lastPage})
+            vm.isPosting = false
+            vm.processing(0, 1)
+            if (vm.lastPage.name && vm.lastPage.name === 'confirm_order') {
+              vm.jump(vm.lastPage.name, {thedata: vm.lastPage.data})
             } else {
               vm.$router.back()
             }
-            vm.isPosting = false
-            vm.processing(0, 1)
           }, function () {
             vm.isPosting = false
             vm.processing(0, 1)
@@ -287,7 +295,7 @@
       .center;
       .cf;
       .fz(28);
-      .bdiy(#16a542);
+      .bdiy(@c2);
     }
   }
 

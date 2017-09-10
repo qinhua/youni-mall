@@ -5,11 +5,12 @@
       <tab-item :selected="params.status==1?true:false" @on-item-click="onItemClick(1)">待支付</tab-item>
       <tab-item :selected="params.status==2?true:false" @on-item-click="onItemClick(2)">待派送</tab-item>
       <tab-item :selected="params.status==3?true:false" @on-item-click="onItemClick(3)">派送中</tab-item>
-      <tab-item :selected="params.status==4?true:false" @on-item-click="onItemClick(4)">已完成</tab-item>
+      <tab-item :selected="params.status==4?true:false" @on-item-click="onItemClick(4)">暂停中</tab-item>
+      <tab-item :selected="params.status==5?true:false" @on-item-click="onItemClick(5)">已完成</tab-item>
     </tab>
     <div class="order-list">
       <scroller class="inner-scroller" ref="orderScroller" :on-refresh="refresh" :on-infinite="infinite"
-                refreshText="下拉刷新" noDataText="没有更多数据" snapping>
+                refreshText="下拉刷新" noDataText="" snapping>
         <!-- content goes here -->
         <section class="v-items" v-for="(item, index) in orders" :data-id="item.orderId"
                  :data-orderNumber="item.appOrderNumber" :data-itemId="item.orderItemId">
@@ -58,6 +59,7 @@
         </section>
       </scroller>
     </div>
+    <div class="iconNoData abs-center-vh" v-if="!orders.length"><i></i><p>暂无订单</p></div>
   </div>
 </template>
 <!--/* eslint-disable no-unused-vars */-->
@@ -66,12 +68,11 @@
   let me
   let vm
   import {Tab, TabItem} from 'vux'
-  import {orderApi} from '../service/main.js'
+  import {orderApi,commonApi} from '../service/main.js'
   export default {
     name: 'order',
     data () {
       return {
-        show: false,
         orders: [],
         params: {
           userType: 1,
@@ -97,7 +98,10 @@
     computed: {},
     watch: {
       '$route' (to, from) {
-        vm.getOrders()
+        if(to.name==='order'){
+          vm.params.status = vm.$route.params.status
+          vm.getOrders()
+        }
       }
     },
     methods: {
@@ -132,6 +136,8 @@
         vm.processing()
         vm.isPosting = true
         vm.loadData(orderApi.list, vm.params, 'POST', function (res) {
+          vm.isPosting = false
+          vm.processing(0, 1)
           var resD = res.data.pager
           if(resD.itemList.length){
             for (var i = 0; i < resD.itemList.length; i++) {
@@ -169,8 +175,6 @@
             resD.itemList.length ? vm.orders.concat(resD.itemList) : vm.noMore = true
           }
           console.log(vm.orders, '订单数据')
-          vm.isPosting = false
-          vm.processing(0, 1)
         }, function () {
           vm.isPosting = false
           vm.processing(0, 1)
@@ -218,8 +222,38 @@
       payOrder (id) {
         if (vm.isPosting) return false
         vm.isPosting = true
-        vm.loadData(orderApi.payOrder, {id: id}, 'POST', function (res) {
+        vm.loadData(commonApi.wxPay, {orderId:id}, 'POST', function (res) {
           vm.isPosting = false
+          var resD=res.data
+          wx.config({
+            debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+            appId: resD.appId, // 必填，公众号的唯一标识
+            timestamp:resD.timeStamp , // 必填，生成签名的时间戳
+            nonceStr: resD.nonceStr, // 必填，生成签名的随机串
+            signature: resD.paySign,// 必填，签名，见附录1
+            jsApiList: [
+              'chooseWXPay'
+            ] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+          });
+          wx.ready(function(){
+            // config信息验证后会执行ready方法，所有接口调用都必须在config接口获得结果之后，config是一个客户端的异步操作，所以如果需要在页面加载时就调用相关接口，则须把相关接口放在ready函数中调用来确保正确执行。对于用户触发时才调用的接口，则可以直接调用，不需要放在ready函数中。
+            wx.chooseWXPay({
+              appId:resD.appId,
+              timestamp: resD.timeStamp, // 支付签名时间戳，注意微信jssdk中的所有使用timestamp字段均为小写。但最新版的支付后台生成签名使用的timeStamp字段名需大写其中的S字符
+              nonceStr: resD.nonceStr, // 支付签名随机串，不长于 32 位
+              package: resD.package, // 统一支付接口返回的prepay_id参数值，提交格式如：prepay_id=***）
+              signType: resD.signType, // 签名方式，默认为'SHA1'，使用新版支付需传入'MD5'
+              paySign: resD.paySign, // 支付签名
+              success: function (res) {
+                // 支付成功后的回调函数
+                vm.$router.push({path:'/order'})
+              }
+            })
+          })
+          wx.error(function(res){
+            // config信息验证失败会执行error函数，如签名过期导致验证失败，具体错误信息可以打开config的debug模式查看，也可以在返回的res参数中查看，对于SPA可以在这里更新签名。
+            // alert(JSON.stringify(res))
+          })
         }, function () {
           vm.isPosting = false
         })
@@ -282,6 +316,7 @@
           .img-con {
             .rel;
             .size(130, 130);
+            overflow: hidden;
             img {
               width: 100%;
               .abs-center-vh;

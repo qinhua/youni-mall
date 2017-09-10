@@ -1,7 +1,7 @@
 <template>
   <div class="confirm-order" v-cloak>
-    <div class="pick-address" data-from="confirm_order" v-jump="['myaddress',['from'],3]">
-      <div class="wrap" v-if="address">
+    <div class="pick-address" data-from="confirm_order">
+      <div class="wrap" v-if="address" @click="toAddress(1)">
         <i class="fa fa-map-marker i-map"></i>
         <div class="txt-con">
           <h3>收货人：{{address.name}}<span>{{address.phone}}</span></h3>
@@ -9,7 +9,9 @@
         </div>
         <i class="fa fa-angle-right i-right"></i>
       </div>
-      <div class="add-address" data-from="confirm_order" v-jump="['edit_address',['from'],3]" v-else><i class="fa fa-plus"></i>&nbsp;添加收货地址</div>
+      <div class="add-address" data-from="confirm_order" v-else @click="toAddress(2)"><i
+        class="fa fa-plus"></i>&nbsp;添加收货地址
+      </div>
     </div>
     <div class="goods-info">
       <section class="v-items">
@@ -42,7 +44,7 @@
     </div>
     <div class="others-col">
       <group>
-        <datetime title="配送时间" format="YYYY-MM-DD HH:mm" minute-row required v-model="params.dispatchTime"
+        <datetime title="配送时间" format="YYYY-MM-DD HH:mm" minute-row v-model="params.dispatchTime"
                   @on-change="changeTime"></datetime>
         <popup-picker title="优惠券" :data="coupons" :columns="1" v-model="tmpCoupon" ref="picker1" @on-show=""
                       @on-hide="" @on-change="changeCoupon"></popup-picker>
@@ -54,7 +56,7 @@
     <div class="count-bar">
       <div class="wrap">
         <div class="txt-total">
-          <h4>合计：<span>￥{{theTotalPrice | toFixed}}</span><!--<i></i>--></h4>
+          <h4>合计：<span>￥{{(curCartData.totalPrice || 0) | toFixed}}</span><!--<i></i>--></h4>
         </div>
         <div class="btn btn-toPay" @click="generateOrder">提交订单</div>
       </div>
@@ -67,7 +69,7 @@
   let me
   let vm
   import {Tab, TabItem, XButton, Group, XInput, Selector, PopupPicker, XTextarea, Datetime} from 'vux'
-  import {orderApi, userApi} from '../../service/main.js'
+  import {commonApi, orderApi, userApi} from '../../service/main.js'
 
   export default {
     name: 'confirm-order',
@@ -90,7 +92,7 @@
           key: '',
           value: '未选择',
           name: '未选择'
-        },{
+        }, {
           key: '028283447c4311e7aa18d8cb8a971933',
           value: '满减20元',
           name: '满减20元'
@@ -111,35 +113,38 @@
     },
     mounted() {
       vm = this
-      vm.curCartData = vm.$route.query.thedata ? JSON.parse(decodeURIComponent(vm.$route.query.thedata)) : {}
-      for (var i = 0; i < vm.curCartData.goods.length; i++) {
-        vm.params.goods.push({goodsId:vm.curCartData.goods[i].goodsId})
-      }
-//      vm.params.sellerId=vm.curCartData.sellerId
-      console.log(vm.curCartData)
-      vm.switchData(vm.coupons, vm.tmpCoupon, 'couponId')
-      vm.getAddress ()
+      this.$nextTick(function () {
+        vm.getAddress()
+        vm.getGoods()
+      })
     },
-    computed: {
-      theTotalPrice () {
-        let tmp=0
-        if(this.curCartData.goods){
-          for (let i = 0; i < vm.curCartData.goods.length; i++) {
-            tmp += (vm.curCartData.goods[i].price*vm.curCartData.goods[i].goodsNum)
-          }
-        }
-        return tmp
-      }
-    },
+//    computed: {
+//      theTotalPrice () {
+//        let tmp=0
+//        if(this.curCartData.goods){
+//          for (let i = 0; i < vm.curCartData.goods.length; i++) {
+//            tmp += (vm.curCartData.goods[i].price*vm.curCartData.goods[i].goodsNum)
+//          }
+//        }
+//        return tmp
+//      }
+//    },
     watch: {
-       '$route'(to, from) {
-         vm.getAddress()
-       }
+      '$route'(to, from) {
+        if(to.name==='confirm_order') {
+          vm.getAddress()
+          vm.getGoods()
+        }
+      }
     },
     methods: {
       // 向父组件传值
       setPageStatus(data) {
         this.$emit('listenPage', data)
+      },
+      toAddress(type) {
+        me.sessions.set('ynTmpConfirm',vm.$route.query.thedata)
+        type === 1 ? vm.jump('myaddress', {from: 'confirm_order'}) : vm.jump('edit_address', {from: 'confirm_order'})
       },
       validate() {
         if (!vm.params.addressId) {
@@ -183,21 +188,39 @@
       changeTime(val) {
         console.log('change', val)
       },
-      getAddress () {
+      getGoods() {
+        try{
+          vm.curCartData = vm.$route.query.thedata ? JSON.parse(decodeURIComponent(vm.$route.query.thedata)) : {}
+          for (var i = 0; i < vm.curCartData.goods.length; i++) {
+            vm.params.goods.push({goodsId: vm.curCartData.goods[i].goodsId})
+          }
+          console.log(vm.curCartData, '带过来的数据')
+          vm.switchData(vm.coupons, vm.tmpCoupon, 'couponId')
+        }catch(e){
+            // console.log(e)
+        }
+      },
+      getAddress() {
         vm.processing()
         vm.loadData(userApi.addressList, null, 'POST', function (res) {
-          var resD = res.data.itemList
-          if(resD.length){
-            for (let i = 0; i < resD.length; i++) {
-              if (resD[i].defaultAddress) {
-                vm.address=resD[i]
-                vm.params.addressId=resD[i].id
-              }
-            }
-          }
-          console.log(vm.address, '地址数据')
           vm.isPosting = false
           vm.processing(0, 1)
+          var resD = res.data.itemList
+          if (resD.length>1) {
+            for (let i = 0; i < resD.length; i++) {
+              if (resD[i].defaultAddress) {
+                vm.address = resD[i]
+                vm.params.addressId = resD[i].id
+              }else{
+                vm.address = resD[0]
+                vm.params.addressId = resD[0].id
+              }
+            }
+          }else{
+            vm.address = resD[0]
+            vm.params.addressId = resD[0].id
+          }
+          console.log(vm.address, '地址数据')
         }, function () {
           vm.isPosting = false
           vm.processing(0, 1)
@@ -220,24 +243,51 @@
       },
       generateOrder() {
         if (vm.isPosting) return false
-        if(vm.validate()){
+        if (vm.validate()) {
           vm.isPosting = true
           vm.loadData(orderApi.add, vm.params, 'POST', function (res) {
-            // vm.payOrder()
             vm.isPosting = false
+            if (res.success && res.data) {
+              vm.payOrder(res.data)
+            } else {
+              vm.toast('生成订单失败！')
+            }
           }, function () {
             vm.toast('提交失败！')
             vm.isPosting = false
           })
         }
       },
-      payOrder(id) {
-        if (vm.isPosting) return false
-        vm.isPosting = true
-        vm.loadData(orderApi.payOrder , vm.params, 'POST', function (res) {
-          vm.isPosting = false
-        }, function () {
-          vm.isPosting = false
+      payOrder(data) {
+        wx.config({
+          debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+          appId: data.appId, // 必填，公众号的唯一标识
+          timestamp: data.timeStamp, // 必填，生成签名的时间戳
+          nonceStr: data.nonceStr, // 必填，生成签名的随机串
+          signature: data.paySign,// 必填，签名，见附录1
+          jsApiList: [
+            'chooseWXPay'
+          ] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+        });
+        wx.ready(function () {
+          // config信息验证后会执行ready方法，所有接口调用都必须在config接口获得结果之后，config是一个客户端的异步操作，所以如果需要在页面加载时就调用相关接口，则须把相关接口放在ready函数中调用来确保正确执行。对于用户触发时才调用的接口，则可以直接调用，不需要放在ready函数中。
+          wx.chooseWXPay({
+            appId: data.appId,
+            timestamp: data.timeStamp, // 支付签名时间戳，注意微信jssdk中的所有使用timestamp字段均为小写。但最新版的支付后台生成签名使用的timeStamp字段名需大写其中的S字符
+            nonceStr: data.nonceStr, // 支付签名随机串，不长于 32 位
+            package: data.package, // 统一支付接口返回的prepay_id参数值，提交格式如：prepay_id=***）
+            signType: data.signType, // 签名方式，默认为'SHA1'，使用新版支付需传入'MD5'
+            paySign: data.paySign, // 支付签名
+            success: function (res) {
+              // 支付成功后的回调函数
+              vm.$router.push({path: '/order'})
+            }
+          })
+        })
+        wx.error(function (res) {
+          vm.$router.push({path: '/order'})
+          // config信息验证失败会执行error函数，如签名过期导致验证失败，具体错误信息可以打开config的debug模式查看，也可以在返回的res参数中查看，对于SPA可以在这里更新签名。
+          // alert(JSON.stringify(res))
         })
       }
     }
@@ -252,39 +302,39 @@
 
   }
 
-  .pick-address{
+  .pick-address {
     .rel;
-    margin-bottom:10/@rem;
+    margin-bottom: 10/@rem;
     .bf;
     .bor-b;
-    .wrap{
-      padding:20/@rem 0;
+    .wrap {
+      padding: 20/@rem 0;
     }
-    .i-map{
+    .i-map {
       .abs-center-vertical;
       left: 0;
-      padding:0 20/@rem;
+      padding: 0 20/@rem;
       .fz(36);
       .cdiy(@c2);
     }
-    .i-right{
+    .i-right {
       .abs-center-vertical;
       right: 0;
-      padding:0 20/@rem;
+      padding: 0 20/@rem;
       .fz(40);
     }
-    .txt-con{
+    .txt-con {
       .borBox;
-      padding:0 55/@rem 0 70/@rem;
-      h3{
+      padding: 0 55/@rem 0 70/@rem;
+      h3 {
         .fz(24);
         .c3;
         .txt-normal;
-        span{
+        span {
           .fr;
         }
       }
-      p{
+      p {
         .fz(22);
         .c6;
         line-height: 1.8;
@@ -347,7 +397,9 @@
         .flex;
         .img-con {
           .rel;
+          padding: 10/@rem 0;
           .size(130, 130);
+          overflow: hidden;
           img {
             width: 100%;
             .abs-center-vh;
@@ -428,7 +480,7 @@
         .fz(24);
         .right;
         .txt-normal;
-        span{
+        span {
           .cdiy(@c2);
         }
         i {

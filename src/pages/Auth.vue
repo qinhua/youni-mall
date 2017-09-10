@@ -7,15 +7,12 @@
 
 <script>
   /* eslint-disable */
-  import $ from 'jquery'
-
   let vm
   let me
-  import {Tabbar, TabbarItem} from 'vux'
   import {commonApi} from '../service/main.js'
   // import {mapState, mapMutations} from 'vuex'
-  var url = window.decodeURIComponent(window.location.href + (window.location.href.indexOf('?') > -1 ? '&' : '?') + '_=' + Math.random());
-  var hashstr = window.decodeURIComponent(window.location.hash);
+  let url = window.decodeURIComponent(window.location.href + (window.location.href.indexOf('?') > -1 ? '&' : '?') + '_=' + Math.random());
+  let hashstr = window.decodeURIComponent(window.location.hash);
   export default {
     name: 'auth',
     data() {
@@ -33,134 +30,79 @@
     created() {
       me = window.me
     },
-    components: {Tabbar, TabbarItem},
-    beforeMount() {
-      // console.log(window.me)
-    },
     mounted() {
-      // me.attachClick()
       vm = this
-      let urlParam = me.getURLParams()
-      /*window.weixinAuthBase = function(callback, appId, store) {
-        try {
-          appId = 'wxa92cd39da6d03d8f'; //appId
-          var url = decodeURIComponent(window.location.href + (window.location.href.indexOf('?') > -1 ? '&' : '?') + '_=' + Math.random());
-          var hashstr = decodeURIComponent(window.location.hash);
-          var authObj = {
-            appid: appId,
-            redirect_uri: url.replace(hashstr, ''),
-            response_type: 'code',
-            //scope: 'snsapi_base',//静默授权
-            scope: 'snsapi_userinfo', //用户确认授权
-            state: hashstr.replace('#', '')
-          };
-          var code = urlParam.code;
-        } catch (e) {
-          alert(e.message);
-        }
-        if (!code || code == 'undefined') {
-          document.write('正在授权，如果无响应请<a href="javascript:location.reload();">点击刷新</a>');
-          location.href = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=' + authObj.appid + '&redirect_uri=' + window.encodeURIComponent(authObj.redirect_uri) + '&response_type=' + authObj.response_type + '&scope=' + authObj.scope + '&state=' + window.encodeURIComponent(authObj.state) + '#wechat_redirect';
-        } else {
-          window.location.hash = urlParam.state;
-          $.ajax({
-            // url: window.location.protocol + '//api.share.m.kakamobi.com/api/open/sign/token.htm',
-            //            url: window.location.protocol + '//api-share-m.kakamobi.com/api/open/sign/read-user-info.htm',
-            url: 'https://api.weixin.qq.com/sns/oauth2/access_token?appid=' + vm.appId + '&secret=' + vm.appSecret + '&code=' + urlParam.code + '&grant_type=authorization_code',
-            type: 'get',
-            data: {},
-            dataType: 'JSON',
-            // cache: false,
-            // async: false,
-            success: function(ret) {
-              callback(ret.data);
-            },
-            error: function(res) {
-              callback(res);
-            }
-          })
-        }
-      }
-      window.weixinAuthBase(function(obj) {
-        $("#userInfo").text(JSON.stringify(obj))
-      }) */
-
       // 检测用户是否登录
-      if (!me.locals.get('ynWxUser')) {
+//      if (vm.$store.state.global.wxInfo) {
+
         if (me.isWeixin) {
           // wx授权页面
-          if (urlParam.code) {
-            alert('1')
-            vm.loadData(commonApi.wxAuth, {code: urlParam.code}, 'POST', function (res) {
-              var resD = res.data.authResult ? JSON.parse(res.data.authResult) : null
-              alert(JSON.stringify(resD))
-              if (resD) {
-                // 获取用户信息
-                /*$.ajax({
-                  url: 'https://api.weixin.qq.com/sns/userinfo',
-                  type: 'get',
-                  data: {
-                    access_token: resD.access_token,
-                    openid: resD.openid
-                  },
-                  dataType: 'JSON'
-                  ,
-                  // cache: false,
-                  // async: false,
-                  success: function (res) {
-                    alert(JSON.stringify(res))
-//                  callback(ret.data);
-                  },
-                  error: function (res) {
-                    alert(JSON.stringify(res))
-//                  callback(res);
-                  }
-                })*/
-                location.href = 'https://api.weixin.qq.com/sns/userinfo?access_token=' + resD.access_token + '&openid=' + resD.openid + '&lang=zh_CN'
-              }
-            }, function (res) {
-              alert(JSON.stringify(res))
-            })
-            // window.location.href = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid=' + vm.appId + '&secret=' + vm.appSecret + '&code=' + urlParam.code + '&grant_type=authorization_code'
-          } else {
-            alert('2')
-            window.location.href = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=' + vm.appId + '&redirect_uri=' + vm.redirect_uri + '&response_type=' + vm.response_type + '&scope=' + vm.scope + '&state=' + vm.state + '#wechat_redirect'
-          }
+          vm.getWxInfo(function (info) {
+            /* 保存用户信息 */
+            vm.addUser(info)
+            me.locals.set('ynWxUser', JSON.stringify({data: info, timeStamp: new Date().getTime()}))
+            // alert(JSON.stringify(info))
+            vm.$router.push({path: '/home'})
+          })
         } else {
           // 外部登录页面
+          // location.href = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=123456&connect_redirect=1#wechat_redirect'
+
+          /*测试专用*/
+          var info={
+               'city': '武汉',
+               'country': '中国',
+               'errorCode': 0,
+               'errorMessage': null,
+               'headimgurl': 'http://wx.qlogo.cn/mmopen/QAm7hEbaujS41jY5T0icQd9ySS9FaRJibTiclJGyysBmLoFmswkhLemAHAibYOQml4hibx3BqD2u8NRIwrAhTyeLgjavI70oxia8uk/0',
+               'nickname': '覃华',
+               'openid': 'oGnE80ixTvBXjQ_Dql0BcTlx',
+               'privilege': [],
+               'province': '湖北',
+               'sex': '1',
+               'subscribe': 0,
+               'subscribeTime': null,
+               'unionid': null
+             }
+          me.locals.set('ynWxUser', JSON.stringify({data: info, timeStamp: new Date().getTime()}))
+          vm.$router.push({path: '/home'})
         }
-      } else {
-        // 如果有token 但是vuex中没有用户登录信息则做登录操作
-        this.login()
-      }
+
+      /*} else {
+        vm.$router.push({path: '/home'})
+      }*/
     },
     computed: {},
     methods: {
-      // 从子组件获取数据
-      getPageStatus(data) {
-        vm.curSelected = data
+      /* 添加当前用户 */
+      addUser(data) {
+        vm.loadData(commonApi.addUser, data, 'POST', function (res) {
+        }, function () {
+        })
       },
-      login() {
-        let url = this.webUrl + '/Wap/User/info'
-        // 通过cookie中保存的token 获取用户信息
-        this.$http.get(url).then(
-          function (response) {
-            response = response.body
-            console.log(response)
-            if (response) {
-              // 保存用户登录状态(Vuex)
-              this.$store.commit('getUser', response)
-              setTimeout(function () {
-                this.goBeforeLoginUrl() // 页面恢复(进入用户一开始请求的页面)
-              }, 2000)
+      // 01.拉取wx用户信息
+      getWxInfo(cb) {
+        let urlParam = me.getURLParams()
+        if (urlParam.code) {
+          vm.loadData(commonApi.wxAuth, {code: urlParam.code}, 'POST', function (res) {
+            if (res.success) {
+              cb ? cb(res.data || null) : null
             } else {
-              this.alert('服务器tm撸猫去了 :(', 'wrong')
-              if (me.locals.get('ynWxUser')) {
-                // 跳转到微信授权页面
-                window.location.href = this.webUrl + '/Wap/User/getOpenid'
-              }
+              me.lightPop('拉取用户信息失败！')
+              cb ? cb(null) : null
             }
+          }, function (res) {
+            me.lightPop('拉取用户信息失败！')
+            // alert(JSON.stringify(res))
           })
+          // window.location.href = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid=' + vm.appId + '&secret=' + vm.appSecret + '&code=' + urlParam.code + '&grant_type=authorization_code'
+          // location.href = 'https://api.weixin.qq.com/sns/userinfo?access_token=' + resD.access_token + '&openid=' + resD.openid + '&lang=zh_CN'
+        } else {
+          window.location.href = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=' + vm.appId + '&redirect_uri=' + vm.redirect_uri + '&response_type=' + vm.response_type + '&scope=' + vm.scope + '&state=' + vm.state + '#wechat_redirect'
+        }
+      },
+      // 02.wx外部登录
+      login() {
       },
       goBeforeLoginUrl() {
         let url = me.locals.get('beforeLoginUrl')
@@ -172,9 +114,9 @@
         }
       }
     },
-    watch: {
-      // '$route' (to, from) {}
-    }
+    /*watch: {
+       '$route' (to, from) {}
+    }*/
   }
 </script>
 

@@ -1,36 +1,43 @@
 <template>
-  <div class="shops-detail" ref="shopsDetail" @scroll="scrollHandler">
+  <div class="seller-detail" ref="sellerDetail" @scroll="scrollHandler">
     <!--banner-->
     <!--<div class="swiper-shop">-->
     <!--<swiper ref="slider02" skey="s03" :slides="banner" autoPlay="2500"></swiper>-->
     <!--</div>-->
     <div class="shop-info">
-      <div class="v-items">
+      <div class="v-items" :data-id="seller.id">
         <div class="wrap">
-          <img :src="shopInfo.imgurl">
+          <img :src="seller.headimgurl">
           <div class="infos">
-            <h3>{{shopInfo.name}}<span class="distance">{{shopInfo.distance}}km</span></h3>
+            <h3>{{seller.name}}({{seller.serviceTypeName}})<span
+              class="distance">{{seller.distance ? ((seller.distance / 1000) | toFixed(1)) : seller.distance}}km</span>
+            </h3>
             <div class="middle">
               <ol class="star">
-                <li v-for="star in shopInfo.score">★</li>
+                <li class="gray" v-for="star in 5" v-if="!seller.score">★</li>
+                <li v-for="star in 5" v-else>★</li>
               </ol>
-              <span class="hasSell"><i>{{shopInfo.score}}.0分</i>已售{{shopInfo.saleCount}}单</span>
+              <span
+                class="hasSell"><i>{{((seller.score || 0) / 1000) | toFixed(1)}}分</i>已售{{seller.sellerCount}}单</span>
             </div>
-            <ul>
-              <li v-for="(label,idx) in shopInfo.labels" :class="'c'+(idx+1)">{{label}}</li>
-            </ul>
+            <div class="tags">
+              <label class="c2">{{seller.authLevelName}}</label>
+              <span class="dispatchTime">平均{{seller.dispatchTime || 22}}分钟送达</span>
+            </div>
           </div>
           <div class="bottom">
-            <label class="note" v-if="shopInfo.note">{{shopInfo.note}}</label>
-            <span class="dispatchTime">平均{{shopInfo.dispatchTime}}分钟送达</span>
+            <label class="note" v-if="seller.note">{{seller.note || '商家特惠'}}</label>
           </div>
         </div>
       </div>
-      <p class="contacts">配送电话：027-25252545，楼梯房需收取上楼费</p>
+      <div class="contacts">
+        <p>地址：{{seller.address}}</p>
+        <p>配送电话：<a :href="'tel:'+seller.phone">{{seller.phone}}</a>，楼梯房需收取上楼费</p>
+      </div>
     </div>
 
     <!--过滤条-->
-    <div class="shops-filter" ref="filters02">
+    <div class="shops-filter" ref="filters03">
       <div class="v-filter-tabs">
         <ul class="v-f-tabs">
           <li :class="factive==='shop'?'mfilterActive':''" @click="showFilter('shop',$event)">店铺分类<i
@@ -78,9 +85,9 @@
               </group>
             </section>
           </section>
-          <!--<load-more tip="loading"></load-more>-->
+          <div class="noMoreData" v-if="goods.length">{{noMore ? '就这么多了' : '上拉加载'}}</div>
+          <div class="iconNoData" v-else><i></i><p>暂无商品</p></div>
         </div>
-        <!--<div class="iconNoData" @click="beContinue(curNumber)"><i></i><p>暂无内容</p></div>-->
       </scroller>
     </div>
 
@@ -97,7 +104,7 @@
     </div>
     <!--悬浮购物车-->
     <div class="float-cart" ref="floatCart"
-         v-show="curCount && ($route.name==='home'||$route.name==='shops_detail')" v-jump="['cart']">
+         v-show="curCount && ($route.name==='home'||$route.name==='seller_detail')" v-jump="['cart']">
       <div class="cart-wrap"><i class="cur-count" v-if="curCount">{{curCount}}</i></div>
     </div>
   </div>
@@ -110,18 +117,17 @@
   let vm
   import Swiper from '../../components/Swiper'
   import {Group, GroupTitle, Grid, GridItem, Marquee, MarqueeItem, XNumber, Scroller, LoadMore} from 'vux'
-  import {homeApi, nearbyApi} from '../../service/main.js'
+  import {goodsList, nearbyApi} from '../../service/main.js'
   import {mapState, mapMutations} from 'vuex'
 
   export default {
-    name: 'shops_detail',
+    name: 'seller_detail',
     data() {
       return {
-        location: '',
-        banner: [],
-        notice: [],
-        shopInfo: [],
+        sellerId: null,
+        seller: {},
         goods: [],
+        /* filter start */
         filters: {
           shop: [
             {
@@ -130,19 +136,11 @@
             },
             {
               key: 1,
-              value: '瓶装水'
-            },
-            {
-              key: 2,
               value: '桶装水'
             },
             {
-              key: 3,
-              value: '认证卖家'
-            },
-            {
-              key: 4,
-              value: '金牌卖家'
+              key: 2,
+              value: '奶'
             }
           ],
           sort: [
@@ -189,11 +187,17 @@
         factive: '',
         subActive: 0,
         /* filter end */
-        showList: true,
         scrollTop: 0,
-        roundValue: 0,
-        onFetching: false,
         isPosting: false,
+        noMore: false,
+        params: {
+          sellerId: null,
+          pageSize: 5,
+          pageNo: 1,
+          /*goodsType: 'goods_type.1',
+          goodsCategory: 'goods_category.1',
+          brandId: '038283447c4311e7aa18d8cb8a971936'*/
+        },
         pulldownConfig: {
           content: '下拉刷新',
           height: 60,
@@ -227,11 +231,8 @@
       }
     },
     components: {
-      Swiper,
       Group,
       GroupTitle,
-      Grid,
-      GridItem,
       Marquee,
       MarqueeItem,
       XNumber,
@@ -243,10 +244,8 @@
     },
     mounted() {
       vm = this
-      me.attachClick()
-      // vm.getPos()
-      // vm.getBanner()
-      vm.getShop()
+      // me.attachClick()
+      vm.getSeller()
       vm.getGoods()
       // 点击区域之外隐藏筛选栏
       document.addEventListener('click', (e) => {
@@ -258,12 +257,11 @@
         }
       }, false)
       vm.$nextTick(function () {
+        //获取筛选栏位置
         setTimeout(() => {
-          vm.filterOffset = vm.$refs.filters02.offsetTop
-        }, 500) //获取筛选栏位置
-        vm.$refs.myScroll.reset()
-        vm.$refs.myScroll.donePullup()
-        vm.$refs.myScroll.donePulldown()
+          vm.filterOffset = vm.$refs.filters03.offsetTop
+        }, 500)
+        vm.resetScroll()
       })
     },
     computed: mapState({
@@ -271,73 +269,33 @@
     }),
     watch: {
       '$route'(to, from) {
-        vm.getPos()
+        if (to.name === 'seller_detail') {
+          vm.getSeller()
+        }
       }
     },
     methods: {
-      // 全局定位
-      getPos() {
-        var lp = me.locals.get('cur5656Position')
-        setTimeout(function () {
-          if (lp) {
-            vm.location = JSON.parse(lp).name || JSON.parse(lp).formattedAddress
-          } else {
-            try {
-              vm.location = '定位中…'
-              var map, geolocation;
-              // 加载地图，调用浏览器定位服务
-              map = new AMap.Map('mapContainer', {
-                resizeEnable: true
-              });
-              map.plugin('AMap.Geolocation', function () {
-                geolocation = new AMap.Geolocation({
-                  enableHighAccuracy: true,//是否使用高精度定位，默认:true
-                  timeout: 10000,          //超过10秒后停止定位，默认：无穷大
-                  buttonOffset: new AMap.Pixel(10, 20),//定位按钮与设置的停靠位置的偏移量，默认：Pixel(10, 20)
-                  zoomToAccuracy: true,  //定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
-                  buttonPosition: 'RB'
-                });
-                map.addControl(geolocation);
-                geolocation.getCurrentPosition();
-                AMap.event.addListener(geolocation, 'complete', onComplete);//返回定位信息
-                AMap.event.addListener(geolocation, 'error', onError);      //返回定位出错信息
-              });
-
-              // 解析定位结果
-              function onComplete(data) {
-                me.locals.set('cur5656Position', JSON.stringify(data))
-                vm.location = data.formattedAddress
-                var str = ['定位成功'];
-                str.push('经度：' + data.position.getLng());
-                str.push('纬度：' + data.position.getLat());
-                if (data.accuracy) {
-                  str.push('精度：' + data.accuracy + ' 米');
-                }
-                // 如为IP精确定位结果则没有精度信息
-                str.push('是否经过偏移：' + (data.isConverted ? '是' : '否'));
-                // document.getElementById('tip').innerHTML = str.join('<br>');
-              }
-
-              // 解析定位错误信息
-              function onError(data) {
-                vm.location = '定位失败'
-                // document.getElementById('tip').innerHTML = '定位失败';
-              }
-            } catch (e) {
-              console.log(e)
-            }
-          }
-        }, 200)
-      },
       // 向父组件传值
       setPageStatus(data) {
         this.$emit('listenPage', data)
       },
+      resetScroll() {
+        setTimeout(function () {
+          vm.$refs.myScroll.reset()
+          vm.$refs.myScroll.donePullup()
+          vm.$refs.myScroll.donePulldown()
+          let target = vm.$refs.filters03
+          let list = vm.$refs.goodsList
+          target.classList.remove('fixed')
+          list.classList.remove('fixed')
+          vm.$refs.myScroll.reset()
+        }, 100)
+      },
       scrollHandler() {
         // 监听dom的scroll事件
         setTimeout(function () {
-          let scrollTop = vm.$refs.shopsDetail.scrollTop
-          let target = vm.$refs.filters02
+          let scrollTop = vm.$refs.sellerDetail.scrollTop
+          let target = vm.$refs.filters03
           let list = vm.$refs.goodsList
           if (vm.showFilterCon) {
             vm.hideFilter()
@@ -352,47 +310,60 @@
         }, 300)
       },
       /* 页面数据 */
-      getBanner(cb) {
-        vm.loadData(homeApi.banner, null, 'POST', function (res) {
-          console.log(res.data, '首页Banner')
-          vm.banner = res.data.itemList
-          cb ? cb() : null
+      getSeller() {
+        vm.sellerId = vm.params.sellerId = vm.$route.query.id
+        vm.loadData(nearbyApi.sellerDetail, {id: vm.sellerId}, 'POST', function (res) {
+          if (res.data) {
+            var resD = res.data
+            switch (resD.authLevel) {
+              case 'seller_level.1':
+                resD.authLevelName = '普通店铺'
+                break
+              case 'seller_level.2':
+                resD.authLevelName = '官方认证'
+                break
+              case 'seller_level.3':
+                resD.authLevelName = '金牌店铺'
+                break
+            }
+            switch (resD.serviceType) {
+              case 'seller_service_type.1':
+                resD.serviceTypeName = '水'
+                break
+              case 'seller_service_type.2':
+                resD.serviceTypeName = '奶'
+                break
+              case 'seller_service_type.3':
+                resD.serviceTypeName = '水+奶'
+                break
+            }
+            vm.seller = resD
+          }
         })
-      },
-      getShop() {
-        vm.loadData(nearbyApi.shopsList, null, 'POST', function (res) {
-          vm.shopInfo = res.data.itemList[0]
-        })
-      },
-      toDetail(id) {
-        if (vm.showFilterCon) return
-        vm.$router.push({name: 'goods_detail', query: {id: id}})
       },
       getGoods(isLoadMore) {
-        if (vm.onFetching) return false
-        var params = vm.filterData || {
-          pagerSize: 10,
-          pageNo: 1,
-          goodsType: 'XXX',
-          goodsCategory: '',
-          brandId: '',
-          filter: ''
-        }
-        vm.loadData(homeApi.goodsList, params, 'POST', function (res) {
-          console.log(res.data, '首页goodsList')
+        if (vm.isPosting) return false
+        vm.isPosting = true
+        !isLoadMore ? vm.params.pageNo = 1 : vm.params.pageNo++
+        vm.loadData(goodsApi.sellerGoods, vm.params, 'POST', function (res) {
+          vm.isPosting = false
+          var resD = res.data.pager
           if (!isLoadMore) {
-            vm.goods = res.data.itemList
-            if (res.data.noMore) {
-              vm.$nextTick(function () {
-                vm.$refs.myScroll.disablePullup()
-              })
+            if (resD.totalCount < vm.params.pageSize) {
+              vm.noMore = true
+              /*vm.$nextTick(function () {
+               vm.$refs.myScroll.disablePullup()
+               })*/
+            } else {
+              vm.noMore = false
             }
+            vm.goods = resD.itemList
           } else {
-            vm.shops.push(res.data.itemList)
+            resD.itemList.length ? vm.goods.concat(resD.itemList) : vm.noMore = true
           }
-          vm.onFetching = false
+          console.log(vm.goods, '商家的GoodsList')
         }, function () {
-          vm.onFetching = false
+          vm.isPosting = false
         })
       },
       /* 商品筛选 */
@@ -454,14 +425,14 @@
         vm.getGoods(lastF)
       },
       onPullDown() {
-        if (vm.onFetching) {
+        if (vm.isPosting) {
           // do nothing
           return false
         } else {
-          // this.onFetching = true
+          // this.isPosting = true
           setTimeout(function () {
             // vm.bottomCount += 10
-            vm.getShops()
+            vm.getGoods()
             vm.$nextTick(function () {
               vm.$refs.myScroll.reset({top: 0})
               vm.$refs.myScroll.donePullup()
@@ -471,14 +442,14 @@
         }
       },
       onPullUp() {
-        if (vm.onFetching) {
+        if (vm.isPosting) {
           // do nothing
           return false
         } else {
-          // vm.onFetching = true
+          // vm.isPosting = true
           setTimeout(function () {
             // vm.bottomCount += 10
-            vm.getShops(true)
+            vm.getGoods(true)
             vm.$nextTick(function () {
               vm.$refs.myScroll.reset({bottom: 0})
               vm.$refs.myScroll.donePullup()
@@ -492,7 +463,6 @@
         vm.factive = ''
         vm.showFilterCon ? vm.showFilterCon = false : null
       },
-
       changeCount(obj) {
         console.log(obj)
         if (obj.type === 'add') {
@@ -571,278 +541,27 @@
 <style lang='less'>
   @import '../../../static/css/tools.less';
 
-  .shops-detail {
+  .seller-detail {
     height: 100%;
     overflow: scroll; // 此两个属性至关重要，不写@scroll监听不到滚动
-  }
+    .swiper-shop {
+      margin-bottom: 10/@rem;
+      .swiper-pagination {
+        bottom: 5px;
+      }
+      .swiper-pagination-bullet-active {
+        background: #eee;
+      }
+    }
 
-  .swiper-shop {
-    margin-bottom: 10/@rem;
-    .swiper-pagination {
-      bottom: 5px;
-    }
-    .swiper-pagination-bullet-active {
-      background: #eee;
-    }
-  }
-
-  .shop-info {
-    background: url(../../../static/img/bg_user.jpg) no-repeat top center;
-    .rbg-size(100%);
-    .v-items {
-      .rel;
-      padding: 20/@rem;
-      .wrap {
-        .rel;
-      }
-      img {
-        .abs;
-        left: 0;
-        top: 0;
-        .size(150, 150);
-        background: #f5f5f5 url(../../../static/img/noImg.png) no-repeat center;
-        -webkit-background-size: 30% auto;
-        background-size: 30% auto;
-      }
-      .infos {
-        .flex;
-        .flex-d-v;
-        .borBox;
-        width: 100%;
-        .h(150);
-        padding-left: 170/@rem;
-        h3 {
-          .flex-r(1);
-          .fz(30);
-          .txt-normal;
-          .cf;
-          .ellipsis;
-        }
-        .middle {
-          .flex-r(1);
-          .price {
-          }
-          span {
-            &.price {
-              .cf;
-              .fz(24);
-              .txt-del;
-            }
-            &.hasSell {
-              .ce;
-              .fz(22);
-              i {
-                padding-right: 30/@rem;
-                .txt-normal;
-                .cdiy(#ff9900);
-              }
-            }
-          }
-          .star {
-            li {
-              .fl;
-              margin-right: 10/@rem;
-              .cdiy(#ff9900);
-              .fz(22);
-            }
-          }
-        }
-        ul {
-          .flex-r(1);
-          li {
-            .fl;
-            margin-right: 10/@rem;
-            padding: 1px 8px;
-            line-height: 1.8;
-            .cf;
-            .fz(16);
-            .borR(4px);
-            &.c1 {
-              .bdiy(#fd5900);
-            }
-            &.c2 {
-              .bdiy(#78c725);
-            }
-            &.c3 {
-              .bdiy(#c77e25);
-            }
-          }
-        }
-        .distance {
-          .abs;
-          right: 0;
-          top: 0;
-          .cc;
-          .fz(20);
-        }
-      }
-      .bottom {
-        overflow: hidden;
-      }
-      .note {
-        .fl;
-        .rel;
-        padding: 10/@rem 0 0 30/@rem;
-        .cd;
-        .block;
-        .fz(20);
-        &:before {
-          .abs;
-          .block;
-          left: 0;
-          top: 12/@rem;
-          content: '惠';
-          .size(26, 26);
-          .center;
-          line-height: 26/@rem;
-          background: #f38918;
-        }
-      }
-      .dispatchTime {
-        .fr;
-        padding-top: 10/@rem;
-        .cc;
-        .block;
-        .fz(20);
-      }
-    }
-    .contacts {
-      padding: 5px 20/@rem;
-      .fz(20);
-      .cf;
-      background: rgba(0, 0, 0, .5);
-    }
-  }
-
-  .shops-filter {
-    .rel;
-    z-index: 10;
-    margin-bottom: 10/@rem;
-    .transi(.2s);
-    &.fixed {
-      width: 100%;
-      .fix;
-      top: 0;
-    }
-    .v-filter-tabs {
-      width: 100%;
-      padding: 10/@rem 0;
-      border-top: 1px solid #eee;
-      border-bottom: 1px solid #eee;
-      .bf;
-      .v-f-tabs {
-        height: 60/@rem;
-        li {
-          .pointer;
-          .rel;
-          .borBox;
-          .fl;
-          width: 33.3333%;
-          height: 60/@rem;
-          line-height: 60/@rem;
-          .c3;
-          .center;
-          font-size: 14px;
-          .ico-arr-down {
-            position: absolute;
-            width: 30px;
-            height: 30px;
-            top: 6/@rem;
-            &:before {
-              content: "";
-              position: absolute;
-              width: 6px;
-              height: 6px;
-              border: 1px solid #666;
-              border-width: 1px 0 0 1px;
-              -webkit-transform: rotate(-135deg);
-              transform: rotate(-135deg);
-              top: 8px;
-              left: 7px;
-              .transi(.2s);
-            }
-          }
-          &.mfilterActive {
-            .cdiy(#f1582a);
-            .ico-arr-down {
-              &:before {
-                border-color: #f1582a;
-                -webkit-transform-origin: 0 center;
-                transform-origin: 0 center;
-                -webkit-transform: rotate(45deg);
-                transform: rotate(45deg);
-              }
-            }
-          }
-          &:nth-child(2) {
-            border-left: 1px solid #eee;
-            border-right: 1px solid #eee;
-          }
-        }
-      }
-      .filter-data {
-        .abs;
-        z-index: 10;
-        .borBox;
-        margin-top: 8/@rem;
-        opacity: 0;
-        height: 0;
-        width: 100%;
-        .bf;
-        border-top: 1px solid #eee;
-        .bsd(0, 10px, 18px, 0, #ccc);
-        .transi(.2s);
-        &.show {
-          opacity: 1;
-          height: auto;
-          padding: 30/@rem 18/@rem;
-        }
-        .filter-tags {
-          overflow: hidden;
-          li {
-            .pointer;
-            .fl;
-            padding: 3px 10px;
-            margin: 10/@rem;
-            line-height: 1;
-            font-size: 12px;
-            .c6;
-            .bf1;
-            .borR(10px);
-            &.sfilterActive {
-              .cf;
-              .bdiy(#f1582a);
-            }
-          }
-        }
-      }
-    }
-  }
-
-  .goods-list {
-    /*max-height:500px;*/
-    overflow: auto;
-    &.fixed {
-      margin-top: 100/@rem;
-    }
-    .inner-scroller {
-      .borBox;
-      .static;
+    .shop-info {
+      background: url(../../../static/img/bg_user.jpg) no-repeat top center;
+      .rbg-size(100%);
       .v-items {
+        .rel;
         padding: 20/@rem;
-        .bf;
-        &:not(:last-child) {
-          .bor-b;
-        }
         .wrap {
-          .flex;
           .rel;
-          .h(150);
-        }
-        .click-wrap {
-          .borBox;
-          .flex-r(1);
-          overflow: hidden;
         }
         img {
           .abs;
@@ -858,72 +577,334 @@
           .flex-d-v;
           .borBox;
           width: 100%;
-          height: 100%;
+          .h(150);
           padding-left: 170/@rem;
           h3 {
             .flex-r(1);
-            .fz(30);
+            .fz(28);
             .txt-normal;
-            .c3;
+            .cf;
             .ellipsis;
           }
           .middle {
             .flex-r(1);
-            padding: 10/@rem 0;
             .price {
             }
             span {
               &.price {
-                .c3;
+                .cf;
                 .fz(24);
                 .txt-del;
               }
               &.hasSell {
-                padding-left: 30/@rem;
-                .c9;
+                .ce;
                 .fz(22);
+                i {
+                  padding-right: 30/@rem;
+                  .txt-normal;
+                  .cdiy(#ff9900);
+                }
+              }
+            }
+            .star {
+              li {
+                .fl;
+                margin-right: 10/@rem;
+                .cdiy(#ff9900);
+                .fz(24);
+                &.gray {
+                  .c9;
+                }
               }
             }
           }
-          label {
+          .tags {
             .flex-r(1);
-            .cdiy(#f34c18);
-            .fz(22);
+            label {
+              .fl;
+              margin-right: 10/@rem;
+              padding: 1px 8px;
+              line-height: 1.8;
+              .cf;
+              .fz(16);
+              .borR(4px);
+              &.c1 {
+                .bdiy(#fd5900);
+              }
+              &.c2 {
+                .bdiy(#78c725);
+              }
+              &.c3 {
+                .bdiy(#c77e25);
+              }
+            }
+            .dispatchTime {
+              .fr;
+              padding-top: 10/@rem;
+              .cc;
+              .block;
+              .fz(20);
+            }
+          }
+          .distance {
+            .abs;
+            right: 0;
+            top: 0;
+            .cc;
+            .fz(20);
+          }
+        }
+        .bottom {
+          overflow: hidden;
+        }
+        .note {
+          .fl;
+          .rel;
+          padding: 10/@rem 0 0 30/@rem;
+          .cd;
+          .block;
+          .fz(20);
+          &:before {
+            .abs;
+            .block;
+            left: 0;
+            top: 12/@rem;
+            content: '惠';
+            .size(26, 26);
+            .center;
+            line-height: 26/@rem;
+            background: #f38918;
           }
         }
       }
-      .buy-count {
-        .rel;
-        width: 160/@rem;
-        .weui-cells {
-          .abs-center-vertical;
-          right: -10/@rem;
-          margin-top: 0;
-          .no-bg;
-          &:before, &:after {
-            .none;
+      .contacts {
+        padding: 5px 20/@rem;
+        .fz(20);
+        .cf;
+        background: rgba(0, 0, 0, .5);
+        p {
+          .ellipsis-clamp-2;
+        }
+        a {
+          .cdiy(#38aee8);
+        }
+      }
+    }
+
+    .shops-filter {
+      .rel;
+      z-index: 10;
+      margin-bottom: 10/@rem;
+      .transi(.2s);
+      &.fixed {
+        width: 100%;
+        .fix;
+        top: 0;
+      }
+      .v-filter-tabs {
+        width: 100%;
+        padding: 10/@rem 0;
+        border-top: 1px solid #eee;
+        border-bottom: 1px solid #eee;
+        .bf;
+        .v-f-tabs {
+          height: 60/@rem;
+          li {
+            .pointer;
+            .rel;
+            .borBox;
+            .fl;
+            width: 33.3333%;
+            height: 60/@rem;
+            line-height: 60/@rem;
+            .c3;
+            .center;
+            font-size: 14px;
+            .ico-arr-down {
+              position: absolute;
+              width: 30px;
+              height: 30px;
+              top: 6/@rem;
+              &:before {
+                content: "";
+                position: absolute;
+                width: 6px;
+                height: 6px;
+                border: 1px solid #666;
+                border-width: 1px 0 0 1px;
+                -webkit-transform: rotate(-135deg);
+                transform: rotate(-135deg);
+                top: 8px;
+                left: 7px;
+                .transi(.2s);
+              }
+            }
+            &.mfilterActive {
+              .cdiy(#f1582a);
+              .ico-arr-down {
+                &:before {
+                  border-color: #f1582a;
+                  -webkit-transform-origin: 0 center;
+                  transform-origin: 0 center;
+                  -webkit-transform: rotate(45deg);
+                  transform: rotate(45deg);
+                }
+              }
+            }
+            &:nth-child(2) {
+              border-left: 1px solid #eee;
+              border-right: 1px solid #eee;
+            }
           }
-          .weui-cell {
-            padding: 0;
+        }
+        .filter-data {
+          .abs;
+          z-index: 10;
+          .borBox;
+          margin-top: 8/@rem;
+          opacity: 0;
+          height: 0;
+          width: 100%;
+          .bf;
+          border-top: 1px solid #eee;
+          .bsd(0, 10px, 18px, 0, #ccc);
+          .transi(.2s);
+          &.show {
+            opacity: 1;
+            height: auto;
+            padding: 30/@rem 18/@rem;
           }
-          .vux-number-input {
-            width: 50/@rem !important;
-            height: 34/@rem !important;
-            .fz(24);
+          .filter-tags {
+            overflow: hidden;
+            li {
+              .pointer;
+              .fl;
+              padding: 3px 10px;
+              margin: 10/@rem;
+              line-height: 1;
+              font-size: 12px;
+              .c6;
+              .bf1;
+              .borR(10px);
+              &.sfilterActive {
+                .cf;
+                .bdiy(#f1582a);
+              }
+            }
           }
-          .vux-number-selector, .vux-number-selector-plus {
-            .size(30, 30);
-            padding: 2px;
-            font-size: 0;
-            line-height: 34/@rem;
-            /*border-color: #f34c18;*/
-            svg {
+        }
+      }
+    }
+
+    .goods-list {
+      /*max-height:500px;*/
+      overflow: auto;
+      &.fixed {
+        .xs-container {
+          margin-top: 90/@rem;
+        }
+      }
+      .inner-scroller {
+        .borBox;
+        .static;
+        .v-items {
+          padding: 20/@rem;
+          .bf;
+          &:not(:last-child) {
+            .bor-b;
+          }
+          .wrap {
+            .flex;
+            .rel;
+            .h(150);
+          }
+          .click-wrap {
+            .borBox;
+            .flex-r(1);
+            overflow: hidden;
+          }
+          img {
+            .abs;
+            left: 0;
+            top: 0;
+            .size(150, 150);
+            background: #f5f5f5 url(../../../static/img/noImg.png) no-repeat center;
+            -webkit-background-size: 30% auto;
+            background-size: 30% auto;
+          }
+          .infos {
+            .flex;
+            .flex-d-v;
+            .borBox;
+            width: 100%;
+            height: 100%;
+            padding-left: 170/@rem;
+            h3 {
+              .flex-r(1);
+              .fz(28);
+              .txt-normal;
+              .c3;
+              .ellipsis;
+            }
+            .middle {
+              .flex-r(1);
+              padding: 10/@rem 0;
+              .price {
+              }
+              span {
+                &.price {
+                  .c3;
+                  .fz(24);
+                  .txt-del;
+                }
+                &.hasSell {
+                  padding-left: 30/@rem;
+                  .c9;
+                  .fz(22);
+                }
+              }
+            }
+            label {
+              .flex-r(1);
+              .cdiy(#f34c18);
+              .fz(22);
+            }
+          }
+        }
+        .buy-count {
+          .rel;
+          width: 160/@rem;
+          .weui-cells {
+            .abs-center-vertical;
+            right: -10/@rem;
+            margin-top: 0;
+            .no-bg;
+            &:before, &:after {
+              .none;
+            }
+            .weui-cell {
+              padding: 0;
+            }
+            .vux-number-input {
+              width: 50/@rem !important;
+              height: 34/@rem !important;
+              .fz(24);
+            }
+            .vux-number-selector, .vux-number-selector-plus {
               .size(30, 30);
-              /*fill: #f34c18;*/
+              padding: 2px;
+              font-size: 0;
+              line-height: 34/@rem;
+              /*border-color: #f34c18;*/
+              svg {
+                .size(30, 30);
+                /*fill: #f34c18;*/
+              }
             }
           }
         }
       }
     }
   }
+
 </style>

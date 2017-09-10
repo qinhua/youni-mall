@@ -1,5 +1,5 @@
 <template>
-  <div class="ticket" v-cloak>
+  <div class="ticket-con" v-cloak>
     <tab class="ticket-type" bar-active-color="transparent">
       <tab-item :selected="!params.type?true:false" @on-item-click="onItemClick"><i class="fa fa-ticket"></i>&nbsp;购买水票
       </tab-item>
@@ -12,8 +12,7 @@
       <tab-item @on-item-click="filterTicket(2,true)">买10送2</tab-item>
       <tab-item @on-item-click="filterTicket(3,true)">已失效</tab-item>
     </tab>
-
-    <slide-tab ref="slidernav" skey="s01" :slides="navs" @on-select="selectCategory"></slide-tab>
+    <slide-tab ref="slidernav" skey="s01" :slides="navs" @on-select="selectCategory" v-show="!params.type"></slide-tab>
 
     <!--<tab class="ticket-tab" bar-active-color="transparent" v-show="!params.type">
       <tab-item selected @on-item-click="filterTicket(0)">全部</tab-item>
@@ -26,7 +25,7 @@
     <div class="ticket-list">
       <scroller class="inner-scroller" ref="ticketScroller" height="100%" :on-refresh="refresh" :on-infinite="infinite"
                 refreshText="下拉刷新"
-                noDataText="没有更多数据"
+                noDataText=""
                 snapping>
         <!-- content goes here -->
         <section class="v-items" v-for="(item, index) in tickets" :data-id="item.id">
@@ -45,6 +44,7 @@
         </section>
       </scroller>
     </div>
+    <div class="iconNoData abs-center-vh" v-if="!tickets.length"><i></i><p>暂无水票</p></div>
   </div>
 </template>
 
@@ -63,33 +63,31 @@
         curTicketFilter: '',
         tickets: [],
         navs: [{
-          "value": "water_ticket_type.1",
-          "label": "买5送1"
+          'key': 'water_ticket_type.1',
+          'value': '买5送1'
         },
           {
-            "value": "water_ticket_type.2",
-            "label": "买10送2"
+            'key': 'water_ticket_type.2',
+            'value': '买10送2'
           },
           {
-            "value": "water_ticket_type.3",
-            "label": "买100送30"
+            'key': 'water_ticket_type.3',
+            'value': '买100送30'
           },
           {
-            "value": "water_ticket_type.4",
-            "label": "买100送35"
+            'key': 'water_ticket_type.4',
+            'value': '买100送35'
           },
           {
-            "value": "water_ticket_type.5",
-            "label": "买100送40"
+            'key': 'water_ticket_type.5',
+            'value': '买100送40'
           }],
         params: {
           type: 0,
+          userType: 1,
+          status: 0,
           pagerSize: 10,
-          pageNo: 1,
-          goodsType: 'XXX',
-          goodsCategory: '',
-          brandId: '',
-          filter: ''
+          pageNo: 1
         },
         noMore: false,
         isPosting: false
@@ -101,6 +99,7 @@
     },
     mounted() {
       vm = this
+      vm.params.type = vm.$route.params.type
       vm.getTickets()
       vm.$nextTick(() => {
         vm.$refs.ticketScroller.finishInfinite(true)
@@ -114,14 +113,18 @@
      }, */
     watch: {
       '$route'(to, from) {
-        vm.getTickets()
+        if(to.name==='ticket'){
+          vm.params.type = vm.$route.params.type
+          vm.getTickets()
+        }
       }
     },
     methods: {
       // 向父组件传值
       selectCategory(data) {
-        console.log(data,96969)
-//        this.$emit('listenPage', data)
+        console.log(data,'当前水票种类')
+        vm.params.type=data.key
+        vm.getTickets()
       },
       buy(id) {
         vm.$router.push({path: '/detail/' + id})
@@ -154,12 +157,14 @@
         vm.getTickets()
       },
       getTickets(isLoadMore) {
-        vm.params.type = this.$route.params.type || 0
+        vm.params.status = this.$route.params.type || 0
         if (vm.isPosting) return false
         // 根据isMine判断不同的水票类型
         vm.isPosting = true
+        vm.processing()
         vm.loadData(ticketApi.list, vm.params, 'POST', function (res) {
           vm.isPosting = false
+          vm.processing(0,1)
           var resD = res.data.pager
           if (!isLoadMore) {
             vm.tickets = res.data.itemList
@@ -184,112 +189,114 @@
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang='less'>
   @import '../../static/css/tools.less';
-  /*.ticket{}*/
-
-  .ticket-type {
-    z-index: 10;
-    .vux-tab-item {
-      &.vux-tab-selected {
-        .cf!important;
-        background: #5cc5d0 !important;
+  .ticket-con{
+    height: 100%;
+    .ticket-type {
+      z-index: 10;
+      .vux-tab-item {
+        &.vux-tab-selected {
+          .cf!important;
+          background: #5cc5d0 !important;
+        }
       }
     }
-  }
 
-  .ticket-tab {
-    z-index: 10;
-    .vux-tab-item {
-      &.vux-tab-selected {
-        .cdiy(#5cc5d0) !important;
+    .ticket-tab {
+      z-index: 10;
+      .vux-tab-item {
+        &.vux-tab-selected {
+          .cdiy(#5cc5d0) !important;
+        }
       }
     }
-  }
 
-  .ticket-list {
-    .inner-scroller {
-      .borBox;
-      padding: 88px 0 150px;
-      .v-items {
-        padding: 20/@rem;
-        .bf;
-        &:not(:last-child) {
-          .bor-b;
-        }
-        .wrap {
-          .rel;
-          .h(150);
-        }
-        img {
-          .abs;
-          left: 0;
-          top: 0;
-          .size(150, 150);
-          background: #f5f5f5 url(../../static/img/noImg.png) no-repeat center;
-          -webkit-background-size: 30% auto;
-          background-size: 30% auto;
-        }
-        .infos {
-          .flex;
-          .flex-d-v;
-          .borBox;
-          width: 100%;
-          height: 100%;
-          padding-left: 170/@rem;
-          h3 {
-            .flex-r(1);
-            .fz(30);
-            .txt-normal;
-            .c3;
-            .ellipsis;
+    .ticket-list {
+      .inner-scroller {
+        .borBox;
+        padding: 88px 0 150px;
+        .v-items {
+          padding: 20/@rem;
+          .bf;
+          &:not(:last-child) {
+            .bor-b;
           }
-          .count {
+          .wrap {
+            .rel;
+            .h(150);
+          }
+          img {
             .abs;
-            right: 0;
-            .fz(20);
-            .c3;
-            i {
-              .txt-normal;
-              .c9;
-            }
+            left: 0;
+            top: 0;
+            .size(150, 150);
+            background: #f5f5f5 url(../../static/img/noImg.png) no-repeat center;
+            -webkit-background-size: 30% auto;
+            background-size: 30% auto;
           }
-          .middle {
-            .flex-r(1);
-            padding: 10/@rem 0;
-            .price {
+          .infos {
+            .flex;
+            .flex-d-v;
+            .borBox;
+            width: 100%;
+            height: 100%;
+            padding-left: 170/@rem;
+            h3 {
+              .flex-r(1);
+              .fz(28);
+              .txt-normal;
+              .c3;
+              .ellipsis;
             }
-            span {
-              &.price {
-                .c3;
-                .fz(26);
-              }
-              &.retail-price {
-                padding-left: 30/@rem;
+            .count {
+              .abs;
+              right: 0;
+              .fz(20);
+              .c3;
+              i {
+                .txt-normal;
                 .c9;
-                .fz(22);
-                .txt-del;
-                i {
-                  .txt-normal;
+              }
+            }
+            .middle {
+              .flex-r(1);
+              padding: 10/@rem 0;
+              .price {
+              }
+              span {
+                &.price {
+                  .c3;
+                  .fz(26);
+                }
+                &.retail-price {
+                  padding-left: 30/@rem;
+                  .c9;
+                  .fz(22);
+                  .txt-del;
+                  i {
+                    .txt-normal;
+                  }
                 }
               }
+              .btn-buy {
+                .fr;
+                padding: 2px 20/@rem;
+                .fz(24);
+                .cf;
+                /*.bdiy(#f16b41);*/
+                .bdiy(#5cc5d0);
+                .borR(4px);
+              }
             }
-            .btn-buy {
-              .fr;
-              padding: 2px 20/@rem;
-              .fz(24);
-              .cf;
-              /*.bdiy(#f16b41);*/
-              .bdiy(#5cc5d0);
-              .borR(4px);
+            label {
+              .flex-r(1);
+              .cdiy(#f34c18);
+              .fz(22);
+              .ellipsis;
             }
-          }
-          label {
-            .flex-r(1);
-            .cdiy(#f34c18);
-            .fz(22);
-            .ellipsis;
           }
         }
       }
     }
   }
+
 </style>

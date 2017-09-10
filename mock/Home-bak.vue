@@ -894,7 +894,7 @@
           padding-left: 170/@rem;
           h3 {
             .flex-r(1);
-            .fz(30);
+            .fz(28);
             .txt-normal;
             .c3;
             .ellipsis;

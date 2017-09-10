@@ -40,6 +40,7 @@
       return {
         isPageMode: false,
         lastPage: '',
+        timeout:8000,
         currentPoint: null,
         geoData: null
       }
@@ -195,7 +196,6 @@
             map.addControl(new AMap.CitySearch())
           })
 
-
           setTimeout(function () {
 
             /*01.定位*/
@@ -234,7 +234,8 @@
 
                 // 解析定位错误信息
                 var onError = function (data) {
-                  inputer.value = '定位失败'
+                  // inputer.value = '定位失败'
+                  geoByIp()
                   btnClear.classList.add('show')
                 }
 

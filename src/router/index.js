@@ -20,7 +20,7 @@ import MyFavorite from '@/pages/my/Favorite'
 import Help from '@/pages/my/Help'
 import About from '@/pages/my/About'
 import GoodsDetail from '@/pages/goods/Detail'
-import ShopsDetail from '@/pages/shops/Detail'
+import SellerDetail from '@/pages/sellers/Detail'
 
 import NoPage from '@/pages/NoPage'
 Router.prototype.goBack = function () {
@@ -218,9 +218,9 @@ export default new Router({
       }
     },
     {
-      path: '/shops_detail',
-      name: 'shops_detail',
-      component: ShopsDetail,
+      path: '/seller_detail',
+      name: 'seller_detail',
+      component: SellerDetail,
       meta: {
         title: '店铺详情',
         keepAlive: false

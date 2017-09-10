@@ -2,7 +2,7 @@
   <div class="global-cart" v-cloak>
     <div class="order-list">
       <scroller class="inner-scroller" ref="goodsScroller" :on-refresh="refresh" :on-infinite="infinite"
-                refreshText="下拉刷新" noDataText="" snapping>
+                refreshText="下拉刷新" noDataText="没有更多数据" snapping>
         <!-- content goes here -->
         <section class="v-items" :data-sellerid="goods.sellerId">
           <h4 class="item-top" v-if="goods.goodsList&&goods.goodsList.length"><i
@@ -21,6 +21,12 @@
                 </div>
                 <div slot="content" class="demo-content vux-1px-t">
                   <li>
+                    <checker type="checkbox" default-item-class="demo2-item"
+                             selected-item-class="demo2-item-selected">
+                      <checker-item :value="index+1"
+                                    :dataobj="{goodsId:item.goodsId,goodsNum:item.goodsNum,goodsImage:item.goodsImage,goodsName:item.goodsName,price:item.price}"
+                                    @on-item-click="selectGoods"></checker-item>
+                    </checker>
                     <section class="item-middle">
                       <div class="img-con">
                         <img :src="item.goodsImage">
@@ -52,9 +58,13 @@
         </section>
       </scroller>
     </div>
-    <div class="iconNoData abs-center-vh" v-if="!goods.sellerId"><i></i><p>空空如也</p></div>
     <div class="count-bar">
       <div class="wrap">
+        <div class="checker-all">
+          <checker type="checkbox" default-item-class="demo3-item" selected-item-class="demo2-item-selected">
+            <checker-item :value="0" @on-item-click="selectAll"><label>全选</label></checker-item>
+          </checker>
+        </div>
         <div class="txt-total">
           <h4>合计：<span>￥{{theTotal.price | toFixed}}</span><i>&nbsp;不含配送费用</i></h4>
         </div>
@@ -99,7 +109,7 @@
     },
     mounted() {
       vm = this
-      vm.getCart()
+      vm.getCart(false, true)
       vm.$nextTick(() => {
         vm.$refs.goodsScroller.finishInfinite(true)
         vm.$refs.goodsScroller.resize()
@@ -109,11 +119,16 @@
     },*/
     watch: {
       '$route'(to, from) {
-        if (to.name === 'cart') {
-          vm.isEdit = false
-          vm.getCart()
+        vm.getCart()
+      },
+      /*curCartData(oldVal,newVal) {
+        if(newVal.length){
+          for (let i = 0; i < newVal.length; i++) {
+            vm.theTotal.price += (newVal[i].price*newVal[i].goodsNum)
+            vm.theTotal.number += newVal[i].goodsNum
+          }
         }
-      }
+      }*/
     },
     methods: {
       // 向父组件传值
@@ -194,7 +209,7 @@
               vm.curCartData.push({
                 goodsId: cur.goodsId,
                 goodsNum: cur.goodsNum,
-                goodsImage: cur.goodsImage,
+                goodsImage: cur.goodsNum,
                 goodsName: cur.goodsName,
                 price: cur.price,
               })
@@ -211,15 +226,6 @@
           console.log(vm.curCartData, '最后的购物车数据')
         }, 0)
       },
-      countTotal() {
-        vm.theTotal.price = 0
-        vm.theTotal.number = 0
-        for (let i = 0; i < vm.goods.goodsList.length; i++) {
-          var cur = vm.goods.goodsList[i]
-          vm.theTotal.price += (cur.price * cur.goodsNum)
-          vm.theTotal.number += cur.goodsNum
-        }
-      },
       getCart(isLoadMore, cb) {
         if (vm.onFetching) return false
         vm.processing()
@@ -229,13 +235,12 @@
           vm.processing(0, 1)
           var resD = res.data
           vm.goods = resD
+          cb ? cb() : null
 //          if (!isLoadMore) {
 //          } else {
 //            vm.goods.push(resD)
 //          }
-          cb ? cb() : null
-          vm.countTotal()
-          console.log(vm.goods, '购物车数据')
+//          console.log(vm.goods, '购物车数据')
         }, function () {
           vm.onFetching = false
           vm.processing(0, 1)
@@ -311,12 +316,12 @@
       },
       goConfirm() {
         // 带入当前选择的商品信息
-        if (vm.goods.goodsList.length) {
+        if (vm.curCartData.length) {
           var lastD = {
             sellerId: vm.goods.sellerId,
             sellerName: vm.goods.sellerName,
             totalPrice: vm.goods.totalPrice,
-            goods: vm.goods.goodsList
+            goods: vm.curCartData
           }
           vm.$router.push({
             name: 'confirm_order',
@@ -430,14 +435,11 @@
         .item-middle {
           width: 100%;
           .borBox;
-          /*padding: 14/@rem 20/@rem 14/@rem 60/@rem*/;
-          padding: 14/@rem 20/@rem 14/@rem 20/@rem;
+          padding: 14/@rem 20/@rem 14/@rem 60/@rem;
           .flex;
           .img-con {
             .rel;
-            padding: 10/@rem 0;
             .size(130, 130);
-            overflow: hidden;
             img {
               width: 100%;
               .abs-center-vh;

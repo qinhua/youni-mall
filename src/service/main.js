@@ -16,12 +16,13 @@ const homeApi = {
   goodsList: host + '/home/goodsList'
 }
 const goodsApi = {
-  detail: host + '/goods/detail',
-  appraise: host + '/goods/appraise'
+  detail: host + '/goods/view',
+  appraise: host + '/goods/appraise',
+  sellerGoods: host + '/goods/pageList'
 }
 const nearbyApi = {
-  shopsList: host + '/home/shopsList',
-  sellerList: host + '/seller/list'
+  sellerList: host + '/seller/list',
+  sellerDetail: host + '/seller/view'
 }
 const ticketApi = {
   tickets: host + '/home/list',
@@ -55,9 +56,9 @@ const cartApi = {
 }
 const commonApi = {
   wxAuth: host + '/weixin/auth',
+  wxPay: host + '/weixin/payTest',
   dict: host + '/common/dictList',
   addUser: host + '/user/add'
 }
-console.log('当前域名：%c' + host, 'color:red;font-size:14px;font-weight:bold')
-console.log('当前API：%c' + JSON.stringify(homeApi, null, 2), 'color:orange;font-size:14px')
+// console.log('当前域名：%c' + host, 'color:red;font-size:14px;font-weight:bold')
 export {commonApi,cartApi,homeApi, nearbyApi, ticketApi, orderApi, userApi, goodsApi}

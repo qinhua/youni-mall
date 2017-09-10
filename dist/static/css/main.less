@@ -12,6 +12,7 @@ body {
   .rel;
   width: 100%;
   height: 100%;
+  overflow-x: hidden;
   .bf5;
   .weui-tabbar{
     .ma-w(640);
@@ -119,6 +120,7 @@ body {
   height: 80/@rem;
   line-height: 80/@rem;
   .bf;
+  .bor-b;
   p {
     .fz(24);
     .c6;
@@ -173,7 +175,7 @@ body {
 .xs-plugin-pullup-container{
   line-height: 40px;
 }
-.home .inner-scroller{
+.home .inner-scroller,.nearby .inner-scroller,.seller-detail .inner-scroller{
   .box{
     padding-bottom: 120px!important;
   }
@@ -188,6 +190,55 @@ body {
   padding-bottom: 90px!important;
 }
 
+.vux-popup-dialog {
+  .bf!important;
+  .number-con {
+    padding:30/@rem 20/@rem 40/@rem;
+    .weui-cells {
+      margin-top: 0!important;
+      &:before, &:after {
+        .none;
+      }
+      .weui-cell {
+        padding: 0;
+        p{
+          .fz(24);
+        }
+      }
+      .vux-number-input {
+        .borBox;
+        padding: 0;
+        width: 60/@rem !important;
+        height: 60/@rem !important;
+        .fz(24);
+      }
+      .vux-number-selector, .vux-number-selector-plus {
+        .rel;
+        .borBox;
+        .size(60, 60);
+        font-size: 0;
+        line-height: 34/@rem;
+        .bf;
+        .bor;
+        svg {
+          .abs-center-vh;
+          .size(26, 26);
+          /*fill: #f34c18;*/
+        }
+      }
+    }
+  }
+  .btn-addcart {
+    width: 100%;
+    padding: 20/@rem 0;
+    .fz(24);
+    .cf;
+    .bdiy(#ff9627);
+    &.buy{
+      .bdiy(@c2);
+    }
+  }
+}
 .weui-toast {
   width: auto !important;
   min-width: 200/@rem;
@@ -507,10 +558,11 @@ body {
   .cart-wrap{
     .rel;
     .size(80,80);
-    background: rgba(0,0,0,.5) url(../../static/img/ico_cart.png) no-repeat center;
+    background: rgb(73, 216, 210) url(../../static/img/ico_cart.png) no-repeat center;
     -webkit-background-size: 56% auto;
     background-size: 56% auto;
     .borR(50%);
+    .bsd(0,1px,10px,0,#49d8d2);
     i{
       .abs;
       top:-6/@rem;

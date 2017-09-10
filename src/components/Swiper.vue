@@ -1,6 +1,6 @@
 <template>
   <div class="v-swiper">
-    <div :class="'swiper-container swiper-con' + ' ' + skey">
+    <div :class="'swiper-container v-swiper-con' + ' ' + skey">
       <div class="swiper-wrapper">
         <div class="swiper-slide" v-for="(item,index) in slides" :key="index+1">
           <a :href="item.linkUrl" target="blank">
@@ -29,7 +29,7 @@
       let isAuto = (vm.autoPlay ? vm.autoPlay : (vm.autoPlay === false ? false : 1500))
       // initial swiper
       var mySlider = function () {
-        return new Swiper('.swiper-container' + curCls, {
+        return new Swiper('.v-swiper-con' + curCls, {
           initialSlide: 0,
           direction: vm.direction || 'horizontal',
           loop: false,
@@ -60,7 +60,7 @@
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style lang="less">
+<style scoped lang="less">
   @import '../../static/css/tools.less';
 
   .v-swiper {

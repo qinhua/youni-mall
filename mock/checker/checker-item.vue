@@ -13,7 +13,7 @@
         required: true
       },
       disabled: {
-        type:Boolean,
+        type: Boolean,
         required: false
       },
       dataid: {
@@ -25,14 +25,14 @@
       }
     },
     watch: {
-      disabled (val) {
+      disabled(val) {
         if (val && this.$parent.type === 'radio' && this.value === this.$parent.currentValue) {
           this.$parent.currentValue = ''
         }
       }
     },
     computed: {
-      classNames () {
+      classNames() {
         const isSimpleValue = typeof this.value === 'string' || typeof this.value === 'number'
         const names = {
           'vux-tap-active': !this.disabled
@@ -73,15 +73,15 @@
       }
     },
     methods: {
-      select (e) {
-        if(this.disabled) return
+      select(e) {
+        if (this.disabled) return
         if (this.$parent.type === 'radio') {
           this.selectRadio(e)
         } else {
           this.selectCheckbox(e)
         }
       },
-      selectRadio (e) {
+      selectRadio(e) {
         if (!this.disabled) {
           if (this.$parent.currentValue === this.value) {
             this.$parent.currentValue = ''
@@ -89,9 +89,9 @@
             this.$parent.currentValue = this.value
           }
         }
-        this.$emit('on-item-click', {value:this.value,disabled:this.disabled,id:this.dataid,event:e})
+        this.$emit('on-item-click', {value: this.value, disabled: this.disabled, id: this.dataid, event: e})
       },
-      selectCheckbox (e) {
+      selectCheckbox(e) {
         if (!this.$parent.currentValue || this.$parent.currentValue === null) {
           this.$parent.currentValue = []
         }
@@ -115,12 +115,12 @@
           }
         }
 //      this.$emit('on-item-click', {value:this.value,disabled: this.disabled,id: this.dataid,event:e})
-        this.$emit('on-item-click', {value:this.value,linedata: this.dataobj,disabled: this.disabled,event:e})
+        this.$emit('on-item-click', {value: this.value, linedata: this.dataobj, disabled: this.disabled, event: e})
       }
     }
   }
 
-  function isEqual (obj1, obj2) {
+  function isEqual(obj1, obj2) {
     return JSON.stringify(obj1) === JSON.stringify(obj2)
   }
 </script>

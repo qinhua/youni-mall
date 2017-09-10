@@ -18,26 +18,33 @@
       <div class="buy-con">
         <div class="wrap">
           <div class="txt-con">
-            <h3>{{details.goodsName}}</h3>
-            <p class="middle"><span>￥18.00</span><sub>已售{{details.saleCount}}单</sub></p>
-            <p>{{details.label}}<!--￥10（新用户专享，首单6折）--></p>
+            <h3>{{details.name}}</h3>
+            <p class="middle"><span class="price">￥{{(details.price || 0) | toFixed}}</span><sub>已售{{details.saleCount}}单</sub><span
+              class="stock">剩余{{details.stock}}件</span></p>
+            <ul class="tags" v-if="details.label">
+              <li v-for="tag in details.label.split(',')">{{tag}}</li>
+            </ul>
           </div>
           <div class="right-con">
             <div class="inner">
               <div class="number-con" v-if="curCount">
                 <group>
-                 <!-- <x-number button-style="round" :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0"
-                            :max="50" :value="item.number" align="right" :dataId="item.id" @on-change="changeCount"></x-number>-->
-                  <x-number :value="curCount" :dataId="details.goodsId" :dataSellerId="details.sellerId" :min="0" :max="50" @on-change="changeCount"></x-number>
+                  <x-number :disabled="cartData && details.sellerId!==cartData.sellerId" :value="curCount"
+                            :dataId="details.id" :dataSellerId="details.sellerId" :min="0"
+                            :max="50" @on-change="changeCount"></x-number>
                 </group>
               </div>
-              <button v-else type="button" class="btn btn-addcart" @click="changeCount({type:'add',id:details.id,sellerId:details.sellerId,number:details.curCount})">加入购物车</button>
+              <button v-else type="button" class="btn btn-addcart"
+                      @click="changeCount({type:'add',id:details.id,sellerId:details.sellerId,number:details.curCount})">
+                加入购物车
+              </button>
             </div>
           </div>
         </div>
       </div>
     </div>
     <div class="bottom">
+      <h3 class="title">图文详情</h3>
       <!--<tab :line-width=2 active-color="#f34c18" v-model="curIndex">
         <tab-item class="vux-center" :selected="curIndex === index" v-for="(item, index) in tablist"
                   @click.native="chooseCol(index)" :key="index">{{item}}
@@ -46,8 +53,8 @@
       <div class="swiper-container swiper-goods-detail" v-show="details.imgurl">
         <div class="swiper-wrapper">
           <div class="swiper-slide">
-            <div class="detail-con">
-              <img src="../../../static/img/detail/s01.jpg" class="wd-img" alt="">
+            <div class="detail-con" v-html="details.note">
+              <!--<img src="../../../static/img/detail/s01.jpg" class="wd-img" alt="">-->
             </div>
           </div>
           <!--<div class="swiper-slide">
@@ -107,12 +114,14 @@
 
     <div v-transfer-dom>
       <popup v-model="showPop" position="bottom" max-height="50%">
-        <group>
-          <cell v-for="i in 20" :key="i" :title="i"></cell>
+        <group class="number-con">
+          <x-number title="数量：" :disabled="cartData && details.sellerId!==cartData.sellerId" :value="curCount"
+                    :dataId="details.id" :dataSellerId="details.sellerId" :min="0"
+                    :max="50" @on-change="changeCount"></x-number>
         </group>
-        <div style="padding: 15px;">
-          <x-button @click.native="showPop = false" plain type="primary"> Close Me </x-button>
-        </div>
+        <button type="button" :class="['btn btn-addcart',(addText==='立即购买')?'buy':'']" style="padding: 10px;"
+                @click="showPop = false">{{addText}}
+        </button>
       </popup>
     </div>
 
@@ -129,7 +138,8 @@
     </div>
     <div class="cart-model">
       <div class="wrap">
-        <div class="cur-cart" ref="curCart" :hasgood="curCount>0" v-jump="['cart']"><i v-if="curCount">{{curCount}}</i></div>
+        <div class="cur-cart" ref="curCart" :hasgood="curCount>0" v-jump="['cart']"><i v-if="curCount">{{curCount}}</i>
+        </div>
         <!--<div class="left">
           <div class="txt" v-if="curCount">
             <h4>当前共{{curCount}}件</h4>
@@ -137,8 +147,8 @@
           </div>
         </div>-->
         <div class="right">
-          <div class="btn btn-buy" @click="goConfirm">立即购买</div>
-          <div class="btn btn-add" @click="swDialog">加入购物车</div>
+          <div class="btn btn-buy" @click="swDialog(2)">立即购买</div>
+          <div class="btn btn-add" @click="swDialog(1)">加入购物车</div>
         </div>
       </div>
     </div>
@@ -150,20 +160,18 @@
   let me
   let vm
   import Swiper from 'swiper'
-  import {Tab, TabItem, XNumber, Group,Cell,TransferDom,Popup,XButton} from 'vux'
-  import {homeApi,goodsApi,cartApi} from '../../service/main.js'
+  import {Tab, TabItem, XNumber, Group, Cell, TransferDom, Popup, XButton} from 'vux'
+  import {homeApi, goodsApi, cartApi} from '../../service/main.js'
 
   export default {
     name: 'goods-detail',
     data() {
       return {
         id: null,
-        show: false,
+        value: 0,
+        addText: '添加购物车',
+//        show: false,
         showPop: false,
-        title6: '默认空的',
-        value6: [],
-        show6: false,
-        curOrderFilter: '',
         details: [],
         tablist: ['商品详情', '规格', '评论'],
         balls: [ //小球 设为3个
@@ -177,7 +185,6 @@
         ],
         dropBalls: [],
         isPosting: false,
-        onFetching: false,
         cartData: null,
         curCount: 0,
         detailSwiper: null,
@@ -190,13 +197,12 @@
     directives: {
       TransferDom
     },
-    components: {Tab, TabItem, XNumber, Group,Cell,Popup,XButton},
+    components: {Tab, TabItem, XNumber, Group, Cell, Popup, XButton},
     beforeMount() {
       me = window.me
     },
     mounted() {
       vm = this
-      vm.id = vm.$route.query.id
       vm.viewCart()
       vm.getDetail(function () {
         vm.mySwiper()
@@ -209,13 +215,20 @@
 //      })
     },
     computed: {
-      total() {
+      /*total() {
         return vm.curCount * vm.details.price
-      }
+      }*/
     },
     watch: {
       '$route'(to, from) {
-        vm.getDetail()
+        if (to.name === 'goods_detail') {
+          vm.viewCart()
+          vm.getDetail(function () {
+            vm.mySwiper()
+            vm.swiperDetail()
+            //vm.getAppraise()
+          })
+        }
       }
     },
     methods: {
@@ -279,18 +292,19 @@
         }, 1000)
       },
       getDetail(cb) {
-        if (vm.onFetching) return false
+        vm.id = vm.$route.query.id
+        if (vm.isPosting) return false
         vm.processing()
-        vm.onFetching = true
-        vm.loadData(homeApi.goodsList, {id: vm.id}, 'POST', function (res) {
-          // var resD = res.data.itemList
-          vm.details = res.data.pager.itemList[4]
-          console.log(vm.details, '商品图片数据')
-          cb ? cb() : null
-          vm.onFetching = false
+        vm.isPosting = true
+        vm.processing()
+        vm.loadData(goodsApi.detail, {id: vm.id}, 'POST', function (res) {
+          vm.isPosting = false
           vm.processing(0, 1)
+          vm.details = res.data
+          console.log(vm.details, '商品详情')
+          cb ? cb() : null
         }, function () {
-          vm.onFetching = false
+          vm.isPosting = false
           vm.processing(0, 1)
         })
       },
@@ -322,26 +336,28 @@
           vm.getAppraise()
         }
       },
-      swDialog(){
+      swDialog(type) {
         // vm.showPop = vm.showPop?false:true
-        if(3>2){
-          vm.showPop = true
-        }else{
-
+        vm.showPop = true
+        if (type === 1) {
+          vm.addText = '加入购物车'
+        } else {
+          vm.addText = '立即购买'
+          vm.$router.push({path: '/confirm', query: {lastdata: JSON.stringify(window.encodeURIComponent(theData))}})
         }
       },
       goConfirm() {
         // 判断当前是否填写了数量
         var lastD
-        if (vm.cartData&&vm.cartData.goodsList.length) {
+        if (vm.cartData && vm.cartData.goodsList.length) {
           for (var i = 0; i < vm.cartData.goodsList.length; i++) {
             var cur = vm.cartData.goodsList[i];
-            if(cur.sellerId===vm.details.sellerId){
-              lastD={
-                sellerId:vm.details.sellerId,
-                sellerName:vm.details.sellerName,
-                totalPrice:vm.details.totalPrice,
-                goods:cur
+            if (cur.sellerId === vm.details.sellerId) {
+              lastD = {
+                sellerId: vm.details.sellerId,
+                sellerName: vm.details.sellerName,
+                totalPrice: vm.details.totalPrice,
+                goods: cur
               }
             }
           }
@@ -364,7 +380,7 @@
                   cur01['number'] = cur02.goodsNum
                 }
               }
-            }else{
+            } else {
               cur01['number'] = 0
             }
           }
@@ -373,15 +389,9 @@
       viewCart(cb) {
         vm.loadData(cartApi.view, null, 'POST', function (res) {
           var resD = res.data
-          console.log(resD, '购物车数据')
+          // console.log(resD, '购物车数据')
           vm.cartData = resD
           vm.curCount = resD.totalNum
-          for (var i = 0; i < vm.cartData.goodsList.length; i++) {
-            var cur = vm.cartData.goodsList[i];
-            if(cur.sellerId===vm.details.sellerId){
-              vm.curCount=cur.goodsNum
-            }
-          }
           cb ? cb() : null
           vm.isPosting = false
         }, function () {
@@ -495,8 +505,11 @@
     overflow: auto;
     .top {
       margin-bottom: 14/@rem;
+      .banner-goods-detail{
+        height: 440/@rem!important;
+        overflow: hidden;
+      }
       .swiper-detail {
-        min-height: 320/@rem;
         margin-bottom: 10/@rem;
         .swiper-container {
           .swiper-pagination {
@@ -526,19 +539,32 @@
         .middle {
           padding: 10/@rem 0;
           .fz(24);
-          .fz(28);
           .c9;
-          span{
-            .txt-del;
+          .price {
+            .cdiy(@c2);
+          }
+          .stock {
+            padding-right: 10/@rem;
+            .fr;
           }
           sub {
             .fz(24);
             padding-left: 20/@rem;
           }
         }
-        p {
-          .fz(24);
-          .cdiy(@c2);
+        .tags {
+          .cdiy(#f34c18);
+          overflow: hidden;
+          li {
+            .fl;
+            margin: 0 10/@rem 5/@rem 0;
+            padding: 1px 8px;
+            line-height: 1.8;
+            .cf;
+            .fz(16);
+            .borR(4px);
+            background: orange;
+          }
         }
       }
       .right-con {
@@ -574,47 +600,25 @@
         }
       }
     }
-    .number-con {
-      .weui-cells {
-        .abs-center-vertical;
-        right: 0;
-        margin-top: 0;
-        .no-bg;
-        &:before, &:after {
-          .none;
-        }
-        .weui-cell {
-          padding: 0;
-        }
-        .vux-number-input {
-          .borBox;
-          padding: 0;
-          width: 60/@rem !important;
-          height: 60/@rem !important;
-          .fz(24);
-        }
-        .vux-number-selector, .vux-number-selector-plus {
-          .rel;
-          .borBox;
-          .size(60, 60);
-          /*padding:0;*/
-          font-size: 0;
-          line-height: 34/@rem;
-          svg {
-            .abs-center-vh;
-            .size(26, 26);
-            /*fill: #f34c18;*/
-          }
-        }
-      }
-    }
     .bottom {
+      .title {
+        .borBox;
+        padding: 10/@rem 20/@rem;
+        .fz(24);
+        background: #fff;
+        .bor-l(3px, solid, red);
+        .bor-b;
+      }
       .swiper-goods-detail {
         width: 100%;
         padding-bottom: 120/@rem;
         .swiper-slide {
           padding-bottom: 20px;
           .bf;
+        }
+        .detail-con {
+          .borBox;
+          padding: 20/@rem;
         }
         .goods-param {
           .borBox;
@@ -739,84 +743,120 @@
         }
       }
     }
-  }
 
-  .cart-model {
-    .fix;
-    bottom: 0;
-    z-index: 20;
-    width: 100%;
-    .ma-w(640);
-    .cf;
-    background: #1d2231;
-    .wrap {
-      height: 100/@rem;
-      .cur-cart {
-        .borBox;
-        .abs;
-        left: 20/@rem;
-        top: 0;
-        .size(100, 100);
-        .bor(4px, solid, #373c4c);
-        background: #1d2231 url(../../../static/img/carts.png) no-repeat center;
-        .rbg-size(50%);
-        .borR(50%);
-        .transi(.2s);
-        i {
-          .abs;
-          top: -6/@rem;
-          right: -8/@rem;
-          .block;
-          .center;
-          line-height: 20/@rem;
-          .txt-normal;
-          min-width: 20/@rem;
-          padding: 4px;
-          .fz(20);
-          .cf;
-          .bdiy(#f74c31);
-          .borR(30px);
+    .number-con {
+      .weui-cells {
+        .abs-center-vertical;
+        right: 0;
+        margin-top: 0;
+        .no-bg;
+        &:before, &:after {
+          .none;
         }
-        &[hasgood] {
-          top: -40/@rem;
-          box-shadow: 0 1px 10px 0 #fc6b01;
+        .weui-cell {
+          padding: 0;
         }
-      }
-      /*.left {
-        .rel;
-        .borBox;
-        .fl;
-        padding: 0 10/@rem 0 160/@rem;
-        width: 68%;
-        height: 100%;
-        .txt {
-          .abs-center-vertical;
-          .txt-normal;
-          p {
-            .fz(20);
+        .vux-number-input {
+          .borBox;
+          padding: 0;
+          width: 60/@rem !important;
+          height: 60/@rem !important;
+          .fz(24);
+        }
+        .vux-number-selector, .vux-number-selector-plus {
+          .rel;
+          .borBox;
+          .size(60, 60);
+          /*padding:0;*/
+          font-size: 0;
+          line-height: 34/@rem;
+          svg {
+            .abs-center-vh;
+            .size(26, 26);
+            /*fill: #f34c18;*/
           }
         }
-      }*/
-      .right {
-        //.fl;
-        width: 100%;
-        height: 100%;
-        line-height: 100/@rem;
-        .center;
-        .btn{
-          .fr;
-          .iblock;
-          padding:0 26/@rem;
+      }
+    }
+
+    .cart-model {
+      .fix;
+      bottom: 0;
+      z-index: 20;
+      width: 100%;
+      .ma-w(640);
+      .cf;
+      background: #1d2231;
+      .wrap {
+        height: 100/@rem;
+        .cur-cart {
+          .borBox;
+          .abs;
+          left: 20/@rem;
+          top: 0;
+          .size(100, 100);
+          .bor(4px, solid, #373c4c);
+          background: #1d2231 url(../../../static/img/carts.png) no-repeat center;
+          .rbg-size(50%);
+          .borR(50%);
+          .transi(.2s);
+          i {
+            .abs;
+            top: -6/@rem;
+            right: -8/@rem;
+            .block;
+            .center;
+            line-height: 20/@rem;
+            .txt-normal;
+            min-width: 20/@rem;
+            padding: 4px;
+            .fz(20);
+            .cf;
+            .bdiy(#f74c31);
+            .borR(30px);
+          }
+          &[hasgood] {
+            top: -40/@rem;
+            box-shadow: 0 1px 10px 0 #fc6b01;
+          }
         }
-        .btn-buy{
-          background: #ec3902;
-          /*background: -webkit-linear-gradient(90deg, #dc0404, #ff7600);
-          background: linear-gradient(90deg, #dc0404, #ff7600);*/
-        }
-        .btn-add{
-          background: #ff9627;
+        /*.left {
+          .rel;
+          .borBox;
+          .fl;
+          padding: 0 10/@rem 0 160/@rem;
+          width: 68%;
+          height: 100%;
+          .txt {
+            .abs-center-vertical;
+            .txt-normal;
+            p {
+              .fz(20);
+            }
+          }
+        }*/
+        .right {
+          //.fl;
+          width: 100%;
+          height: 100%;
+          line-height: 100/@rem;
+          .center;
+          .btn {
+            .fr;
+            .iblock;
+            padding: 0 26/@rem;
+          }
+          .btn-buy {
+            background: #ec3902;
+            /*background: -webkit-linear-gradient(90deg, #dc0404, #ff7600);
+            background: linear-gradient(90deg, #dc0404, #ff7600);*/
+          }
+          .btn-add {
+            background: #ff9627;
+          }
         }
       }
     }
   }
+
 </style>

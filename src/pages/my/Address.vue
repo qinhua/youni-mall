@@ -16,7 +16,8 @@
         </div>
       </li>
     </ul>
-    <div class="add-address" v-jump="['edit_address',null,3]"><i class="fa fa-plus"></i>&nbsp;添加新地址</div>
+    <div class="iconNoData abs-center-vh" v-if="!list.length"><i></i><p>空空如也</p></div>
+    <div class="add-address" @click="addAddress"><i class="fa fa-plus"></i>&nbsp;添加新地址</div>
   </div>
 </template>
 
@@ -26,86 +27,87 @@
   let vm
   import {Grid, GridItem, Group, Cell} from 'vux'
   import {userApi} from '../../service/main.js'
+
   export default {
     name: 'my-address',
-    data () {
+    data() {
       return {
-        lastPage: null,
-        onFetching: false,
+        lastPage: {
+          name: '',
+          data: null
+        },
         isPosting: false,
-        userId: null,
-        list: null
+        list: []
       }
     },
     components: {Grid, GridItem, Group, Cell},
-    beforeMount () {
+    beforeMount() {
       me = window.me
     },
-    mounted () {
-      vm = this
-      vm.userId = vm.$route.query.userId
-      vm.lastPage = vm.$route.query.from||''
+    mounted() {
       // me.attachClick()
+      vm = this
       this.$nextTick(function () {
         vm.getAddress()
       })
     },
     computed: {},
     watch: {
-      '$route' (to, from) {
-        vm.getAddress()
+      '$route'(to, from) {
+        if(to.name==='myaddress'){
+          vm.getAddress()
+        }
       }
     },
     methods: {
-      getAddress () {
+      getAddress() {
         vm.processing()
+        vm.lastPage.name = vm.$route.query.from || ''
+        if (vm.lastPage.name === 'confirm_order') {
+          vm.lastPage.data = me.sessions.get('ynTmpConfirm')
+        }
         vm.loadData(userApi.addressList, null, 'POST', function (res) {
           vm.list = res.data.itemList
-          vm.$store.state.global.address = vm.list
-          console.log(vm.list, '地址数据')
+          // console.log(vm.list, '地址数据')
           vm.processing(0, 1)
         }, function () {
           vm.processing(0, 1)
         })
       },
-      setDefault (id) {
+      setDefault(id) {
         if (vm.isPosting) return false
         vm.isPosting = true
         vm.processing()
-        vm.loadData(userApi.setDefaultAddress, {addressId: id, defaultAddress:1}, 'POST', function (res) {
-          if(vm.lastPage){
-            vm.$router.push({name:vm.lastPage})
-          }
+        vm.loadData(userApi.setDefaultAddress, {addressId: id, defaultAddress: 1}, 'POST', function (res) {
+          vm.isPosting = false
+          vm.processing(0, 1)
           vm.getAddress()
-          vm.isPosting = false
-          vm.processing(0, 1)
-        }, function () {
-          vm.isPosting = false
-          vm.processing(0, 1)
-        })
-
-      },
-      addAddress () {
-        if (vm.isPosting) return false
-        vm.isPosting = true
-        vm.processing()
-        vm.loadData(userApi.addAddress, vm.params, 'POST', function (res) {
-          console.log(res.data)
-          vm.isPosting = false
-          vm.processing(0, 1)
+          if (vm.lastPage.name) {
+            vm.jump(vm.lastPage.name, {thedata: vm.lastPage.data})
+          }
         }, function () {
           vm.isPosting = false
           vm.processing(0, 1)
         })
       },
-      updateAddress (id) {
+      addAddress() {
+        if (vm.lastPage.name) {
+          vm.jump('edit_address', {from: vm.lastPage.name})
+        } else {
+          vm.jump('edit_address')
+        }
+      },
+      updateAddress(id) {
         for (let i = 0; i < vm.list.length; i++) {
-          if(id===vm.list[i].id){
-            vm.$router.push({name: 'edit_address', query: {linedata: encodeURIComponent(JSON.stringify(vm.list[i]))}})
+          if (id === vm.list[i].id) {
+            vm.$router.push({
+              name: 'edit_address',
+              query: {from: vm.lastPage.name, linedata: encodeURIComponent(JSON.stringify(vm.list[i]))}
+            })
           }
         }
       },
-      delAddress (id) {
+      delAddress(id) {
         if (vm.isPosting) return false
         vm.confirm('确认删除？', '删除后只能重新添加了！', function () {
           vm.processing()
@@ -151,13 +153,13 @@
         .bf;
         &.current {
           .bor-b(2px, solid, @c2);
-          .operates .btn-set{
+          .operates .btn-set {
             .cdiy(@c2);
             .no-bor;
             .borR(0);
           }
         }
-        .top{
+        .top {
           padding: 20/@rem;
         }
         h2 {
@@ -183,7 +185,7 @@
             padding: 5/@rem 20/@rem;
             .c3;
             .fz(20);
-            .bor(1px,solid,#ddd);
+            .bor(1px, solid, #ddd);
             .borR(80px)
           }
           .right {

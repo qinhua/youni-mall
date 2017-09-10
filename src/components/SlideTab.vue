@@ -3,8 +3,8 @@
     <div :class="'swiper-container slide-tab-con' + ' ' + skey">
       <div class="swiper-wrapper">
         <div :class="['swiper-slide',current===index?'active':'']" v-for="(item,index) in slides" :key="index+1"
-             @click="selectTab(index,item.key,item.label)">
-          <a :data-id="item.key">{{item.label}}</a>
+             @click="selectTab(index,item.key,item.value)">
+          <a :data-id="item.key">{{item.value}}</a>
         </div>
       </div>
       <!--<div class="swiper-pagination"></div>-->
@@ -27,14 +27,13 @@
     },
     props: ['skey', 'slides', 'autoPlay', 'direction', 'loop'],
     mounted() {
-      // var me = window.me
       vm = this
       console.log(this.slides)
       let curCls = '.' + vm.skey
       let isAuto = vm.autoPlay ? vm.autoPlay : false
       // initial swiper
-      var mySlider = function () {
-        return new Swiper('.swiper-container' + curCls, {
+      var mySlideTab = function () {
+        return new Swiper('.slide-tab-con' + curCls, {
           initialSlide: 0,
           direction: vm.direction || 'horizontal',
           loop: false,
@@ -45,7 +44,7 @@
           slidesPerView: 4,
           observeParents: true,
           // If we need pagination
-          pagination: curCls + ' .swiper-pagination',
+          pagination: '.slide-tab-con' + (curCls ? (' ' + curCls + ' .swiper-pagination') : ' .swiper-pagination'),
           paginationClickable: true,
           // Navigation arrows
           // nextButton: '.swiper-button-next',
@@ -67,19 +66,19 @@
            }*/
         })
       }
-      mySlider()
+      mySlideTab()
     },
     methods: {
-      selectTab(index) {
+      selectTab(index, key, value) {
         vm.current = index
-        vm.$store.commit('on-select', {})
+        vm.$emit('on-select', {index: index, key: key, value: value})
       }
     }
   }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style lang="less">
+<style scoped lang="less">
   @import '../../static/css/tools.less';
 
   .v-slide-tab {

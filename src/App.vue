@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <!--定位组件-->
-    <geo :visible="false" :cache="true" @on-geo-end="getMap"></geo>
+    <geo :visible="false" :cache="true" @on-geo-end="getMap" v-if="$route.path!=='/auth'"></geo>
 
     <!--标签栏-->
     <tabbar v-if="showTabbar" style="position:fixed">
@@ -80,9 +80,6 @@
     mounted() {
       // me.attachClick()
       vm = this
-      window.youniMall.userAuth = vm.$store.state.global.wxInfo
-      !vm.$store.state.global.dict ? vm.getDict() : null
-      vm.addUser()
     },
     computed: {
       'showTabbar'() {
@@ -103,19 +100,6 @@
       // 从子组件获取数据
       getPageStatus(data) {
         vm.curSelected = data
-      },
-      getDict() {
-        vm.loadData(commonApi.dict, {}, 'POST', function (res) {
-          vm.$store.commit('storeData', {key: 'dict', data: res.data.itemList})
-        }, function () {
-        })
-      },
-      addUser() {
-        let info=vm.$store.state.global.wxInfo
-        console.log(info)
-        vm.loadData(commonApi.addUser, info, 'POST', function (res) {
-        }, function () {
-        })
       }
     },
     watch: {

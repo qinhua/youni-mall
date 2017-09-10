@@ -44,18 +44,18 @@
     <div class="goods-filter" ref="filters01">
       <div class="v-filter-tabs">
         <ul class="v-f-tabs">
-          <li :class="factive==='goods'?'mfilterActive':''" @click="showFilter('goods',$event)">商品类目<i
+          <li class="f-img"></li>
+          <li :class="curFilterType==='categorys'?'mfilterActive':''" @click="showFilter('categorys',$event)">商品类目<i
             class="ico-arr-down"></i>
           </li>
-          <li :class="factive==='brands'?'mfilterActive':''" @click="showFilter('brands',$event)">品牌<i
+          <li :class="curFilterType==='brands'?'mfilterActive':''" @click="showFilter('brands',$event)">品牌<i
             class="ico-arr-down"></i>
           </li>
-          <li :class="factive==='specials'?'mfilterActive':''" @click="showFilter('specials',$event)">筛选<i
-            class="ico-arr-down"></i></li>
         </ul>
         <div class="filter-data" v-if="showFilterCon" :class="showFilterCon?'show':''">
-          <ul class="filter-tags" v-show="currentFilter">
-            <li v-for="(data,idx) in currentFilter" :class="subActive==idx?'sfilterActive':''" :data-key="data.key"
+          <ul class="filter-tags" v-show="curFilterDict">
+            <li v-for="(data,idx) in curFilterDict" :class="curSelFilter[curFilterType].index==idx?'sfilterActive':''"
+                :data-key="data.key"
                 :data-value="data.value" @click="chooseFilter(idx,data.key,data.value,$event)">{{data.value}}
             </li>
           </ul>
@@ -95,10 +95,11 @@
               </group>
             </section>
           </section>
-          <div class="noMoreData">{{noMore ? '就这么多了' : '上拉加载'}}</div>
+          <div class="noMoreData" v-if="goods.length">{{noMore ? '就这么多了' : '上拉加载'}}</div>
+          <div class="iconNoData" v-else><i></i>
+            <p>暂无商品</p></div>
           <!--<load-more tip="loading"></load-more>-->
         </div>
-        <!--<div class="iconNoData" @click="beContinue(curNumber)"><i></i><p>暂无内容</p></div>-->
       </scroller>
     </div>
 
@@ -114,7 +115,7 @@
       </div>
     </div>
     <!--悬浮购物车-->
-    <div class="float-cart" ref="floatCart" v-show="curCount && ($route.name==='home'||$route.name==='shops_detail')"
+    <div class="float-cart" ref="floatCart" v-show="curCount && ($route.name==='home'||$route.name==='seller_detail')"
          v-jump="['cart']">
       <div class="cart-wrap"><i class="cur-count">{{curCount}}</i></div>
     </div>
@@ -138,36 +139,46 @@
         geoData: null,
         address: '',
         cartData: '',
-        banner: [],
+        // banner: [],
+        banner: [{
+          image: 'static/img/banner/p01.jpg',
+          linkeUrl: ''
+        }, {
+          image: 'static/img/banner/p02.jpg',
+          linkeUrl: ''
+        }, {
+          image: 'static/img/banner/p03.jpg',
+          linkeUrl: ''
+        }],
         notice: [],
         goods: [],
         params: {
           pageSize: 5,
           pageNo: 1,
-          /*goodsType: 'goods_type.1',
-          goodsCategory: 'goods_category.1',
-          brandId: '038283447c4311e7aa18d8cb8a971936'*/
+          /*goodsCategory: '',
+          brandId: ''*/
         },
         /* filter start */
+        showFilterCon: false,
         filterOffset: 0,
         filters: {
-          goods: [
+          categorys: [
             {
-              key: 0,
+              key: '',
               value: '全部'
             },
             {
               key: 1,
-              value: '水'
+              value: '桶装水'
             },
             {
               key: 2,
-              value: '牛奶'
+              value: '奶'
             }
           ],
           brands: [
             {
-              key: 0,
+              key: '',
               value: '全部'
             },
             {
@@ -206,38 +217,26 @@
               key: 9,
               value: '昆仑山'
             }
-          ],
-          specials: [
-            {
-              key: 0,
-              value: '全部'
-            },
-            {
-              key: 1,
-              value: '有优惠'
-            },
-            {
-              key: 2,
-              value: '有红包'
-            },
-            {
-              key: 3,
-              value: '买二送一'
-            }
           ]
         },
         curFilterType: '',
-        currentFilter: null,
-        filterData: [],
-        showFilterCon: false,
-        factive: '',
-        subActive: 0,
+        curFilterDict: null, // 当前的filter数据
+        curSelFilter: {
+          categorys: {
+            index: '',
+            key: '',
+            value: ''
+          },
+          brands: {
+            index: '',
+            key: '',
+            value: ''
+          }
+        }, // 当前选择的过滤条件
+        factive: '', // 当前筛选分类
         /* filter end */
-        showList: true,
-        curPage: 1,
-        noMore: false,
         scrollTop: 0,
-        pageCount: 0,
+        noMore: false,
         isPosting: false,
         pulldownConfig: {
           content: '下拉刷新',
@@ -292,7 +291,7 @@
       vm = this
       // me.attachClick()
       vm.getMap()
-      vm.getBanner()
+      // vm.getBanner()
       vm.getNotice()
       vm.getGoods()
       vm.viewCart()
@@ -306,13 +305,11 @@
         }
       }, false)
       vm.$nextTick(function () {
+        //获取筛选栏位置
         setTimeout(() => {
           vm.filterOffset = vm.$refs.filters01.offsetTop
         }, 500)
-        //获取筛选栏位置
-        vm.$refs.myScroll.reset()
-        vm.$refs.myScroll.donePullup()
-        vm.$refs.myScroll.donePulldown()
+        vm.resetScroll()
       })
     },
     /*computed: mapState({
@@ -331,9 +328,12 @@
     },
     watch: {
       '$route'(to, from) {
-        vm.getMap()
-        vm.getGoods()
-        vm.viewCart()
+        if (to.name === 'home') {
+          vm.resetScroll()
+          vm.getMap()
+          vm.getGoods()
+          vm.viewCart()
+        }
       },
       goods() {
         vm.syncList()
@@ -365,6 +365,18 @@
       // 向父组件传值
       setPageStatus(data) {
         this.$emit('listenPage', data)
+      },
+      resetScroll() {
+        setTimeout(function () {
+          vm.$refs.myScroll.reset()
+          vm.$refs.myScroll.donePullup()
+          vm.$refs.myScroll.donePulldown()
+          let target = vm.$refs.filters01
+          let list = vm.$refs.goodsList
+          target.classList.remove('fixed')
+          list.classList.remove('fixed')
+          vm.$refs.myScroll.reset()
+        }, 100)
       },
       scrollHandler() {
         // 监听dom的scroll事件
@@ -411,6 +423,7 @@
         vm.isPosting = true
         !isLoadMore ? vm.params.pageNo = 1 : vm.params.pageNo++
         vm.loadData(homeApi.goodsList, vm.params, 'POST', function (res) {
+          vm.isPosting = false
           var resD = res.data.pager
           if (!isLoadMore) {
             if (resD.totalCount < vm.params.pageSize) {
@@ -426,68 +439,42 @@
             resD.itemList.length ? vm.goods.concat(resD.itemList) : vm.noMore = true
           }
           console.log(vm.goods, '首页GoodsList')
-          vm.isPosting = false
         }, function () {
           vm.isPosting = false
         })
       },
       /* 商品筛选 */
       showFilter(type, e) {
-        vm.factive = type
-        console.log(vm.subActive)
         if (vm.showFilterCon) {
           if (vm.curFilterType === type) {
-            vm.factive = ''
+            vm.curFilterType = ''
             vm.showFilterCon = false
           } else {
             vm.curFilterType = type
-            vm.currentFilter = vm.filters[type]
+            vm.curFilterDict = vm.filters[type]
             vm.showFilterCon = true
           }
         } else {
           vm.curFilterType = type
-          vm.currentFilter = vm.filters[type]
+          vm.curFilterDict = vm.filters[type]
           vm.showFilterCon = true
         }
-        // 默认选中已选择的筛选条件
       },
       hideFilter() {
         if (vm.showFilterCon) {
           vm.showFilterCon = false
-          vm.factive = ''
+          vm.curFilterType = ''
         }
       },
       chooseFilter(idx, key, value, e) {
-        vm.goods = []
-        console.log(JSON.stringify(vm.filterData), vm.curFilterType)
-        if (JSON.stringify(vm.filterData).indexOf(vm.curFilterType) === -1) {
-          vm.filterData.push({
-            type: vm.curFilterType,
-            filterId: key,
-            filterName: value !== '全部' ? value : ''
-          })
-        } else {
-          for (var i = 0; i < vm.filterData.length; i++) {
-            console.log(vm.filterData[i].filterName, value)
-            if (vm.filterData[i].filterName !== value) {
-              vm.filterData[i] = {
-                type: vm.curFilterType,
-                filterId: key,
-                filterName: value !== '全部' ? value : ''
-              }
-            }
-          }
-        }
-        vm.factive = ''
-        vm.showFilterCon = false
-        console.log(vm.filterData, '最后的筛选数据')
-        var lastF = {
-          goodsType: 1,
-          goodsCategory: 'water',
-          brandId: 2,
-          filter: '有折扣，有满减'
-        }
-        vm.getGoods(lastF)
+        // console.log(arguments)
+        vm.curSelFilter[vm.curFilterType].index = idx
+        vm.curSelFilter[vm.curFilterType].key = key
+        vm.curSelFilter[vm.curFilterType].value = value
+        console.error(JSON.stringify(vm.curSelFilter, null, 2))
+        vm.curSelFilter.categorys.key ? vm.params.goodsCategory = vm.curSelFilter.categorys.key : delete vm.params.goodsCategory
+        vm.curSelFilter.brands.key ? vm.params.brandId = vm.curSelFilter.brands.key : delete vm.params.brandId
+        vm.getGoods()
       },
       /* 上下拉刷新 */
       onPullDown() {
@@ -538,7 +525,7 @@
                   cur01['number'] = cur02.goodsNum
                 }
               }
-            }else{
+            } else {
               cur01['number'] = 0
             }
           }
@@ -547,7 +534,7 @@
       viewCart(cb) {
         vm.loadData(cartApi.view, null, 'POST', function (res) {
           var resD = res.data
-          console.log(resD, '购物车数据')
+          // console.log(resD, '购物车数据')
           vm.cartData = resD
           vm.curCount = resD.totalNum
           cb ? cb() : null
@@ -800,8 +787,12 @@
             }
           }
           &:nth-child(2) {
-            border-left: 1px solid #eee;
+            /*border-left: 1px solid #eee;*/
             border-right: 1px solid #eee;
+          }
+          &.f-img{
+            background: url(../../static/img/f-tit.png) no-repeat center;
+            .rbg-size(70%);
           }
         }
       }
@@ -848,7 +839,9 @@
     /*max-height:500px;*/
     overflow: auto;
     &.fixed {
-      margin-top: 100/@rem;
+      .xs-container {
+        margin-top: 90/@rem;
+      }
     }
     .inner-scroller {
       .borBox;
@@ -887,7 +880,7 @@
           padding-left: 170/@rem;
           h3 {
             .flex-r(1);
-            .fz(30);
+            .fz(28);
             .txt-normal;
             .c3;
             .ellipsis;
@@ -914,9 +907,10 @@
             .flex-r(1);
             .cdiy(#f34c18);
             .fz(22);
+            overflow: hidden;
             li {
               .fl;
-              margin: 0 10/@rem 5/@rem 0;
+              margin-right: 10/@rem;
               padding: 1px 8px;
               line-height: 1.8;
               .cf;
