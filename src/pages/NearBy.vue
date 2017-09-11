@@ -9,18 +9,19 @@
     <div class="sellers-filter" ref="filters02">
       <div class="v-filter-tabs">
         <ul class="v-f-tabs">
-          <li :class="factive==='shop'?'mfilterActive':''" @click="showFilter('shop',$event)">店铺分类<i
+          <li :class="curFilterType==='types'?'mfilterActive':''" @click="showFilter('types',$event)">店铺分类<i
             class="ico-arr-down"></i>
           </li>
-          <li :class="factive==='sort'?'mfilterActive':''" @click="showFilter('sort',$event)">排序<i
+          <li :class="curFilterType==='services'?'mfilterActive':''" @click="showFilter('services',$event)">主营类目<i
             class="ico-arr-down"></i>
           </li>
-          <li :class="factive==='specials'?'mfilterActive':''" @click="showFilter('specials',$event)">筛选<i
+          <li :class="curFilterType==='sorts'?'mfilterActive':''" @click="showFilter('sorts',$event)">排序<i
             class="ico-arr-down"></i></li>
         </ul>
         <div class="filter-data" v-if="showFilterCon" :class="showFilterCon?'show':''">
-          <ul class="filter-tags" v-show="currentFilter">
-            <li v-for="(data,idx) in currentFilter" :class="subActive==idx?'sfilterActive':''" :data-key="data.key"
+          <ul class="filter-tags" v-show="curFilterDict">
+            <li v-for="(data,idx) in curFilterDict" :class="curSelFilter[curFilterType].index==idx?'sfilterActive':''"
+                :data-key="data.key"
                 :data-value="data.value" @click="chooseFilter(idx,data.key,data.value,$event)">{{data.value}}
             </li>
           </ul>
@@ -73,7 +74,8 @@
           </section>
           <div class="noMoreData" v-if="sellers.length">{{noMore ? '就这么多了' : '上拉加载'}}</div>
         </div>
-        <div class="iconNoData" v-if="!sellers.length"><i></i><p>暂无商品</p></div>
+        <div class="iconNoData" v-if="!sellers.length"><i></i>
+          <p>暂无商品</p></div>
         <!--<div class="iconNoData" @click="beContinue(curNumber)"><i></i><p>暂无内容</p></div>-->
       </scroller>
     </div>
@@ -95,101 +97,36 @@
       return {
         geoData: null,
         address: '',
-        sellers: [],/* filter start */
+        sellers: [],
+        params: {
+          pageSize: 10,
+          pageNo: 1,
+          sellerLevel: '',
+          sellerType: '',
+          sortType: ''
+        },
+        /* filter start */
         showFilterCon: false,
         filterOffset: 0,
         filters: {
-          categorys: [
+          types: [
             {
               key: '',
               value: '全部'
             },
             {
-              key: 1,
-              value: '桶装水'
+              key: 'seller_level.1',
+              value: '普通店'
             },
             {
-              key: 2,
-              value: '奶'
+              key: 'seller_level.2',
+              value: '官方认证'
+            },
+            {
+              key: 'seller_level.3',
+              value: '金牌店'
             }
           ],
-          brands: [
-            {
-              key: '',
-              value: '全部'
-            },
-            {
-              key: 1,
-              value: '怡宝'
-            },
-            {
-              key: 2,
-              value: '康师傅'
-            },
-            {
-              key: 3,
-              value: '百岁山'
-            },
-            {
-              key: 4,
-              value: '花果山'
-            },
-            {
-              key: 5,
-              value: '水老官'
-            },
-            {
-              key: 6,
-              value: '一方人'
-            },
-            {
-              key: 7,
-              value: '农夫山泉'
-            },
-            {
-              key: 8,
-              value: '八宝山'
-            },
-            {
-              key: 9,
-              value: '昆仑山'
-            }
-          ]
-        },
-        curFilterType: '', // 当前筛选分类
-        curFilterDict: null, // 当前的filter数据
-        curSelFilter: {
-          categorys: {
-            index: '',
-            key: '',
-            value: ''
-          },
-          brands: {
-            index: '',
-            key: '',
-            value: ''
-          }
-        }, // 当前选择的过滤条件
-        /* filter end */
-        filters: {
-           types: [
-           {
-           key: '',
-           value: '全部'
-           },
-           {
-           key: 'seller_level.1',
-           value: '普通店'
-           },
-           {
-           key: 'seller_level.2',
-           value: '官方认证'
-           },
-           {
-           key: 'seller_level.3',
-           value: '金牌店'
-           }
-           ],
           services: [
             {
               key: 'seller_service_type.3',
@@ -204,9 +141,9 @@
               value: '奶'
             }
           ],
-          sort: [
+          sorts: [
             {
-              key: 0,
+              key: '',
               value: '默认排序'
             },
             {
@@ -217,40 +154,28 @@
               key: 2,
               value: '销量最高'
             }
-          ],
-          specials: [
-            {
-              key: 0,
-              value: '全部'
-            },
-            {
-              key: 1,
-              value: '水票'
-            },
-            {
-              key: 2,
-              value: '满减'
-            },
-            {
-              key: 3,
-              value: '折扣'
-            }
           ]
         },
-        curFilterType: '',
-        currentFilter: null,
-        filterData: [],
-        params: {
-          pageSize: 10,
-          pageNo:1,
-          sellerType: '',
-          sortType: ''
-        },
-        showFilterCon: false,
-        factive: '',
-        subActive: 0,
+        curFilterType: '', // 当前筛选分类
+        curFilterDict: null, // 当前的filter数据
+        curSelFilter: {
+          types: {
+            index: '',
+            key: '',
+            value: ''
+          },
+          services: {
+            index: '',
+            key: '',
+            value: ''
+          },
+          sorts: {
+            index: '',
+            key: '',
+            value: ''
+          }
+        }, // 当前选择的过滤条件
         /* filter end */
-        showList: true,
         scrollTop: 0,
         isPosting: false,
         noMore: false,
@@ -307,9 +232,9 @@
       }, false)
       vm.$nextTick(function () {
         //获取筛选栏位置
-        setTimeout(function(){
+        setTimeout(function () {
           vm.filterOffset = vm.$refs.filters02.offsetTop
-        },300)
+        }, 300)
         vm.resetScroll()
       })
     },
@@ -345,7 +270,7 @@
         this.$emit('listenPage', data)
       },
       resetScroll(){
-        setTimeout(function(){
+        setTimeout(function () {
           vm.$refs.myScroll.reset()
           vm.$refs.myScroll.donePullup()
           vm.$refs.myScroll.donePulldown()
@@ -354,7 +279,7 @@
           target.classList.remove('fixed')
           list.classList.remove('fixed')
           vm.$refs.myScroll.reset()
-        },100)
+        }, 100)
       },
       scrollHandler() {
         // 监听dom的scroll事件
@@ -409,7 +334,7 @@
           if (!isLoadMore) {
             if (resD.totalCount < vm.params.pageSize) {
               vm.noMore = true
-            }else{
+            } else {
               vm.noMore = false
             }
             vm.sellers = resD.itemList
@@ -421,68 +346,44 @@
           vm.isPosting = false
         })
       },
-      /* 商品筛选 */
+      /* 店铺筛选 */
       showFilter(type, e) {
-        vm.factive = type
-        // console.log(vm.subActive)
         if (vm.showFilterCon) {
           if (vm.curFilterType === type) {
-            vm.factive = ''
+            vm.curFilterType = ''
             vm.showFilterCon = false
           } else {
             vm.curFilterType = type
-            vm.currentFilter = vm.filters[type]
+            vm.curFilterDict = vm.filters[type]
             vm.showFilterCon = true
           }
         } else {
           vm.curFilterType = type
-          vm.currentFilter = vm.filters[type]
+          vm.curFilterDict = vm.filters[type]
           vm.showFilterCon = true
         }
-        // 默认选中已选择的筛选条件
       },
       hideFilter() {
         if (vm.showFilterCon) {
           vm.showFilterCon = false
-          vm.factive = ''
+          vm.curFilterType = ''
         }
       },
       chooseFilter(idx, key, value, e) {
-        vm.shops = []
-        console.log(JSON.stringify(vm.filterData), vm.curFilterType)
-        if (JSON.stringify(vm.filterData).indexOf(vm.curFilterType) === -1) {
-          vm.filterData.push({
-            type: vm.curFilterType,
-            filterId: key,
-            filterName: value !== '全部' ? value : ''
-          })
-        } else {
-          for (var i = 0; i < vm.filterData.length; i++) {
-            console.log(vm.filterData[i].filterName, value)
-            if (vm.filterData[i].filterName !== value) {
-              vm.filterData[i] = {
-                type: vm.curFilterType,
-                filterId: key,
-                filterName: value !== '全部' ? value : ''
-              }
-            }
-          }
-        }
-        vm.factive = ''
-        vm.showFilterCon = false
-        console.log(vm.filterData, '最后的筛选数据')
-        var lastF = {
-          goodsType: 1,
-          goodsCategory: 'water',
-          brandId: 2,
-          filter: '有折扣，有满减'
-        }
-        vm.getShops(lastF)
+        // console.log(arguments)
+        vm.curSelFilter[vm.curFilterType].index = idx
+        vm.curSelFilter[vm.curFilterType].key = key
+        vm.curSelFilter[vm.curFilterType].value = value
+        console.error(JSON.stringify(vm.curSelFilter, null, 2))
+        vm.curSelFilter.types.key ? vm.params.sellerLevel = vm.curSelFilter.types.key : delete vm.params.sellerLevel
+        vm.curSelFilter.services.key ? vm.params.sellerType = vm.curSelFilter.services.key : delete vm.params.sellerType
+        vm.curSelFilter.sorts.key ? vm.params.sortType = vm.curSelFilter.sorts.key : delete vm.params.sortType
+        vm.hideFilter()
+        vm.getSellers()
       },
       onScroll(pos) {
         this.scrollTop = pos.top
-        vm.factive = ''
-        vm.showFilterCon ? vm.showFilterCon = false : null
+        vm.hideFilter()
       },
       onPullDown() {
         if (vm.isPosting) {
@@ -530,7 +431,7 @@
     height: 100%;
     overflow: scroll; // 此两个属性至关重要，不写@scroll监听不到滚动
 
-    .location-chooser{
+    .location-chooser {
       margin-bottom: 10/@rem;
     }
     .sellers-filter {
@@ -641,13 +542,13 @@
     .sellers-list {
       height: auto;
       &.fixed {
-        .xs-container{
+        .xs-container {
           margin-top: 90/@rem;
         }
       }
       .inner-scroller {
         .borBox;
-        height:100%!important;
+        height: 100% !important;
         .v-items {
           .rel;
           padding: 20/@rem;

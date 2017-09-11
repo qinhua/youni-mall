@@ -37,27 +37,28 @@
     </div>
 
     <!--过滤条-->
-    <div class="shops-filter" ref="filters03">
+    <div class="goods-filter" ref="filters03">
       <div class="v-filter-tabs">
         <ul class="v-f-tabs">
-          <li :class="factive==='shop'?'mfilterActive':''" @click="showFilter('shop',$event)">店铺分类<i
+          <li class="f-img"></li>
+          <li :class="curFilterType==='categorys'?'mfilterActive':''" @click="showFilter('categorys',$event)">商品类目<i
             class="ico-arr-down"></i>
           </li>
-          <li :class="factive==='sort'?'mfilterActive':''" @click="showFilter('sort',$event)">排序<i
+          <li :class="curFilterType==='brands'?'mfilterActive':''" @click="showFilter('brands',$event)">品牌<i
             class="ico-arr-down"></i>
           </li>
-          <li :class="factive==='specials'?'mfilterActive':''" @click="showFilter('specials',$event)">筛选<i
-            class="ico-arr-down"></i></li>
         </ul>
         <div class="filter-data" v-if="showFilterCon" :class="showFilterCon?'show':''">
-          <ul class="filter-tags" v-show="currentFilter">
-            <li v-for="(data,idx) in currentFilter" :class="subActive==idx?'sfilterActive':''" :data-key="data.key"
+          <ul class="filter-tags" v-show="curFilterDict">
+            <li v-for="(data,idx) in curFilterDict" :class="curSelFilter[curFilterType].index==idx?'sfilterActive':''"
+                :data-key="data.key"
                 :data-value="data.value" @click="chooseFilter(idx,data.key,data.value,$event)">{{data.value}}
             </li>
           </ul>
         </div>
       </div>
     </div>
+
     <!--店铺列表-->
     <div class="goods-list" ref="goodsList">
       <scroller class="inner-scroller" lock-x scrollbarY use-pullup use-pulldown :pullup-config="pullupConfig"
@@ -80,8 +81,10 @@
                 </section>
               </div>
               <group class="buy-count">
-                <x-number button-style="round" :min="0" :max="50" align="right" @on-change="changeCount"
-                          fillable></x-number>
+                <x-number button-style="round" :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0"
+                          :max="50" :value="item.number" align="right" :dataId="item.id"
+                          :dataSellerId="item.sellerId"
+                          @on-change="changeCount"></x-number>
               </group>
             </section>
           </section>
@@ -103,9 +106,9 @@
       </div>
     </div>
     <!--悬浮购物车-->
-    <div class="float-cart" ref="floatCart"
-         v-show="curCount && ($route.name==='home'||$route.name==='seller_detail')" v-jump="['cart']">
-      <div class="cart-wrap"><i class="cur-count" v-if="curCount">{{curCount}}</i></div>
+    <div class="float-cart" ref="floatCart" v-show="curCount"
+         v-jump="['cart']">
+      <div class="cart-wrap"><i class="cur-count">{{curCount}}</i></div>
     </div>
   </div>
 </template>
@@ -117,7 +120,7 @@
   let vm
   import Swiper from '../../components/Swiper'
   import {Group, GroupTitle, Grid, GridItem, Marquee, MarqueeItem, XNumber, Scroller, LoadMore} from 'vux'
-  import {goodsApi, nearbyApi} from '../../service/main.js'
+  import {goodsApi, nearbyApi,cartApi} from '../../service/main.js'
   import {mapState, mapMutations} from 'vuex'
 
   export default {
@@ -125,13 +128,23 @@
     data() {
       return {
         sellerId: null,
+        cartData: '',
         seller: {},
         goods: [],
+        params: {
+          sellerId: null,
+          pageSize: 5,
+          pageNo: 1,
+          /*goodsCategory: '',
+           brandId: ''*/
+        },
         /* filter start */
+        showFilterCon: false,
+        filterOffset: 0,
         filters: {
-          shop: [
+          categorys: [
             {
-              key: 0,
+              key: '',
               value: '全部'
             },
             {
@@ -143,61 +156,67 @@
               value: '奶'
             }
           ],
-          sort: [
+          brands: [
             {
-              key: 0,
-              value: '默认排序'
-            },
-            {
-              key: 1,
-              value: '离我最近'
-            },
-            {
-              key: 2,
-              value: '销量最高'
-            },
-            {
-              key: 3,
-              value: '好评最多'
-            }
-          ],
-          specials: [
-            {
-              key: 0,
+              key: '',
               value: '全部'
             },
             {
               key: 1,
-              value: '水票'
+              value: '怡宝'
             },
             {
               key: 2,
-              value: '满减'
+              value: '康师傅'
             },
             {
               key: 3,
-              value: '折扣'
+              value: '百岁山'
+            },
+            {
+              key: 4,
+              value: '花果山'
+            },
+            {
+              key: 5,
+              value: '水老官'
+            },
+            {
+              key: 6,
+              value: '一方人'
+            },
+            {
+              key: 7,
+              value: '农夫山泉'
+            },
+            {
+              key: 8,
+              value: '八宝山'
+            },
+            {
+              key: 9,
+              value: '昆仑山'
             }
           ]
         },
-        curFilterType: '',
-        currentFilter: null,
-        filterData: [],
-        showFilterCon: false,
-        factive: '',
-        subActive: 0,
+        curFilterType: '', // 当前筛选分类
+        curFilterDict: null, // 当前的filter数据
+        curSelFilter: {
+          categorys: {
+            index: '',
+            key: '',
+            value: ''
+          },
+          brands: {
+            index: '',
+            key: '',
+            value: ''
+          }
+        }, // 当前选择的过滤条件
         /* filter end */
         scrollTop: 0,
         isPosting: false,
         noMore: false,
-        params: {
-          sellerId: null,
-          pageSize: 5,
-          pageNo: 1,
-          /*goodsType: 'goods_type.1',
-          goodsCategory: 'goods_category.1',
-          brandId: '038283447c4311e7aa18d8cb8a971936'*/
-        },
         pulldownConfig: {
           content: '下拉刷新',
           height: 60,
@@ -217,15 +236,16 @@
           loadingContent: '加载中…',
           clsPrefix: 'xs-plugin-pullup-'
         },
-        count: 0,
+        curCount: 0,
         balls: [ //小球 设为3个
           {
             show: false
           }, {
             show: false
+
           }, {
             show: false
-          },
+          }
         ],
         dropBalls: []
       }
@@ -247,6 +267,7 @@
       // me.attachClick()
       vm.getSeller()
       vm.getGoods()
+      vm.viewCart()
       // 点击区域之外隐藏筛选栏
       document.addEventListener('click', function (e) {
         if (e.target.offsetParent) {
@@ -264,14 +285,31 @@
         vm.resetScroll()
       })
     },
-    computed: mapState({
-      curCount: state => state.cart.count
-    }),
+    /*computed: {
+     //如果要动态改变，必须有setter方法
+     curCount: {
+     get: function () {
+     return this.$store.state.cart.count
+     },
+     set: function (newValue) {
+     this.$store.commit('updateCart', newValue)
+     }
+     }
+     },*/
     watch: {
       '$route'(to, from) {
         if (to.name === 'seller_detail') {
           vm.getSeller()
         }
+      },
+      goods() {
+        vm.syncList()
+      },
+      cartData() {
+        vm.syncList()
+      },
+      curCount() {
+        vm.syncList()
       }
     },
     methods: {
@@ -368,61 +406,41 @@
       },
       /* 商品筛选 */
       showFilter(type, e) {
-        vm.factive = type
-        // console.log(vm.subActive)
         if (vm.showFilterCon) {
           if (vm.curFilterType === type) {
-            vm.factive = ''
+            vm.curFilterType = ''
             vm.showFilterCon = false
           } else {
             vm.curFilterType = type
-            vm.currentFilter = vm.filters[type]
+            vm.curFilterDict = vm.filters[type]
             vm.showFilterCon = true
           }
         } else {
           vm.curFilterType = type
-          vm.currentFilter = vm.filters[type]
+          vm.curFilterDict = vm.filters[type]
           vm.showFilterCon = true
         }
-        // 默认选中已选择的筛选条件
       },
       hideFilter() {
         if (vm.showFilterCon) {
           vm.showFilterCon = false
-          vm.factive = ''
+          vm.curFilterType = ''
         }
       },
       chooseFilter(idx, key, value, e) {
-        vm.shops = []
-        console.log(JSON.stringify(vm.filterData), vm.curFilterType)
-        if (JSON.stringify(vm.filterData).indexOf(vm.curFilterType) === -1) {
-          vm.filterData.push({
-            type: vm.curFilterType,
-            filterId: key,
-            filterName: value !== '全部' ? value : ''
-          })
-        } else {
-          for (var i = 0; i < vm.filterData.length; i++) {
-            console.log(vm.filterData[i].filterName, value)
-            if (vm.filterData[i].filterName !== value) {
-              vm.filterData[i] = {
-                type: vm.curFilterType,
-                filterId: key,
-                filterName: value !== '全部' ? value : ''
-              }
-            }
-          }
-        }
-        vm.factive = ''
-        vm.showFilterCon = false
-        console.log(vm.filterData, '最后的筛选数据')
-        var lastF = {
-          goodsType: 1,
-          goodsCategory: 'water',
-          brandId: 2,
-          filter: '有折扣，有满减'
-        }
-        vm.getGoods(lastF)
+        // console.log(arguments)
+        vm.curSelFilter[vm.curFilterType].index = idx
+        vm.curSelFilter[vm.curFilterType].key = key
+        vm.curSelFilter[vm.curFilterType].value = value
+        console.error(JSON.stringify(vm.curSelFilter, null, 2))
+        vm.curSelFilter.categorys.key ? vm.params.goodsCategory = vm.curSelFilter.categorys.key : delete vm.params.goodsCategory
+        vm.curSelFilter.brands.key ? vm.params.brandId = vm.curSelFilter.brands.key : delete vm.params.brandId
+        vm.hideFilter()
+        vm.getGoods()
+      },
+      onScroll(pos) {
+        this.scrollTop = pos.top
+        vm.hideFilter()
       },
       onPullDown() {
         if (vm.isPosting) {
@@ -441,6 +459,7 @@
           }, 1500)
         }
       },
+      /* 上下拉刷新 */
       onPullUp() {
         if (vm.isPosting) {
           // do nothing
@@ -458,11 +477,6 @@
           }, 200)
         }
       },
-      onScroll(pos) {
-        this.scrollTop = pos.top
-        vm.factive = ''
-        vm.showFilterCon ? vm.showFilterCon = false : null
-      },
       changeCount(obj) {
         console.log(obj)
         if (obj.type === 'add') {
@@ -477,6 +491,72 @@
         console.log(vm.$store.state.cart.count)
       },
       /* 购物车 */
+      syncList() {
+        if (vm.goods && vm.goods.length) {
+          for (let i = 0; i < vm.goods.length; i++) {
+            let cur01 = vm.goods[i]
+            if (vm.cartData && vm.cartData.goodsList.length) {
+              for (let j = 0; j < vm.cartData.goodsList.length; j++) {
+                let cur02 = vm.cartData.goodsList[j]
+                if (cur01.id === cur02.goodsId) {
+                  cur01['number'] = cur02.goodsNum
+                }
+              }
+            } else {
+              cur01['number'] = 0
+            }
+          }
+        }
+      },
+      viewCart(cb) {
+        vm.loadData(cartApi.view, null, 'POST', function (res) {
+          var resD = res.data
+          // console.log(resD, '购物车数据')
+          vm.cartData = resD
+          vm.curCount = resD.totalNum
+          cb ? cb() : null
+          vm.isPosting = false
+        }, function () {
+          vm.isPosting = false
+        })
+      },
+      changeCount(obj) {
+        if (vm.isPosting) return
+        vm.isPosting = true
+        if (obj.type === 'add') {
+          if (vm.cartData.sellerId && vm.cartData.sellerId !== obj.sellerId) {
+            //vm.toast('购物车中已有其他店铺商品，请先清空')
+            vm.confirm('温馨提示', '当前购物车中已有其他店铺商品，请先清空！', function () {
+              vm.isPosting = true
+              vm.loadData(cartApi.clear, null, 'POST', function (res) {
+                vm.viewCart()
+                vm.isPosting = false
+              }, function () {
+                vm.isPosting = false
+              })
+            })
+            return
+          }
+          vm.loadData(cartApi.add, {goodsId: obj.id}, 'POST', function (res) {
+            if (res.success) {
+              vm.viewCart()
+              vm.additem(obj.event)
+            } else {
+              vm.toast(res.message || '购物车中已有其他店铺商品，请先清空')
+            }
+            vm.isPosting = false
+          }, function () {
+            vm.isPosting = false
+          })
+        } else {
+          vm.loadData(cartApi.minus, {goodsId: obj.id}, 'POST', function (res) {
+            vm.viewCart()
+            vm.isPosting = false
+          }, function () {
+            vm.isPosting = false
+          })
+        }
+      },
       additem(event) {
         this.drop(event.target);
       },
@@ -489,7 +569,7 @@
             ball.show = true
             ball.el = el
             this.dropBalls.push(ball)
-            return;
+            return
           }
         }
       },
@@ -521,9 +601,9 @@
         inner.style.transform = 'translate3d(-10px,-80px,0)'
         el.addEventListener('transitionend', done)
         cartCls.toggle('bulbing')
-        setTimeout(() => {
+        setTimeout(function(){
           cartCls.remove('bulbing')
-        }, 800)
+        },800)
       },
       /*初始化小球*/
       afterDrop(el) {
@@ -691,7 +771,7 @@
       }
     }
 
-    .shops-filter {
+    .goods-filter {
       .rel;
       z-index: 10;
       margin-bottom: 10/@rem;
@@ -752,8 +832,12 @@
               }
             }
             &:nth-child(2) {
-              border-left: 1px solid #eee;
+              /*border-left: 1px solid #eee;*/
               border-right: 1px solid #eee;
+            }
+            &.f-img {
+              background: url(../../../static/img/f-tit.png) no-repeat center;
+              .rbg-size(70%);
             }
           }
         }

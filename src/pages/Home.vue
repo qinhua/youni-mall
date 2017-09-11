@@ -115,7 +115,7 @@
       </div>
     </div>
     <!--悬浮购物车-->
-    <div class="float-cart" ref="floatCart" v-show="curCount && ($route.name==='home'||$route.name==='seller_detail')"
+    <div class="float-cart" ref="floatCart" v-show="curCount"
          v-jump="['cart']">
       <div class="cart-wrap"><i class="cur-count">{{curCount}}</i></div>
     </div>
@@ -311,20 +311,17 @@
         vm.resetScroll()
       })
     },
-    /*computed: mapState({
-     curCount: state => state.cart.count
-     }),*/
-    computed: {
-      //如果要动态改变，必须有setter方法
-      /*curCount: {
-       get: function () {
-       return this.$store.state.cart.count
-       },
-       set: function (newValue) {
-       this.$store.commit('updateCart', newValue)
-       }
-       }*/
-    },
+    /*computed: {
+     //如果要动态改变，必须有setter方法
+     curCount: {
+     get: function () {
+     return this.$store.state.cart.count
+     },
+     set: function (newValue) {
+     this.$store.commit('updateCart', newValue)
+     }
+     }
+     },*/
     watch: {
       '$route'(to, from) {
         if (to.name === 'home') {
@@ -478,7 +475,7 @@
       },
       onScroll(pos) {
         this.scrollTop = pos.top
-        vm.showFilterCon ? vm.showFilterCon = false : null
+        vm.hideFilter()
       },
       /* 上下拉刷新 */
       onPullDown() {
@@ -623,9 +620,9 @@
         inner.style.transform = 'translate3d(-10px,-80px,0)'
         el.addEventListener('transitionend', done)
         cartCls.toggle('bulbing')
-        setTimeout(function(){
+        setTimeout(function () {
           cartCls.remove('bulbing')
-        },800)
+        }, 800)
       },
       /*初始化小球*/
       afterDrop(el) {
