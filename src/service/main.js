@@ -18,7 +18,7 @@ const homeApi = {
 const goodsApi = {
   detail: host + '/goods/view',
   appraise: host + '/goods/appraise',
-  sellerGoods: host + '/goods/pageList'
+  sellerGoods: host + '/user/goodsList'
 }
 const nearbyApi = {
   sellerList: host + '/seller/list',

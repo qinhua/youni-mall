@@ -117,7 +117,7 @@
   let vm
   import Swiper from '../../components/Swiper'
   import {Group, GroupTitle, Grid, GridItem, Marquee, MarqueeItem, XNumber, Scroller, LoadMore} from 'vux'
-  import {goodsList, nearbyApi} from '../../service/main.js'
+  import {goodsApi, nearbyApi} from '../../service/main.js'
   import {mapState, mapMutations} from 'vuex'
 
   export default {
@@ -248,7 +248,7 @@
       vm.getSeller()
       vm.getGoods()
       // 点击区域之外隐藏筛选栏
-      document.addEventListener('click', (e) => {
+      document.addEventListener('click', function (e) {
         if (e.target.offsetParent) {
           if (JSON.stringify(e.target.offsetParent.classList).indexOf('filter') === -1) {
             vm.hideFilter()
@@ -258,9 +258,9 @@
       }, false)
       vm.$nextTick(function () {
         //获取筛选栏位置
-        setTimeout(() => {
+        setTimeout(function(){
           vm.filterOffset = vm.$refs.filters03.offsetTop
-        }, 500)
+        },300)
         vm.resetScroll()
       })
     },
@@ -806,7 +806,7 @@
       }
       .inner-scroller {
         .borBox;
-        .static;
+        height:100%!important;
         .v-items {
           padding: 20/@rem;
           .bf;

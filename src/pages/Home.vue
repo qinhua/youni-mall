@@ -156,7 +156,7 @@
           pageSize: 5,
           pageNo: 1,
           /*goodsCategory: '',
-          brandId: ''*/
+           brandId: ''*/
         },
         /* filter start */
         showFilterCon: false,
@@ -219,7 +219,7 @@
             }
           ]
         },
-        curFilterType: '',
+        curFilterType: '', // 当前筛选分类
         curFilterDict: null, // 当前的filter数据
         curSelFilter: {
           categorys: {
@@ -233,7 +233,6 @@
             value: ''
           }
         }, // 当前选择的过滤条件
-        factive: '', // 当前筛选分类
         /* filter end */
         scrollTop: 0,
         noMore: false,
@@ -296,7 +295,7 @@
       vm.getGoods()
       vm.viewCart()
       // 点击区域之外隐藏筛选栏
-      document.addEventListener('click', (e) => {
+      document.addEventListener('click', function (e) {
         if (e.target.offsetParent) {
           if (JSON.stringify(e.target.offsetParent.classList).indexOf('filter') === -1) {
             vm.hideFilter()
@@ -306,9 +305,9 @@
       }, false)
       vm.$nextTick(function () {
         //获取筛选栏位置
-        setTimeout(() => {
+        setTimeout(function () {
           vm.filterOffset = vm.$refs.filters01.offsetTop
-        }, 500)
+        }, 300)
         vm.resetScroll()
       })
     },
@@ -318,13 +317,13 @@
     computed: {
       //如果要动态改变，必须有setter方法
       /*curCount: {
-        get: function () {
-          return this.$store.state.cart.count
-        },
-        set: function (newValue) {
-          this.$store.commit('updateCart', newValue)
-        }
-      }*/
+       get: function () {
+       return this.$store.state.cart.count
+       },
+       set: function (newValue) {
+       this.$store.commit('updateCart', newValue)
+       }
+       }*/
     },
     watch: {
       '$route'(to, from) {
@@ -348,8 +347,7 @@
     methods: {
       // 全局定位
       getMap(data) {
-        var tmp = me.locals.get('cur5656Position')
-        // this.$store.commit('storeData',{key:'userPositionData',data:data})
+        var tmp = me.locals.get('cur5656Position')//存储的用户选择位置
         if (tmp) {
           var data = JSON.parse(tmp)
           console.log(data, 'home amap info')
@@ -358,6 +356,7 @@
             vm.address = data.name
           }
         }
+        vm.getGoods() // 用户修改位置之后重载列表
       },
       toMap() {
         vm.$router.push({name: 'amap', query: {path: vm.$route.path.replace(/\//g, '')}})
@@ -474,7 +473,12 @@
         console.error(JSON.stringify(vm.curSelFilter, null, 2))
         vm.curSelFilter.categorys.key ? vm.params.goodsCategory = vm.curSelFilter.categorys.key : delete vm.params.goodsCategory
         vm.curSelFilter.brands.key ? vm.params.brandId = vm.curSelFilter.brands.key : delete vm.params.brandId
+        vm.hideFilter()
         vm.getGoods()
+      },
+      onScroll(pos) {
+        this.scrollTop = pos.top
+        vm.showFilterCon ? vm.showFilterCon = false : null
       },
       /* 上下拉刷新 */
       onPullDown() {
@@ -507,11 +511,6 @@
             })
           }, 200)
         }
-      },
-      onScroll(pos) {
-        this.scrollTop = pos.top
-        vm.factive = ''
-        vm.showFilterCon ? vm.showFilterCon = false : null
       },
       /* 购物车 */
       syncList() {
@@ -624,9 +623,9 @@
         inner.style.transform = 'translate3d(-10px,-80px,0)'
         el.addEventListener('transitionend', done)
         cartCls.toggle('bulbing')
-        setTimeout(() => {
+        setTimeout(function(){
           cartCls.remove('bulbing')
-        }, 800)
+        },800)
       },
       /*初始化小球*/
       afterDrop(el) {
@@ -790,7 +789,7 @@
             /*border-left: 1px solid #eee;*/
             border-right: 1px solid #eee;
           }
-          &.f-img{
+          &.f-img {
             background: url(../../static/img/f-tit.png) no-repeat center;
             .rbg-size(70%);
           }

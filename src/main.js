@@ -106,13 +106,16 @@ window.loadData = Vue.prototype.loadData = function (url, params, type, sucCb, e
   params = params || {}
   setTimeout(function () {
     var winAuth = window.youniMall.userAuth || store.state.global.wxInfo
-    var localGeo = me.sessions.get('cur5656Geo') ? JSON.parse(me.sessions.get('cur5656Geo')) : {}
-    var localIps = me.sessions.get('cur5656Ips') ? JSON.parse(me.sessions.get('cur5656Ips')) : {}
+    /* 【cur5656Geo-当前定位的位置信息，cur5656SelArea-用户选择的位置信息，cur5656Ips-当前定位的ip和城市】 */
+    var localGeo = me.sessions.get('cur5656Geo') ? JSON.parse(me.sessions.get('cur5656Geo')) : null
+    var localUserSel = me.locals.get('cur5656Position') ? JSON.parse(me.locals.get('cur5656Position')) : null
+    var localIps = me.sessions.get('cur5656Ips') ? JSON.parse(me.sessions.get('cur5656Ips')) : null
+    var lastD = localUserSel ? localUserSel : localGeo
     var localParams = {
       ip: localIps.cip,
-      cityCode: localGeo.cityCode || localIps.cid,
-      lon: localGeo.lng,
-      lat: localGeo.lat
+      cityCode: lastD.cityCode || localIps.cid,
+      lon: lastD.lng,
+      lat: lastD.lat
     }
     $.extend(params, winAuth)
     // console.log('%c'+JSON.stringify(params, null, 2), 'color:#fff;background:purple')
@@ -126,11 +129,11 @@ window.loadData = Vue.prototype.loadData = function (url, params, type, sucCb, e
       success: function (res) {
         // 检测是否登录
         /*if (res.message.indexOf('登录') > -1) {
-          vm.processing(0, 1)
-          // vm.confirm('温馨提示','请先登录！',function(){
-          vm.$router.push({path: '/login'})
-          // })
-        }*/
+         vm.processing(0, 1)
+         // vm.confirm('温馨提示','请先登录！',function(){
+         vm.$router.push({path: '/login'})
+         // })
+         }*/
         try {
           sucCb ? sucCb(res) : console.log(res, '接口的res')
         } catch (e) {
@@ -365,19 +368,19 @@ new Vue({
   watch: {
     'router'() {
       /*wx.config({
-        debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
-        appId: '', // 必填，公众号的唯一标识
-        timestamp: , // 必填，生成签名的时间戳
-        nonceStr: '', // 必填，生成签名的随机串
-        signature: '',// 必填，签名，见附录1
-        jsApiList: [] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
-      })
-      wx.ready(function(){
-        // config信息验证后会执行ready方法，所有接口调用都必须在config接口获得结果之后，config是一个客户端的异步操作，所以如果需要在页面加载时就调用相关接口，则须把相关接口放在ready函数中调用来确保正确执行。对于用户触发时才调用的接口，则可以直接调用，不需要放在ready函数中。
-      })
-      wx.error(function(res){
-        // config信息验证失败会执行error函数，如签名过期导致验证失败，具体错误信息可以打开config的debug模式查看，也可以在返回的res参数中查看，对于SPA可以在这里更新签名。
-      })*/
+       debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+       appId: '', // 必填，公众号的唯一标识
+       timestamp: , // 必填，生成签名的时间戳
+       nonceStr: '', // 必填，生成签名的随机串
+       signature: '',// 必填，签名，见附录1
+       jsApiList: [] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+       })
+       wx.ready(function(){
+       // config信息验证后会执行ready方法，所有接口调用都必须在config接口获得结果之后，config是一个客户端的异步操作，所以如果需要在页面加载时就调用相关接口，则须把相关接口放在ready函数中调用来确保正确执行。对于用户触发时才调用的接口，则可以直接调用，不需要放在ready函数中。
+       })
+       wx.error(function(res){
+       // config信息验证失败会执行error函数，如签名过期导致验证失败，具体错误信息可以打开config的debug模式查看，也可以在返回的res参数中查看，对于SPA可以在这里更新签名。
+       })*/
     }
   },
   mounted() {

@@ -20,7 +20,6 @@
         appId: 'wxa92cd39da6d03d8f',
         appSecret: 'b6540309f545879b1b33fc8b95fc4f70',
         redirect_uri: window.encodeURIComponent(url.replace(hashstr, '')),
-        // redirect_uri: window.encodeURIComponent('https://www.youni.club/yn/youni-mall/#/author'),
         response_type: 'code',
         //scope: 'snsapi_base', // 静默授权
         scope: 'snsapi_userinfo', // 用户确认授权
