@@ -190,7 +190,7 @@
       },
       getGoods() {
         try{
-          vm.curCartData = vm.$route.query.thedata ? JSON.parse(decodeURIComponent(vm.$route.query.thedata)) : {}
+          vm.curCartData = vm.$route.query.thedata ? JSON.parse(window.decodeURIComponent(vm.$route.query.thedata)) : {}
           for (var i = 0; i < vm.curCartData.goods.length; i++) {
             vm.params.goods.push({goodsId: vm.curCartData.goods[i].goodsId})
           }
@@ -299,7 +299,7 @@
   @import '../../../static/css/tools.less';
 
   .confirm-order {
-
+    padding-bottom:100/@rem;
   }
 
   .pick-address {
@@ -398,7 +398,7 @@
         .img-con {
           .rel;
           padding: 10/@rem 0;
-          .size(130, 130);
+          .size(140, 120);
           overflow: hidden;
           img {
             width: 100%;

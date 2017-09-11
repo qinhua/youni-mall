@@ -39,6 +39,7 @@ const orderApi = {
 }
 const userApi = {
   userInfo: host + '/user/userInfo',
+  bind: host + '/user/bindPhone',
   updateName: host + '/user/updateName',
   couponList: host + '/user/couponList',
   addressList: host + '/user/addressList',
@@ -58,7 +59,8 @@ const commonApi = {
   wxAuth: host + '/weixin/auth',
   wxPay: host + '/weixin/payTest',
   dict: host + '/common/dictList',
-  addUser: host + '/user/add'
+  addUser: host + '/user/add',
+  sendSms: host + '/common/sendSms'
 }
 // console.log('当前域名：%c' + host, 'color:red;font-size:14px;font-weight:bold')
 export {commonApi,cartApi,homeApi, nearbyApi, ticketApi, orderApi, userApi, goodsApi}

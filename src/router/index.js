@@ -16,11 +16,13 @@ import EditAddress from '@/pages/my/EditAddress'
 import MyCoupons from '@/pages/my/Coupons'
 import MyGuarantee from '@/pages/my/Guarantee'
 import MyAddress from '@/pages/my/Address'
+import Bind from '@/pages/my/Bind'
 import MyFavorite from '@/pages/my/Favorite'
 import Help from '@/pages/my/Help'
 import About from '@/pages/my/About'
 import GoodsDetail from '@/pages/goods/Detail'
 import SellerDetail from '@/pages/sellers/Detail'
+import SellerDetailMore from '@/pages/sellers/MoreDetail'
 
 import NoPage from '@/pages/NoPage'
 Router.prototype.goBack = function () {
@@ -164,6 +166,15 @@ export default new Router({
       }
     },
     {
+      path: '/bind',
+      name: 'bind',
+      component: Bind,
+      meta: {
+        title: '绑定手机号',
+        keepAlive: false
+      }
+    },
+    {
       path: '/help',
       name: 'help',
       component: Help,
@@ -221,6 +232,15 @@ export default new Router({
       path: '/seller_detail',
       name: 'seller_detail',
       component: SellerDetail,
+      meta: {
+        title: '店铺详情',
+        keepAlive: false
+      }
+    },
+    {
+      path: '/seller_detail_more',
+      name: 'seller_detail_more',
+      component: SellerDetailMore,
       meta: {
         title: '店铺详情',
         keepAlive: false

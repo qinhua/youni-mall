@@ -320,7 +320,7 @@
           }
           vm.$router.push({
             name: 'confirm_order',
-            query: {thedata: encodeURIComponent(JSON.stringify(lastD))}
+            query: {thedata: window.encodeURIComponent(JSON.stringify(lastD))}
           })
         } else {
           vm.toast('请选择商品！', 'warn')
@@ -436,7 +436,7 @@
           .img-con {
             .rel;
             padding: 10/@rem 0;
-            .size(130, 130);
+            .size(140, 120);
             overflow: hidden;
             img {
               width: 100%;

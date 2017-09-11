@@ -74,7 +74,9 @@
           <section class="v-items" v-for="(item, index) in goods" :data-id="item.id">
             <section class="wrap">
               <div class="click-wrap" :data-id="item.id" @click="toDetail(item.id)">
-                <img :src="item.imgurl">
+                <div class="img-con">
+                  <img :src="item.imgurl">
+                </div>
                 <section class="infos">
                   <h3>{{item.name}}</h3>
                   <section class="middle">
@@ -333,12 +335,6 @@
       },
       goods() {
         vm.syncList()
-      },
-      cartData() {
-        vm.syncList()
-      },
-      curCount() {
-        vm.syncList()
       }
     },
     methods: {
@@ -509,7 +505,8 @@
           }, 200)
         }
       },
-      /* 购物车 */
+      /* 购物车--start */
+      // 同步购物车商品数量至列表
       syncList() {
         if (vm.goods && vm.goods.length) {
           for (let i = 0; i < vm.goods.length; i++) {
@@ -533,6 +530,7 @@
           // console.log(resD, '购物车数据')
           vm.cartData = resD
           vm.curCount = resD.totalNum
+          vm.syncList()
           cb ? cb() : null
           vm.isPosting = false
         }, function () {
@@ -632,6 +630,7 @@
           el.style.display = 'none'
         }
       }
+      /* 购物车--end */
     }
   }
 </script>
@@ -858,15 +857,23 @@
           .flex-r(1);
           overflow: hidden;
         }
-        img {
+        .img-con {
+          .abs-center-vertical;
+          .size(130, 130);
+          overflow: hidden;
+          img {
+            width: 100%;
+            background: #f5f5f5 url(../../static/img/noImg.png) no-repeat center;
+            -webkit-background-size: 30% auto;
+            background-size: 30% auto;
+          }
+        }
+        /*img {
           .abs;
           left: 0;
           top: 0;
           .size(150, 150);
-          background: #f5f5f5 url(../../static/img/noImg.png) no-repeat center;
-          -webkit-background-size: 30% auto;
-          background-size: 30% auto;
-        }
+        }*/
         .infos {
           .flex;
           .flex-d-v;

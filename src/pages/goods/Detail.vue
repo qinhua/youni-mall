@@ -16,9 +16,10 @@
         </div>
       </div>
       <div class="buy-con">
+        <h3 class="title"><span
+          :class="details.categoryName==='奶'?'milk':''">{{details.categoryName}}</span>{{details.name}}</h3>
         <div class="wrap">
           <div class="txt-con">
-            <h3>{{details.name}}</h3>
             <p class="middle"><span class="price">￥{{(details.price || 0) | toFixed}}</span><sub>已售{{details.saleCount}}单</sub><span
               class="stock">剩余{{details.stock}}件</span></p>
             <ul class="tags" v-if="details.label">
@@ -27,17 +28,18 @@
           </div>
           <div class="right-con">
             <div class="inner">
-              <div class="number-con" v-if="curCount">
+              <div class="number-con">
                 <group>
-                  <x-number :disabled="cartData && details.sellerId!==cartData.sellerId" :value="curCount"
+                  <x-number :disabled="cartData && details.sellerId!==cartData.sellerId" :value="details.number"
                             :dataId="details.id" :dataSellerId="details.sellerId" :min="0"
                             :max="50" @on-change="changeCount"></x-number>
                 </group>
               </div>
-              <button v-else type="button" class="btn btn-addcart"
-                      @click="changeCount({type:'add',id:details.id,sellerId:details.sellerId,number:details.curCount})">
+              <!--<button type="button" class="btn btn-addcart"
+                      @click="changeCount({type:'add',id:details.id,sellerId:details.sellerId,number:1})"
+                      v-if="!details.number">
                 加入购物车
-              </button>
+              </button>-->
             </div>
           </div>
         </div>
@@ -115,12 +117,12 @@
     <div v-transfer-dom>
       <popup v-model="showPop" position="bottom" max-height="50%">
         <group class="number-con">
-          <x-number title="数量：" :disabled="cartData && details.sellerId!==cartData.sellerId" :value="curCount"
-                    :dataId="details.id" :dataSellerId="details.sellerId" :min="0"
-                    :max="50" @on-change="changeCount"></x-number>
+          <x-number fillable title="数量：" :disabled="cartData && details.sellerId!==cartData.sellerId" :value="1"
+                    :dataId="details.id" :dataSellerId="details.sellerId" :min="1"
+                    :max="50" @on-change="changeBuyNum" @input="changeBuyNum"></x-number>
         </group>
         <button type="button" :class="['btn btn-addcart',(addText==='立即购买')?'buy':'']" style="padding: 10px;"
-                @click="showPop = false">{{addText}}
+                @click="goConfirm">{{addText}}
         </button>
       </popup>
     </div>
@@ -140,15 +142,14 @@
       <div class="wrap">
         <div class="cur-cart" ref="curCart" :hasgood="curCount>0" v-jump="['cart']"><i v-if="curCount">{{curCount}}</i>
         </div>
-        <!--<div class="left">
-          <div class="txt" v-if="curCount">
-            <h4>当前共{{curCount}}件</h4>
-            <p>合计：{{total|toFixed}}元</p>
+        <div class="left">
+          <div class="txt" v-if="details.number">
+            <h4>当前共{{details.number}}件</h4>
+            <p>合计：{{total | toFixed}}元</p>
           </div>
-        </div>-->
+        </div>
         <div class="right">
           <div class="btn btn-buy" @click="swDialog(2)">立即购买</div>
-          <div class="btn btn-add" @click="swDialog(1)">加入购物车</div>
         </div>
       </div>
     </div>
@@ -161,19 +162,27 @@
   let vm
   import Swiper from 'swiper'
   import {Tab, TabItem, XNumber, Group, Cell, TransferDom, Popup, XButton} from 'vux'
-  import {homeApi, goodsApi, cartApi} from '../../service/main.js'
+  import {homeApi, nearbyApi, goodsApi, cartApi} from '../../service/main.js'
 
   export default {
     name: 'goods-detail',
     data() {
       return {
         id: null,
-        value: 0,
         addText: '添加购物车',
-//        show: false,
         showPop: false,
-        details: [],
+        details: {},
         tablist: ['商品详情', '规格', '评论'],
+        isPosting: false,
+        cartData: null,
+        curCount: 0,
+        curBuyNum: 1,
+        total: 0,
+        detailSwiper: null,
+        curIndex: 0,
+        appIdx: 0,
+        appraiseData: null,
+        appraise: [],
         balls: [ //小球 设为3个
           {
             show: false
@@ -184,14 +193,6 @@
           },
         ],
         dropBalls: [],
-        isPosting: false,
-        cartData: null,
-        curCount: 0,
-        detailSwiper: null,
-        curIndex: 0,
-        appIdx: 0,
-        appraiseData: null,
-        appraise: []
       }
     },
     directives: {
@@ -203,32 +204,35 @@
     },
     mounted() {
       vm = this
-      vm.viewCart()
       vm.getDetail(function () {
+        vm.viewCart()
         vm.mySwiper()
-        vm.swiperDetail()
-        //vm.getAppraise()
+        // vm.swiperDetail()
+        // vm.getAppraise()
       })
 //      vm.$nextTick(function() {
 //        vm.$refs.orderScroller.finishInfinite(true)
 //        vm.$refs.orderScroller.resize()
 //      })
     },
-    computed: {
-      /*total() {
-        return vm.curCount * vm.details.price
-      }*/
-    },
+    /*computed: {
+      total() {
+        return vm.details.number ? vm.details.number * vm.details.price : 0
+      }
+    },*/
     watch: {
       '$route'(to, from) {
         if (to.name === 'goods_detail') {
-          vm.viewCart()
           vm.getDetail(function () {
+            vm.viewCart()
             vm.mySwiper()
-            vm.swiperDetail()
-            //vm.getAppraise()
+            // vm.swiperDetail()
+            // vm.getAppraise()
           })
         }
+      },
+      'details.number'(){
+        vm.total = vm.details.number * vm.details.price
       }
     },
     methods: {
@@ -300,12 +304,21 @@
         vm.loadData(goodsApi.detail, {id: vm.id}, 'POST', function (res) {
           vm.isPosting = false
           vm.processing(0, 1)
+          res.data.categoryName = res.data.category === 'goods_category_1' ? '水' : '奶'
           vm.details = res.data
+          vm.getSeller(res.data.sellerId)
           console.log(vm.details, '商品详情')
           cb ? cb() : null
         }, function () {
           vm.isPosting = false
           vm.processing(0, 1)
+        })
+      },
+      getSeller(id) {
+        vm.loadData(nearbyApi.sellerDetail, {id: id}, 'POST', function (res) {
+          if (res.data) {
+            vm.details.sellerName = res.data.name
+          }
         })
       },
       chooseCol(index) {
@@ -337,29 +350,32 @@
         }
       },
       swDialog(type) {
-        // vm.showPop = vm.showPop?false:true
         vm.showPop = true
         if (type === 1) {
           vm.addText = '加入购物车'
         } else {
           vm.addText = '立即购买'
-          vm.$router.push({path: '/confirm', query: {lastdata: JSON.stringify(window.encodeURIComponent(theData))}})
         }
       },
       goConfirm() {
+        vm.showPop = false
         // 判断当前是否填写了数量
-        var lastD
+        /*var lastD, tmp = []
         if (vm.cartData && vm.cartData.goodsList.length) {
-          for (var i = 0; i < vm.cartData.goodsList.length; i++) {
-            var cur = vm.cartData.goodsList[i];
-            if (cur.sellerId === vm.details.sellerId) {
-              lastD = {
-                sellerId: vm.details.sellerId,
-                sellerName: vm.details.sellerName,
-                totalPrice: vm.details.totalPrice,
-                goods: cur
-              }
+          for (let i = 0; i < vm.cartData.goodsList.length; i++) {
+            let cur = vm.cartData.goodsList[i]
+            if (cur.goodsId === vm.details.id) {
+              tmp.push(cur)
             }
+          }
+          lastD = {
+            sellerId: vm.details.sellerId,
+            sellerName: vm.details.sellerName,
+            totalPrice: vm.curBuyNum * vm.details.price,
+            goods: [{
+              goodsId: vm.details.id,
+              goodsNum: vm.curBuyNum,
+            }]
           }
           vm.$router.push({
             name: 'confirm_order',
@@ -367,23 +383,39 @@
           })
         } else {
           vm.toast('至少选一件哦！', 'warn')
+        }*/
+//        if (vm.curBuyNum) {
+        var lastD = {
+          sellerId: vm.details.sellerId,
+          sellerName: vm.details.sellerName,
+          totalPrice: vm.curBuyNum * vm.details.price,
+          goods: [{
+            goodsId: vm.details.id,
+            goodsNum: vm.curBuyNum,
+            goodsImage: vm.details.imgurl,
+            price: vm.details.price,
+          }]
         }
+        vm.$router.push({
+          name: 'confirm_order',
+          query: {thedata: encodeURIComponent(JSON.stringify(lastD))}
+        })
+        /*} else {
+          vm.toast('至少选1件哦！', 'warn')
+        }*/
       },
+      /* 购物车--start */
+      // 同步购物车商品数量至详情
       syncList() {
-        if (vm.goods && vm.goods.length) {
-          for (let i = 0; i < vm.goods.length; i++) {
-            let cur01 = vm.goods[i]
-            if (vm.cartData && vm.cartData.goodsList.length) {
-              for (let j = 0; j < vm.cartData.goodsList.length; j++) {
-                let cur02 = vm.cartData.goodsList[j]
-                if (cur01.id === cur02.goodsId) {
-                  cur01['number'] = cur02.goodsNum
-                }
-              }
-            } else {
-              cur01['number'] = 0
+        if (vm.cartData && vm.cartData.goodsList.length) {
+          for (let i = 0; i < vm.cartData.goodsList.length; i++) {
+            let cur = vm.cartData.goodsList[i]
+            if (cur.goodsId === vm.details.id) {
+              vm.details['number'] = cur.goodsNum
             }
           }
+        } else {
+          vm.details['number'] = 0
         }
       },
       viewCart(cb) {
@@ -392,6 +424,7 @@
           // console.log(resD, '购物车数据')
           vm.cartData = resD
           vm.curCount = resD.totalNum
+          vm.syncList()
           cb ? cb() : null
           vm.isPosting = false
         }, function () {
@@ -433,9 +466,16 @@
           }, function () {
             vm.isPosting = false
           })
+          if (!obj.value) {
+            vm.isPosting = false
+            vm.details.number = 0
+            return
+          }
         }
       },
-      /* 购物车 */
+      changeBuyNum(obj) {
+        vm.curBuyNum = obj.value
+      },
       additem(event) {
         this.drop(event.target);
       },
@@ -492,6 +532,7 @@
           el.style.display = 'none'
         }
       }
+      /* 购物车--end */
     }
   }
 </script>
@@ -505,8 +546,8 @@
     overflow: auto;
     .top {
       margin-bottom: 14/@rem;
-      .banner-goods-detail{
-        height: 440/@rem!important;
+      .banner-goods-detail {
+        height: 440/@rem !important;
         overflow: hidden;
       }
       .swiper-detail {
@@ -527,20 +568,34 @@
         .wrap {
           .rel;
         }
+        .title {
+          .fz(26);
+          .c3;
+          margin-bottom: 8/@rem;
+          .ellipsis-clamp-2;
+          span {
+            margin-right: 4px;
+            padding: 0 2px;
+            font-weight: normal;
+            .cf;
+            .fz(22);
+            background: #2acaad;
+            .borR(2px);
+            &.milk {
+              background: #74c361;
+            }
+          }
+        }
       }
       .txt-con {
         .borBox;
         padding-right: 200/@rem;
-        h3 {
-          .fz(26);
-          .c3;
-          .ellipsis-clamp-2;
-        }
         .middle {
           padding: 10/@rem 0;
           .fz(24);
           .c9;
           .price {
+            .fz(30);
             .cdiy(@c2);
           }
           .stock {
@@ -561,8 +616,8 @@
             padding: 1px 8px;
             line-height: 1.8;
             .cf;
-            .fz(16);
-            .borR(4px);
+            .fz(18);
+            .borR(2px);
             background: orange;
           }
         }
@@ -619,6 +674,10 @@
         .detail-con {
           .borBox;
           padding: 20/@rem;
+          ul,ol{
+            list-style:decimal;
+            list-style-position: inside;
+          }
         }
         .goods-param {
           .borBox;
@@ -778,7 +837,7 @@
         }
       }
     }
-
+    //部分样式在main.css里
     .cart-model {
       .fix;
       bottom: 0;
@@ -794,8 +853,8 @@
           .abs;
           left: 20/@rem;
           top: 0;
+          z-index: 2;
           .size(100, 100);
-          .bor(4px, solid, #373c4c);
           background: #1d2231 url(../../../static/img/carts.png) no-repeat center;
           .rbg-size(50%);
           .borR(50%);
@@ -817,10 +876,11 @@
           }
           &[hasgood] {
             top: -40/@rem;
+            .bor(4px, solid, #373c4c);
             box-shadow: 0 1px 10px 0 #fc6b01;
           }
         }
-        /*.left {
+        .left {
           .rel;
           .borBox;
           .fl;
@@ -834,26 +894,23 @@
               .fz(20);
             }
           }
-        }*/
+        }
         .right {
-          //.fl;
-          width: 100%;
+          .fl;
+          width: 32%;
           height: 100%;
           line-height: 100/@rem;
           .center;
-          .btn {
+          background: #ec3902;
+          /*.btn {
             .fr;
-            .iblock;
-            padding: 0 26/@rem;
           }
           .btn-buy {
             background: #ec3902;
-            /*background: -webkit-linear-gradient(90deg, #dc0404, #ff7600);
-            background: linear-gradient(90deg, #dc0404, #ff7600);*/
           }
           .btn-add {
             background: #ff9627;
-          }
+          }*/
         }
       }
     }

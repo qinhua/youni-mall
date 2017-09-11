@@ -4,8 +4,8 @@
     <!--<div class="swiper-shop">-->
     <!--<swiper ref="slider02" skey="s03" :slides="banner" autoPlay="2500"></swiper>-->
     <!--</div>-->
-    <div class="shop-info">
-      <div class="v-items" :data-id="seller.id">
+    <div class="seller-info">
+      <div class="v-items" :data-id="seller.id" @click="toMore">
         <div class="wrap">
           <img :src="seller.headimgurl">
           <div class="infos">
@@ -31,7 +31,6 @@
         </div>
       </div>
       <div class="contacts">
-        <p>地址：{{seller.address}}</p>
         <p>配送电话：<a :href="'tel:'+seller.phone">{{seller.phone}}</a>，楼梯房需收取上楼费</p>
       </div>
     </div>
@@ -347,6 +346,14 @@
           }
         }, 300)
       },
+      toDetail(id) {
+        if (vm.showFilterCon) return
+        vm.$router.push({name: 'goods_detail', query: {id: id}})
+      },
+      toMore() {
+        if (vm.showFilterCon) return
+        vm.$router.push({name: 'seller_detail_more', query: {thedata:window.encodeURIComponent(JSON.stringify(vm.seller))}})
+      },
       /* 页面数据 */
       getSeller() {
         vm.sellerId = vm.params.sellerId = vm.$route.query.id
@@ -634,7 +641,7 @@
       }
     }
 
-    .shop-info {
+    .seller-info {
       background: url(../../../static/img/bg_user.jpg) no-repeat top center;
       .rbg-size(100%);
       .v-items {
