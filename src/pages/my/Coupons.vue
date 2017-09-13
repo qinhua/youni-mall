@@ -11,19 +11,23 @@
       <scroller class="inner-scroller" ref="couponScroller" :on-refresh="refresh" :on-infinite="infinite"
                 refreshText="下拉刷新" noDataText="没有更多数据" snapping>
         <!-- content goes here -->
-        <section class="v-items" v-for="(item, index) in coupons" :data-id="item.id">
-          <div :class="('stamp type0'+item.id) + (!item.status?' expired':'')">
+        <section class="v-items" v-for="(item, index) in coupons" :data-id="item.id" :data-couponid="item.couponId">
+          <div :class="('stamp type0'+item.type) + (!item.status?' expired':'')">
             <div class="wrap">
               <div class="par">
-                <p>{{item.couponName}}</p>
-                <div class="value">
-                  <sub class="sign">￥</sub>
-                  <span>{{item.amount}}.00</span>
-                  <sub class="type">{{item.type | couponType(item.type)}}</sub>
+                <!--<p>{{item.sellerName}}</p>-->
+                <div class="content">
+                  <h3 class="value">￥{{item.discountAmount | toFixed}}元<sub class="type">{{item.typeName}}</sub></h3>
+                  <sub class="sign">（最多抵扣）￥{{item.maxAmount | toFixed}}元</sub>
+                  <!--<sub class="type">{{item.goodsType | couponType(item.goodsType)}}</sub>-->
+
                 </div>
-                <p class="info">{{item.info}}</p>
+                <p class="info">{{item.couponNote || '满减优惠'}}</p>
               </div>
-              <div class="copy" v-if="item.status">{{item.couponNote}}<p>{{item.expireTime}}{{item.startTime}}<br>{{item.endTime}}</p></div>
+              <div class="copy" v-if="!item.expired">{{item.label}}<p>
+                {{item.createTime.split(' ')[0] + '~'}}{{item.expireTime.split(' ')[0]}}
+              </p>
+              </div>
               <div class="copy" v-else><span class="exp">已过期</span></div>
             </div>
             <i></i>
@@ -47,8 +51,24 @@
       return {
         show: false,
         tmpType: '',
-        types: ['coupon_type.2','coupon_type.1','coupon_type.3','coupon_type.4'],
-        coupons: [],
+        types: ['coupon_type.2', 'coupon_type.1', 'coupon_type.3', 'coupon_type.4'],
+//        coupons: [],
+        coupons: [
+          {
+            "id": "pbhhlujn7qielom4pvuh8vk6dh",
+            "userId": "562bedbb7b4611e78a0f0242ac110002",
+            "status": 0,
+            "createTime": "2017-09-13 18:18:59",
+            "updateTime": "2017-09-13 18:18:59",
+            "goodsType": "goods_type.2",
+            "sellerType": 1,
+            "type": 1,
+            "discountAmount": 30,
+            "expireTime": "2017-09-23 00:00:00",
+            "maxAmount": 50,
+            "discountRate": 1,
+            "couponId": "2"
+          },],
         params: {
           type: '',
           pagerSize: 10,
@@ -64,7 +84,7 @@
     },
     mounted() {
       vm = this
-      vm.getCoupons()
+      // vm.getCoupons()
       vm.$nextTick(() => {
         vm.$refs.couponScroller.finishInfinite(true)
         vm.$refs.couponScroller.resize()
@@ -110,34 +130,22 @@
         vm.processing()
         vm.isPosting = true
         vm.loadData(userApi.couponList, vm.params, 'POST', function (res) {
-          var resD = res.data.pager
-
-          /* for (var i = 0; i < resD.length; i++) {
-            switch (resD[i].status) {
-              case -1:
-                resD[i].statusName = '已取消'
+          var resD = res.data
+          for (var i = 0; i < resD.length; i++) {
+            // resD.expired = !me.compareCurrentDate(resD.expireTime)
+            switch (resD[i].goodsType) {
+              case 'goods_type.1':
+                resD[i].goodsTypeName = '水'
                 break
-              case 0:
-                resD[i].statusName = '待支付'
-                break
-              case 1:
-                resD[i].statusName = '待派送'
-                break
-              case 2:
-                resD[i].statusName = '派送中'
-                break
-              case 3:
-                resD[i].statusName = '待评价'
-                break
-              case 4:
-                resD[i].statusName = '已完成'
+              case 'goods_type.2':
+                resD[i].goodsTypeName = '奶'
                 break
             }
-          } */
+          }
           if (!isLoadMore) {
             if (resD.totalCount < vm.params.pageSize) {
               vm.noMore = true
-            }else{
+            } else {
               vm.noMore = false
             }
             vm.coupons = resD.itemList
@@ -152,8 +160,8 @@
           vm.processing(0, 1)
         })
       },
-      delOrder(id) {
-        vm.confirm('确认删除？', '订单删除后不可恢复！', function () {
+      del(id) {
+        vm.confirm('确认删除？', '', function () {
           vm.loadData(orderApi.delOrder + '?id=' + id, vm.params, 'POST', function (res) {
             vm.isPosting = true
             vm.isPosting = false
@@ -161,18 +169,6 @@
             vm.isPosting = false
           })
         }, function () {
-        })
-      },
-      cancelOrder(id) {
-        if (vm.isPosting) return false
-        vm.confirm('确认删除？', '订单删除后不可恢复！', function () {
-          vm.loadData(orderApi.delOrder, vm.params, 'POST', function (res) {
-            vm.isPosting = false
-          }, function () {
-            vm.isPosting = false
-          })
-        }, function () {
-          // console.log('no')
         })
       }
     }
@@ -268,17 +264,22 @@
               color: #fff;
               .fz(24);
             }
-            .value {
+            .content {
               padding: 10/@rem 0;
-              span {
+              .value {
                 .fz(48);
                 color: #fff;
+                font-weight: normal;
                 margin-right: 14/@rem;
                 line-height: 60/@rem;
+                sub {
+                  .fr;
+                  .fz(24);
+                  color: rgba(255, 255, 255, .8);
+                }
               }
-              .sign, .type {
-                position: relative;
-                top: 0;
+              .sign {
+                .block;
                 .fz(24);
                 color: rgba(255, 255, 255, .8);
               }

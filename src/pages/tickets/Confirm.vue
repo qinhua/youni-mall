@@ -1,6 +1,6 @@
 <template>
-  <div class="confirm-order" v-cloak>
-    <div class="pick-address" data-from="confirm_order">
+  <div class="confirm-ticket" v-cloak>
+    <div class="pick-address" data-from="confirm-ticket">
       <div class="wrap" v-if="address" @click="toAddress(1)">
         <i class="fa fa-map-marker i-map"></i>
         <div class="txt-con">
@@ -9,15 +9,15 @@
         </div>
         <i class="fa fa-angle-right i-right"></i>
       </div>
-      <div class="add-address" data-from="confirm_order" v-else @click="toAddress(2)"><i
+      <div class="add-address" data-from="confirm-ticket" v-else @click="toAddress(2)"><i
         class="fa fa-plus"></i>&nbsp;添加收货地址
       </div>
     </div>
-    <div class="goods-info">
+    <!--<div class="goods-info">
       <section class="v-items">
         <h4 class="item-top" v-if="curCartData.goods"><i
           class="ico-store"></i>&nbsp;{{curCartData.sellerName}}&nbsp;&nbsp;<i
-          class="fa fa-angle-right cc"></i><!--<span>{{isEdit ? '完成' : '编辑'}}</span>-->
+          class="fa fa-angle-right cc"></i>&lt;!&ndash;<span>{{isEdit ? '完成' : '编辑'}}</span>&ndash;&gt;
         </h4>
         <ul class="has-list">
           <li v-for="(item,index) in curCartData.goods">
@@ -31,7 +31,7 @@
                   <span class="unit-price">￥{{item.price}}</span>
                   <span class="order-info">{{item.info}}</span>
                 </section>
-                <!--<label>{{item.label}}</label>-->
+                &lt;!&ndash;<label>{{item.label}}</label>&ndash;&gt;
               </div>
               <div class="price-con">
                 <p class="price">￥{{item.price * item.goodsNum}}</p>
@@ -41,14 +41,15 @@
           </li>
         </ul>
       </section>
-    </div>
+    </div>-->
     <div class="others-col">
       <group>
+        <x-input title="兑换数量：" placeholder="多少桶" required type="number" text-align="right"
+                 v-model="params.exchangeWaterNum"></x-input>
         <datetime title="配送时间" format="YYYY-MM-DD HH:mm" minute-row v-model="params.dispatchTime"
                   @on-change="changeTime"></datetime>
-        <popup-picker title="优惠券" :data="coupons" :columns="1" v-model="tmpCoupon" ref="picker1" @on-show=""
-                      @on-hide="" @on-change="changeCoupon"></popup-picker>
-        <!--<x-input title="商品名称：" placeholder="商品名称" required text-align="right" v-model="params.name"></x-input>-->
+        <!-- <popup-picker title="优惠券" :data="coupons" :columns="1" v-model="tmpCoupon" ref="picker1" @on-show=""
+                       @on-hide="" @on-change="changeCoupon"></popup-picker>-->
         <x-textarea title="留言：" :max="20" placeholder="一些想对卖家说的话…" @on-blur="" v-model="params.userMessage"
                     show-clear></x-textarea>
       </group>
@@ -69,20 +70,22 @@
   let me
   let vm
   import {Tab, TabItem, XButton, Group, XInput, Selector, PopupPicker, XTextarea, Datetime} from 'vux'
-  import {commonApi, orderApi, userApi} from '../../service/main.js'
+  import {commonApi, orderApi, userApi, ticketApi} from '../../service/main.js'
 
   export default {
-    name: 'confirm-order',
+    name: 'confirm-ticket',
     data() {
       return {
         address: null,
         goods: null,
         params: {
-          goods: [],
+          // goods: [],
+          id: null,
           addressId: null,
+          exchangeWaterNum: null,
           dispatchTime: '',
           userMessage: '',
-          couponId: ''
+          // couponId: ''
         },
         curCartData: {},
         isPosting: false,
@@ -115,7 +118,8 @@
       vm = this
       this.$nextTick(function () {
         vm.getAddress()
-        vm.getGoods()
+        vm.params.id = vm.$route.query.id
+        // vm.getGoods()
       })
     },
 //    computed: {
@@ -131,9 +135,9 @@
 //    },
     watch: {
       '$route'(to, from) {
-        if(to.name==='confirm_order') {
+        if (to.name === 'confirm-ticket') {
           vm.getAddress()
-          vm.getGoods()
+          // vm.getGoods()
         }
       }
     },
@@ -143,12 +147,16 @@
         this.$emit('listenPage', data)
       },
       toAddress(type) {
-        me.sessions.set('ynTmpConfirm',vm.$route.query.thedata)
-        type === 1 ? vm.jump('myaddress', {from: 'confirm_order'}) : vm.jump('edit_address', {from: 'confirm_order'})
+        me.sessions.set('ynTmpConfirm', vm.$route.query.thedata)
+        type === 1 ? vm.jump('myaddress', {from: 'confirm-ticket'}) : vm.jump('edit_address', {from: 'confirm-ticket'})
       },
       validate() {
         if (!vm.params.addressId) {
           vm.toast('请添加收货地址！', 'warn')
+          return false
+        }
+        if (!vm.params.exchangeWaterNum) {
+          vm.toast('请填写兑换数量！', 'warn')
           return false
         }
         if (!vm.params.dispatchTime) {
@@ -189,15 +197,15 @@
         console.log('change', val)
       },
       getGoods() {
-        try{
+        try {
           vm.curCartData = vm.$route.query.thedata ? JSON.parse(window.decodeURIComponent(vm.$route.query.thedata)) : {}
           for (var i = 0; i < vm.curCartData.goods.length; i++) {
             vm.params.goods.push({goodsId: vm.curCartData.goods[i].goodsId})
           }
           console.log(vm.curCartData, '带过来的数据')
           vm.switchData(vm.coupons, vm.tmpCoupon, 'couponId')
-        }catch(e){
-            // console.log(e)
+        } catch (e) {
+          // console.log(e)
         }
       },
       getAddress() {
@@ -206,17 +214,17 @@
           vm.isPosting = false
           vm.processing(0, 1)
           var resD = res.data.itemList
-          if (resD.length>1) {
+          if (resD.length > 1) {
             for (let i = 0; i < resD.length; i++) {
               if (resD[i].defaultAddress) {
                 vm.address = resD[i]
                 vm.params.addressId = resD[i].id
-              }else{
+              } else {
                 vm.address = resD[0]
                 vm.params.addressId = resD[0].id
               }
             }
-          }else{
+          } else {
             vm.address = resD[0]
             vm.params.addressId = resD[0].id
           }
@@ -245,15 +253,16 @@
         if (vm.isPosting) return false
         if (vm.validate()) {
           vm.isPosting = true
-          vm.loadData(orderApi.add, vm.params, 'POST', function (res) {
+          vm.loadData(ticketApi.exchange, vm.params, 'POST', function (res) {
             vm.isPosting = false
-            if (res.success && res.data) {
-              vm.payOrder(res.data)
+            if (res.success) {
+              vm.toast('兑换成功！')
+              // 成功后到订单页
+              vm.$router.push({path: '/order'})
             } else {
-              vm.toast(res.message || '生成订单失败！')
+              vm.toast(res.message || '兑换失败！')
             }
           }, function () {
-            vm.toast('提交失败！')
             vm.isPosting = false
           })
         }
@@ -298,8 +307,8 @@
 <style lang='less'>
   @import '../../../static/css/tools.less';
 
-  .confirm-order {
-    padding-bottom:100/@rem;
+  .confirm-ticket {
+    padding-bottom: 100/@rem;
   }
 
   .pick-address {

@@ -1,29 +1,25 @@
 <template>
   <div class="ticket-con" v-cloak>
     <tab class="ticket-type" bar-active-color="transparent">
-      <tab-item :selected="!params.type?true:false" @on-item-click="onItemClick"><i class="fa fa-ticket"></i>&nbsp;购买水票
+      <tab-item :selected="!isMe?true:false" @on-item-click="onItemClick(0)"><i class="fa fa-ticket"></i>&nbsp;购买水票
       </tab-item>
-      <tab-item :selected="params.type?true:false" @on-item-click="onItemClick(1)"><i class="fa fa-user-circle-o"></i>&nbsp;我的水票
+      <tab-item :selected="isMe?true:false" @on-item-click="onItemClick(1)"><i class="fa fa-user-circle-o"></i>&nbsp;我的水票
       </tab-item>
     </tab>
-    <tab class="ticket-tab" bar-active-color="transparent" v-show="params.type">
-      <tab-item selected @on-item-click="filterTicket(0,true)">全部</tab-item>
-      <tab-item @on-item-click="filterTicket(1,true)">买5送1</tab-item>
-      <tab-item @on-item-click="filterTicket(2,true)">买10送2</tab-item>
-      <tab-item @on-item-click="filterTicket(3,true)">已失效</tab-item>
-    </tab>
-    <slide-tab ref="slidernav" skey="s01" :slides="navs" @on-select="selectCategory" v-show="!params.type"></slide-tab>
-
-    <!--<tab class="ticket-tab" bar-active-color="transparent" v-show="!params.type">
-      <tab-item selected @on-item-click="filterTicket(0)">全部</tab-item>
-      <tab-item @on-item-click="filterTicket(1)">买5送1</tab-item>
-      <tab-item @on-item-click="filterTicket(2)">买10送2</tab-item>
-      <tab-item @on-item-click="filterTicket(2)">买100送30</tab-item>
-      <tab-item @on-item-click="filterTicket(2)">买100送35</tab-item>
-      <tab-item @on-item-click="filterTicket(2)">买100送40</tab-item>
-    </tab>-->
+    <!--<slide-tab ref="slidernav" skey="s01" :slides="navs" @on-select="selectCategory"></slide-tab>-->
+    <div class="v-slide-tab" ref="slidernav">
+      <div class="swiper-container slide-tab-con">
+        <div class="swiper-wrapper">
+          <div :class="['swiper-slide',current===index?'active':'']" v-for="(item,index) in navs" :key="index+1"
+               @click="filterTicket({index:index,key:item.key,value:item.value})">
+            <a :data-id="item.key">{{item.value}}</a>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="ticket-list">
-      <scroller class="inner-scroller" ref="ticketScroller" height="100%" :on-refresh="refresh" :on-infinite="infinite"
+      <scroller class="inner-scroller" ref="ticketScroller" height="100%" :on-refresh="refresh"
+                :on-infinite="infinite"
                 refreshText="下拉刷新"
                 noDataText=""
                 snapping>
@@ -32,19 +28,20 @@
           <section class="wrap">
             <img :src="item.imgurl">
             <section class="infos">
-              <h3>{{item.name}}<span class="count">数量：<i>{{item.count}}桶</i></span></h3>
+              <h3>{{item.name}}<span class="count">数量：<i>{{item.waterNum}}桶</i></span></h3>
               <section class="middle">
                 <span class="price">￥{{item.price}}</span>
-                <span class="retail-price">零售价<i>￥{{item.retailPrice}}</i></span>
-                <button type="button" class="btn btn-buy" @click="buy(item.id)">购买</button>
+                <span class="sale-count">已售：<i>{{item.saleCount}}件</i></span>
+                <button type="button" class="btn btn-buy" @click="buy($event,item.id)">{{isMe ? '兑换' : '购买'}}</button>
               </section>
-              <label>{{item.note}}</label>
+              <label>{{item.waterNote}}</label>
             </section>
           </section>
         </section>
       </scroller>
     </div>
-    <div class="iconNoData abs-center-vh" v-if="!tickets.length"><i></i><p>暂无水票</p></div>
+    <div class="iconNoData abs-center-vh" v-if="!tickets.length"><i></i>
+      <p>暂无水票</p></div>
   </div>
 </template>
 
@@ -52,7 +49,7 @@
   /* eslint-disable no-unused-vars */
   let me
   let vm
-  import SlideTab from '../components/SlideTab'
+  //  import SlideTab from '../components/SlideTab'
   import {Tab, TabItem} from 'vux'
   import {ticketApi} from '../service/main.js'
 
@@ -60,7 +57,10 @@
     name: 'ticket',
     data() {
       return {
-        curTicketFilter: '',
+        isMe: false,
+        current: 0,
+        slideTab: null,
+        curApi: ticketApi.list,
         tickets: [],
         navs: [{
           'key': 'water_ticket_type.1',
@@ -83,7 +83,7 @@
             'value': '买100送40'
           }],
         params: {
-          type: 0,
+          waterTicketType: 'water_ticket_type.1',
           userType: 1,
           status: 0,
           pagerSize: 10,
@@ -93,13 +93,14 @@
         isPosting: false
       }
     },
-    components: {Tab, TabItem,SlideTab},
+    components: {Tab, TabItem},
     beforeMount() {
       me = window.me
     },
     mounted() {
       vm = this
-      vm.params.type = vm.$route.params.type
+      vm.keepFresh(vm.$route.params.type)
+      vm.initTab()
       vm.getTickets()
       vm.$nextTick(() => {
         vm.$refs.ticketScroller.finishInfinite(true)
@@ -113,21 +114,110 @@
      }, */
     watch: {
       '$route'(to, from) {
-        if(to.name==='ticket'){
-          vm.params.type = vm.$route.params.type
-          vm.getTickets()
-        }
+        vm.current = 0
+        vm.params.waterTicketType = vm.navs[0].key
+        vm.keepFresh(vm.$route.params.type)
+        vm.getTickets()
       }
     },
     methods: {
       // 向父组件传值
-      selectCategory(data) {
-        console.log(data,'当前水票种类')
-        vm.params.type=data.key
+      /*selectCategory(data) {
+        console.log(data, '当前水票种类')
+        vm.current = data.index
+        vm.params.waterTicketType = data.key
         vm.getTickets()
-      },
-      buy(id) {
+      },*/
+      toDetail(id) {
         vm.$router.push({path: '/detail/' + id})
+      },
+      initTab() {
+        vm.slideTab = new Swiper('.slide-tab-con', {
+          initialSlide: 0,
+          direction: 'horizontal',
+          loop: false,
+          autoplay: false,
+          preloadImages: true,
+          autoplayDisableOnInteraction: false,
+          observer: true,
+          slidesPerView: 4,
+          observeParents: true,
+          // If we need pagination
+          pagination: '.slide-tab-con .swiper-pagination',
+          paginationClickable: true,
+          grabCursor: true,
+          /*onInit: function (swiper) {
+            $(document).on('click', '.swiper-slide', function () {
+              var curIdx = $(this).index()
+              var $navs = $('.swiper-slide')
+              $navs.eq(curIdx).addClass('active').siblings('.swiper-slide').removeClass('active')
+            })
+          }*/
+        })
+      },
+      keepFresh(data) {
+        if (data) {
+          vm.isMe = true
+          vm.curApi = ticketApi.user
+        } else {
+          vm.isMe = false
+          vm.curApi = ticketApi.list
+        }
+      },
+      buy(e, id) {
+        e.stopPropagation()
+        /*if (!me.isWeixin) {
+          vm.toast('请在微信中操作！')
+          return
+        }*/
+        if (vm.isPosting) return false
+        vm.isPosting = true
+        if (!vm.isMe) {
+          vm.$router.push({
+            name: 'confirm_ticket',
+            query: {id: id}
+          })
+        } else {
+          vm.loadData(ticketApi.buy, {}, 'POST', function (res) {
+            vm.isPosting = false
+            var resD = res.data
+            vm.payOrder(resD)
+          }, function () {
+            vm.isPosting = false
+          })
+        }
+      },
+      payOrder(data) {
+        wx.config({
+          debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+          appId: data.appId, // 必填，公众号的唯一标识
+          timestamp: data.timeStamp, // 必填，生成签名的时间戳
+          nonceStr: data.nonceStr, // 必填，生成签名的随机串
+          signature: data.paySign,// 必填，签名，见附录1
+          jsApiList: [
+            'chooseWXPay'
+          ] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+        });
+        wx.ready(function () {
+          // config信息验证后会执行ready方法，所有接口调用都必须在config接口获得结果之后，config是一个客户端的异步操作，所以如果需要在页面加载时就调用相关接口，则须把相关接口放在ready函数中调用来确保正确执行。对于用户触发时才调用的接口，则可以直接调用，不需要放在ready函数中。
+          wx.chooseWXPay({
+            appId: data.appId,
+            timestamp: data.timeStamp, // 支付签名时间戳，注意微信jssdk中的所有使用timestamp字段均为小写。但最新版的支付后台生成签名使用的timeStamp字段名需大写其中的S字符
+            nonceStr: data.nonceStr, // 支付签名随机串，不长于 32 位
+            package: data.package, // 统一支付接口返回的prepay_id参数值，提交格式如：prepay_id=***）
+            signType: data.signType, // 签名方式，默认为'SHA1'，使用新版支付需传入'MD5'
+            paySign: data.paySign, // 支付签名
+            success: function (res) {
+              // 支付成功后的回调函数
+              vm.$router.push({path: '/order'})
+            }
+          })
+        })
+        wx.error(function (res) {
+          vm.$router.push({path: '/order'})
+          // config信息验证失败会执行error函数，如签名过期导致验证失败，具体错误信息可以打开config的debug模式查看，也可以在返回的res参数中查看，对于SPA可以在这里更新签名。
+          // alert(JSON.stringify(res))
+        })
       },
       refresh(done) {
         console.log('下拉加载')
@@ -144,27 +234,28 @@
         }, 1000)
       },
       onItemClick(type) {
-        if (type) {
-          vm.params.type = 2
-        } else {
-          vm.params.type = 0
-          this.$router.push({path: '/ticket'})
+        vm.current = 0
+        vm.params.waterTicketType = vm.navs[0].key
+        if (type === 0) {
+          vm.$router.push({path: '/ticket'})
         }
+        vm.keepFresh(type)
         vm.getTickets()
       },
-      filterTicket(type, isMine) {
-        vm.curTicketFilter = type
+      filterTicket(obj) {
+        vm.current = obj.index
+        vm.params.waterTicketType = obj.key
         vm.getTickets()
       },
       getTickets(isLoadMore) {
-        vm.params.status = this.$route.params.type || 0
+        vm.isMe = this.$route.params.type ? true : false
         if (vm.isPosting) return false
         // 根据isMine判断不同的水票类型
         vm.isPosting = true
         vm.processing()
-        vm.loadData(ticketApi.list, vm.params, 'POST', function (res) {
+        vm.loadData(vm.curApi, vm.params, 'POST', function (res) {
           vm.isPosting = false
-          vm.processing(0,1)
+          vm.processing(0, 1)
           var resD = res.data.pager
           if (!isLoadMore) {
             vm.tickets = res.data.itemList
@@ -189,7 +280,8 @@
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang='less'>
   @import '../../static/css/tools.less';
-  .ticket-con{
+
+  .ticket-con {
     height: 100%;
     .ticket-type {
       z-index: 10;
@@ -206,6 +298,44 @@
       .vux-tab-item {
         &.vux-tab-selected {
           .cdiy(#5cc5d0) !important;
+        }
+      }
+    }
+
+    .v-slide-tab {
+      .rel;
+      .swiper-container {
+        .bf;
+        .swiper-wrapper {
+          height: 40px;
+          .swiper-slide {
+            .center;
+            &.active {
+              a {
+                color: #5cc5d0;
+              }
+            }
+            a {
+              line-height: 40px;
+              .fz(24);
+            }
+            /*h4 {
+              padding: 5/@rem 0;
+              .center;
+              .bdiy(#ff3969);
+              .fz(24);
+              .cf;
+            }
+            img {
+              margin: 6/@rem 0;
+            }
+            p {
+              padding: 10/@rem 0;
+              .center;
+              .fz(24);
+              .cdiy(#5b4ae6);
+            }*/
+          }
         }
       }
     }
@@ -261,17 +391,18 @@
               .flex-r(1);
               padding: 10/@rem 0;
               .price {
+                .fz(26);
+                .cdiy(@c2);
               }
               span {
                 &.price {
                   .c3;
                   .fz(26);
                 }
-                &.retail-price {
+                &.sale-count {
                   padding-left: 30/@rem;
                   .c9;
                   .fz(22);
-                  .txt-del;
                   i {
                     .txt-normal;
                   }

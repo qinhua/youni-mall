@@ -11,6 +11,7 @@ import Amap from '@/components/Amap'
 import My from '@/pages/My'
 import Cart from '@/pages/cart/Cart'
 import ConfirmOrder from '@/pages/cart/Confirm'
+import ConfirmTicket from '@/pages/tickets/Confirm'
 import EditUser from '@/pages/my/EditUser'
 import EditAddress from '@/pages/my/EditAddress'
 import MyCoupons from '@/pages/my/Coupons'
@@ -216,6 +217,15 @@ export default new Router({
       component: ConfirmOrder,
       meta: {
         title: '确认订单',
+        keepAlive: false
+      }
+    },
+    {
+      path: '/confirm_ticket',
+      name: 'confirm_ticket',
+      component: ConfirmTicket,
+      meta: {
+        title: '确认兑换',
         keepAlive: false
       }
     },

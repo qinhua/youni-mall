@@ -65,12 +65,324 @@
 
     <!--商品列表-->
     <div class="goods-list" ref="goodsList">
-      <scroller class="inner-scroller" lock-x scrollbarY use-pullup use-pulldown :pullup-config="pullupConfig"
+      <scroller class="inner-scroller" scrollbarY lock-x use-pullup use-pulldown :pullup-config="pullupConfig"
                 :pulldown-config="pulldownConfig"
                 @on-scroll="onScroll"
                 @on-pulldown-loading="onPullDown" @on-pullup-loading="onPullUp" @on-scroll-bottom="" ref="myScroll"
                 :scroll-bottom-offst="300">
         <div class="box">
+          <section class="v-items" v-for="(item, index) in goods" :data-id="item.id">
+            <section class="wrap">
+              <div class="click-wrap" :data-id="item.id" @click="toDetail(item.id)">
+                <div class="img-con">
+                  <img :src="item.imgurl">
+                </div>
+                <section class="infos">
+                  <h3>{{item.name}}</h3>
+                  <section class="middle">
+                    <span class="price">￥{{item.price}}</span>
+                    <span class="hasSell">已售{{item.saleCount}}单</span>
+                  </section>
+                  <ul class="tags" v-if="item.label">
+                    <li v-for="t in item.label.split(',')">{{t}}</li>
+                  </ul>
+                  <label></label>
+                </section>
+              </div>
+              <group class="buy-count">
+                <x-number button-style="round" :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0"
+                          :max="50" :value="item.number" align="right" :dataId="item.id"
+                          :dataSellerId="item.sellerId"
+                          @on-change="changeCount"></x-number>
+              </group>
+            </section>
+          </section>
+          <section class="v-items" v-for="(item, index) in goods" :data-id="item.id">
+            <section class="wrap">
+              <div class="click-wrap" :data-id="item.id" @click="toDetail(item.id)">
+                <div class="img-con">
+                  <img :src="item.imgurl">
+                </div>
+                <section class="infos">
+                  <h3>{{item.name}}</h3>
+                  <section class="middle">
+                    <span class="price">￥{{item.price}}</span>
+                    <span class="hasSell">已售{{item.saleCount}}单</span>
+                  </section>
+                  <ul class="tags" v-if="item.label">
+                    <li v-for="t in item.label.split(',')">{{t}}</li>
+                  </ul>
+                  <label></label>
+                </section>
+              </div>
+              <group class="buy-count">
+                <x-number button-style="round" :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0"
+                          :max="50" :value="item.number" align="right" :dataId="item.id"
+                          :dataSellerId="item.sellerId"
+                          @on-change="changeCount"></x-number>
+              </group>
+            </section>
+          </section>
+          <section class="v-items" v-for="(item, index) in goods" :data-id="item.id">
+            <section class="wrap">
+              <div class="click-wrap" :data-id="item.id" @click="toDetail(item.id)">
+                <div class="img-con">
+                  <img :src="item.imgurl">
+                </div>
+                <section class="infos">
+                  <h3>{{item.name}}</h3>
+                  <section class="middle">
+                    <span class="price">￥{{item.price}}</span>
+                    <span class="hasSell">已售{{item.saleCount}}单</span>
+                  </section>
+                  <ul class="tags" v-if="item.label">
+                    <li v-for="t in item.label.split(',')">{{t}}</li>
+                  </ul>
+                  <label></label>
+                </section>
+              </div>
+              <group class="buy-count">
+                <x-number button-style="round" :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0"
+                          :max="50" :value="item.number" align="right" :dataId="item.id"
+                          :dataSellerId="item.sellerId"
+                          @on-change="changeCount"></x-number>
+              </group>
+            </section>
+          </section>
+          <section class="v-items" v-for="(item, index) in goods" :data-id="item.id">
+            <section class="wrap">
+              <div class="click-wrap" :data-id="item.id" @click="toDetail(item.id)">
+                <div class="img-con">
+                  <img :src="item.imgurl">
+                </div>
+                <section class="infos">
+                  <h3>{{item.name}}</h3>
+                  <section class="middle">
+                    <span class="price">￥{{item.price}}</span>
+                    <span class="hasSell">已售{{item.saleCount}}单</span>
+                  </section>
+                  <ul class="tags" v-if="item.label">
+                    <li v-for="t in item.label.split(',')">{{t}}</li>
+                  </ul>
+                  <label></label>
+                </section>
+              </div>
+              <group class="buy-count">
+                <x-number button-style="round" :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0"
+                          :max="50" :value="item.number" align="right" :dataId="item.id"
+                          :dataSellerId="item.sellerId"
+                          @on-change="changeCount"></x-number>
+              </group>
+            </section>
+          </section>
+          <section class="v-items" v-for="(item, index) in goods" :data-id="item.id">
+            <section class="wrap">
+              <div class="click-wrap" :data-id="item.id" @click="toDetail(item.id)">
+                <div class="img-con">
+                  <img :src="item.imgurl">
+                </div>
+                <section class="infos">
+                  <h3>{{item.name}}</h3>
+                  <section class="middle">
+                    <span class="price">￥{{item.price}}</span>
+                    <span class="hasSell">已售{{item.saleCount}}单</span>
+                  </section>
+                  <ul class="tags" v-if="item.label">
+                    <li v-for="t in item.label.split(',')">{{t}}</li>
+                  </ul>
+                  <label></label>
+                </section>
+              </div>
+              <group class="buy-count">
+                <x-number button-style="round" :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0"
+                          :max="50" :value="item.number" align="right" :dataId="item.id"
+                          :dataSellerId="item.sellerId"
+                          @on-change="changeCount"></x-number>
+              </group>
+            </section>
+          </section>
+          <section class="v-items" v-for="(item, index) in goods" :data-id="item.id">
+            <section class="wrap">
+              <div class="click-wrap" :data-id="item.id" @click="toDetail(item.id)">
+                <div class="img-con">
+                  <img :src="item.imgurl">
+                </div>
+                <section class="infos">
+                  <h3>{{item.name}}</h3>
+                  <section class="middle">
+                    <span class="price">￥{{item.price}}</span>
+                    <span class="hasSell">已售{{item.saleCount}}单</span>
+                  </section>
+                  <ul class="tags" v-if="item.label">
+                    <li v-for="t in item.label.split(',')">{{t}}</li>
+                  </ul>
+                  <label></label>
+                </section>
+              </div>
+              <group class="buy-count">
+                <x-number button-style="round" :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0"
+                          :max="50" :value="item.number" align="right" :dataId="item.id"
+                          :dataSellerId="item.sellerId"
+                          @on-change="changeCount"></x-number>
+              </group>
+            </section>
+          </section>
+          <section class="v-items" v-for="(item, index) in goods" :data-id="item.id">
+            <section class="wrap">
+              <div class="click-wrap" :data-id="item.id" @click="toDetail(item.id)">
+                <div class="img-con">
+                  <img :src="item.imgurl">
+                </div>
+                <section class="infos">
+                  <h3>{{item.name}}</h3>
+                  <section class="middle">
+                    <span class="price">￥{{item.price}}</span>
+                    <span class="hasSell">已售{{item.saleCount}}单</span>
+                  </section>
+                  <ul class="tags" v-if="item.label">
+                    <li v-for="t in item.label.split(',')">{{t}}</li>
+                  </ul>
+                  <label></label>
+                </section>
+              </div>
+              <group class="buy-count">
+                <x-number button-style="round" :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0"
+                          :max="50" :value="item.number" align="right" :dataId="item.id"
+                          :dataSellerId="item.sellerId"
+                          @on-change="changeCount"></x-number>
+              </group>
+            </section>
+          </section>
+          <section class="v-items" v-for="(item, index) in goods" :data-id="item.id">
+            <section class="wrap">
+              <div class="click-wrap" :data-id="item.id" @click="toDetail(item.id)">
+                <div class="img-con">
+                  <img :src="item.imgurl">
+                </div>
+                <section class="infos">
+                  <h3>{{item.name}}</h3>
+                  <section class="middle">
+                    <span class="price">￥{{item.price}}</span>
+                    <span class="hasSell">已售{{item.saleCount}}单</span>
+                  </section>
+                  <ul class="tags" v-if="item.label">
+                    <li v-for="t in item.label.split(',')">{{t}}</li>
+                  </ul>
+                  <label></label>
+                </section>
+              </div>
+              <group class="buy-count">
+                <x-number button-style="round" :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0"
+                          :max="50" :value="item.number" align="right" :dataId="item.id"
+                          :dataSellerId="item.sellerId"
+                          @on-change="changeCount"></x-number>
+              </group>
+            </section>
+          </section>
+          <section class="v-items" v-for="(item, index) in goods" :data-id="item.id">
+            <section class="wrap">
+              <div class="click-wrap" :data-id="item.id" @click="toDetail(item.id)">
+                <div class="img-con">
+                  <img :src="item.imgurl">
+                </div>
+                <section class="infos">
+                  <h3>{{item.name}}</h3>
+                  <section class="middle">
+                    <span class="price">￥{{item.price}}</span>
+                    <span class="hasSell">已售{{item.saleCount}}单</span>
+                  </section>
+                  <ul class="tags" v-if="item.label">
+                    <li v-for="t in item.label.split(',')">{{t}}</li>
+                  </ul>
+                  <label></label>
+                </section>
+              </div>
+              <group class="buy-count">
+                <x-number button-style="round" :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0"
+                          :max="50" :value="item.number" align="right" :dataId="item.id"
+                          :dataSellerId="item.sellerId"
+                          @on-change="changeCount"></x-number>
+              </group>
+            </section>
+          </section>
+          <section class="v-items" v-for="(item, index) in goods" :data-id="item.id">
+            <section class="wrap">
+              <div class="click-wrap" :data-id="item.id" @click="toDetail(item.id)">
+                <div class="img-con">
+                  <img :src="item.imgurl">
+                </div>
+                <section class="infos">
+                  <h3>{{item.name}}</h3>
+                  <section class="middle">
+                    <span class="price">￥{{item.price}}</span>
+                    <span class="hasSell">已售{{item.saleCount}}单</span>
+                  </section>
+                  <ul class="tags" v-if="item.label">
+                    <li v-for="t in item.label.split(',')">{{t}}</li>
+                  </ul>
+                  <label></label>
+                </section>
+              </div>
+              <group class="buy-count">
+                <x-number button-style="round" :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0"
+                          :max="50" :value="item.number" align="right" :dataId="item.id"
+                          :dataSellerId="item.sellerId"
+                          @on-change="changeCount"></x-number>
+              </group>
+            </section>
+          </section>
+          <section class="v-items" v-for="(item, index) in goods" :data-id="item.id">
+            <section class="wrap">
+              <div class="click-wrap" :data-id="item.id" @click="toDetail(item.id)">
+                <div class="img-con">
+                  <img :src="item.imgurl">
+                </div>
+                <section class="infos">
+                  <h3>{{item.name}}</h3>
+                  <section class="middle">
+                    <span class="price">￥{{item.price}}</span>
+                    <span class="hasSell">已售{{item.saleCount}}单</span>
+                  </section>
+                  <ul class="tags" v-if="item.label">
+                    <li v-for="t in item.label.split(',')">{{t}}</li>
+                  </ul>
+                  <label></label>
+                </section>
+              </div>
+              <group class="buy-count">
+                <x-number button-style="round" :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0"
+                          :max="50" :value="item.number" align="right" :dataId="item.id"
+                          :dataSellerId="item.sellerId"
+                          @on-change="changeCount"></x-number>
+              </group>
+            </section>
+          </section>
+          <section class="v-items" v-for="(item, index) in goods" :data-id="item.id">
+            <section class="wrap">
+              <div class="click-wrap" :data-id="item.id" @click="toDetail(item.id)">
+                <div class="img-con">
+                  <img :src="item.imgurl">
+                </div>
+                <section class="infos">
+                  <h3>{{item.name}}</h3>
+                  <section class="middle">
+                    <span class="price">￥{{item.price}}</span>
+                    <span class="hasSell">已售{{item.saleCount}}单</span>
+                  </section>
+                  <ul class="tags" v-if="item.label">
+                    <li v-for="t in item.label.split(',')">{{t}}</li>
+                  </ul>
+                  <label></label>
+                </section>
+              </div>
+              <group class="buy-count">
+                <x-number button-style="round" :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0"
+                          :max="50" :value="item.number" align="right" :dataId="item.id"
+                          :dataSellerId="item.sellerId"
+                          @on-change="changeCount"></x-number>
+              </group>
+            </section>
+          </section>
           <section class="v-items" v-for="(item, index) in goods" :data-id="item.id">
             <section class="wrap">
               <div class="click-wrap" :data-id="item.id" @click="toDetail(item.id)">
@@ -129,8 +441,21 @@
   /* eslint-disable */
   let me
   let vm
+  import $ from 'jquery'
   import Swiper from '../components/Swiper'
-  import {Group, GroupTitle, Grid, GridItem, Marquee, MarqueeItem, XNumber, XSwitch, Scroller, LoadMore} from 'vux'
+  import {
+    Group,
+    GroupTitle,
+    Grid,
+    GridItem,
+    Marquee,
+    MarqueeItem,
+    XNumber,
+    XSwitch,
+    Sticky,
+    Scroller,
+    LoadMore
+  } from 'vux'
   import {homeApi, cartApi} from '../service/main.js'
   import {mapState, mapMutations} from 'vuex'
 
@@ -141,17 +466,7 @@
         geoData: null,
         address: '',
         cartData: '',
-        // banner: [],
-        banner: [{
-          image: 'static/img/banner/p01.jpg',
-          linkeUrl: ''
-        }, {
-          image: 'static/img/banner/p02.jpg',
-          linkeUrl: ''
-        }, {
-          image: 'static/img/banner/p03.jpg',
-          linkeUrl: ''
-        }],
+        banner: [],
         notice: [],
         goods: [],
         params: {
@@ -165,16 +480,16 @@
         filterOffset: 0,
         filters: {
           categorys: [
-            {
+            /*{
               key: '',
               value: '全部'
-            },
+            },*/
             {
-              key: 1,
+              key: 'goods_type.1',
               value: '桶装水'
             },
             {
-              key: 2,
+              key: 'goods_type.2',
               value: '奶'
             }
           ],
@@ -282,6 +597,7 @@
       Marquee,
       MarqueeItem,
       XNumber,
+      Sticky,
       Scroller,
       LoadMore
     },
@@ -292,7 +608,7 @@
       vm = this
       // me.attachClick()
       vm.getMap()
-      // vm.getBanner()
+      vm.getBanner()
       vm.getNotice()
       vm.getGoods()
       vm.viewCart()
@@ -472,6 +788,12 @@
       onScroll(pos) {
         this.scrollTop = pos.top
         vm.hideFilter()
+        if (this.scrollTop <= 0 && vm.$refs.filters01.classList.contains('fixed')) {
+          vm.$refs.filters01.classList.remove('fixed')
+          vm.$refs.goodsList.classList.remove('fixed')
+          vm.$refs.home.scrollTop = 250
+          return false
+        }
       },
       /* 上下拉刷新 */
       onPullDown() {
@@ -896,8 +1218,7 @@
             span {
               &.price {
                 .c3;
-                .fz(24);
-                .txt-del;
+                .fz(26);
               }
               &.hasSell {
                 padding-left: 30/@rem;

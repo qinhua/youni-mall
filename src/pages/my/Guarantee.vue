@@ -1,34 +1,40 @@
 <template>
-  <div class="my-guarantee">
-    <h2><i class="fa fa-smile-o"></i>&nbsp;这里列出了您的所有押金，您可以进行相应操作</h2>
-    <x-table class="inner-table" :cell-bordered="true">
-      <thead>
-      <tr>
-        <th>商家名称</th>
-        <th>押金类型</th>
-        <th>金额</th>
-        <th>操作</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr>
-        <td>心上人水铺</td>
-        <td>水桶押金</td>
-        <td>200元</td>
-        <td>
-          <button type="button" class="btn btn-refund">退还押金</button>
-        </td>
-      </tr>
-      <tr>
-        <td>哇哈哈乳品</td>
-        <td>设备押金</td>
-        <td>80元</td>
-        <td>
-          <button type="button" class="btn btn-refund disabled">已申请退还</button>
-        </td>
-      </tr>
-      </tbody>
-    </x-table>
+  <div class="my-guarantee" v-cloak>
+    <div class="wrap" v-if="list.length">
+      <h2><i class="fa fa-smile-o"></i>&nbsp;这里列出了您的所有押金</h2>
+      <x-table class="inner-table" :cell-bordered="true">
+        <thead>
+        <tr>
+          <th>商家</th>
+          <th>数量</th>
+          <th>每桶(元)</th>
+          <th>总押金(元)</th>
+          <th>数量(桶)</th>
+          <!--<th>操作</th>-->
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="(item,index) in list" :data-id="item.id" :data-ordernumber="item.orderNumber" :index="index">
+          <td><div class="name">{{item.sellerName}}</div></td>
+          <td>{{item.bucketNum}}</td>
+          <td>{{item.bucketAmount}}</td>
+          <td>{{item.totalAmount}}</td>
+          <!--<td>
+            <div class="fee">
+              <p>单桶：{{item.bucketAmount}}</p>
+              <p>总押金：{{item.totalAmount}}</p>
+            </div>
+          </td>-->
+          <td>{{item.totalAmount}}</td>
+          <!--<td>
+            <button type="button" class="btn btn-refund">退还</button>
+          </td>-->
+        </tr>
+        </tbody>
+      </x-table>
+    </div>
+    <div class="iconNoData abs-center-vh" v-else><i></i>
+      <p>没交过押金</p></div>
   </div>
 </template>
 
@@ -36,26 +42,87 @@
   /* eslint-disable no-unused-vars */
   let me
   let vm
-  import {Grid, GridItem, Group, Cell, XTable, LoadMore} from 'vux'
-  import {userApi} from '../../service/main.js'
+  import {Group, Cell,XTable} from 'vux'
+  import {depositApi} from '../../service/main.js'
+
   export default {
     name: 'my-guarantee',
-    data () {
+    data() {
       return {
         address: null,
         onFetching: false,
-        isPosting: false
+        isPosting: false,
+//        list: [],
+        list: [{
+          "id": "0akcmhdocqhqoorqlrhihsk6hv",
+          "userId": "562bedbb7b4611e78a0f0242ac110002",
+          "sellerName": "大河人家",
+          "sellerId": "dcd95c4c7c3911e7aa18d8cb8a971933",
+          "bucketNum": 12,
+          "status": 0,
+          "createTime": "2017-09-12 22:32:14",
+          "updateTime": "2017-09-12 22:32:14",
+          "payStatus": 0,
+          "type": 0,
+          "bucketAmount": 50,
+          "totalAmount": 600,
+          "orderNumber": "20170912223214172003"
+        },
+          {
+            "id": "3nj6b3t76uhaarlk20pp240quj",
+            "userId": "562bedbb7b4611e78a0f0242ac110002",
+            "sellerName": "冰冰有力",
+            "sellerId": "dcd95c4c7c3911e7aa18d8cb8a971933",
+            "bucketNum": 12,
+            "status": 0,
+            "createTime": "2017-09-12 22:30:13",
+            "updateTime": "2017-09-12 22:30:13",
+            "payStatus": 0,
+            "type": 0,
+            "bucketAmount": 50,
+            "totalAmount": 600,
+            "orderNumber": "20170912223013318002"
+          }],
       }
     },
-    components: {Grid, GridItem, Group, Cell, XTable, LoadMore},
-    beforeMount () {
+    components: {Group, Cell, XTable},
+    beforeMount() {
       me = window.me
     },
-    mounted () {
+    mounted() {
       // me.attachClick()
+      vm = this
+      // vm.getDeposits()
     },
     computed: {},
-    methods: {}
+    methods: {
+      getDeposits() {
+        vm.processing()
+        vm.processing()
+        vm.isPosting = true
+        vm.loadData(depositApi.list, vm.params, 'POST', function (res) {
+          var resD = res.data.itemList
+          vm.list = resD
+          console.log(vm.deposits, '保证金数据')
+          vm.isPosting = false
+          vm.processing(0, 1)
+        }, function () {
+          vm.isPosting = false
+          vm.processing(0, 1)
+        })
+      },
+      refund(id) {
+        vm.confirm('确认退还押金？', '', function () {
+          vm.loadData(depositApi.refund, vm.params, 'POST', function (res) {
+            vm.isPosting = true
+            vm.isPosting = false
+          }, function () {
+            vm.isPosting = false
+          })
+        }, function () {
+        })
+      }
+    }
   }
 </script>
 
@@ -80,6 +147,17 @@
         background: #f5f5f5;
         th {
           font-weight: bold;
+        }
+      }
+      tr {
+        .fz(24);
+        td {
+          .name{
+            padding:1px;
+            line-height: 1.5;
+            max-width: 200/@rem;
+            .ellipsis-clamp-2;
+          }
         }
       }
       .btn {

@@ -48,8 +48,8 @@
       </cell>
       <cell title="收货地址" link="/myaddress"><i slot="icon" width="20" style="margin-right:5px;"
                                               class="fa fa-map-signs"></i></cell>
-      <cell title="我的收藏" link="/myfavor"><i slot="icon" width="20" style="margin-right:5px;"
-                                            class="fa fa-star"></i></cell>
+      <!--<cell title="我的收藏" link="/myfavor"><i slot="icon" width="20" style="margin-right:5px;"
+                                            class="fa fa-star"></i></cell>-->
       <cell title="使用帮助" link="/help"><i slot="icon" width="20" style="margin-right:5px;"
                                          class="fa fa-question-circle"></i></cell>
       <cell title="关于友你" link="/aboutus"><i slot="icon" width="20" style="margin-right:5px;"

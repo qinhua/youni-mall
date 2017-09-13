@@ -1,5 +1,6 @@
 <template>
   <div class="container">
+    <div class="btn flush-button" onclick="javascript:me.locals.clear();me.sessions.clear();me.lightPop('ok,已清理');">清理缓存</div>
     <!--定位组件-->
     <geo :visible="false" :cache="true" @on-geo-end="getMap" v-if="$route.path!=='/auth'"></geo>
 

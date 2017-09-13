@@ -1,6 +1,5 @@
 <template>
   <div class="page-auth">
-    授权页面
     <div id="userInfo"></div>
   </div>
 </template>
@@ -34,38 +33,34 @@
       // 检测用户是否登录
 //      if (vm.$store.state.global.wxInfo) {
 
-        if (me.isWeixin) {
-          // wx授权页面
-          vm.getWxInfo(function (info) {
-            /* 保存用户信息 */
-            vm.addUser(info)
-            me.locals.set('ynWxUser', JSON.stringify({data: info, timeStamp: new Date().getTime()}))
-            // alert(JSON.stringify(info))
-            vm.$router.push({path: '/home'})
-          })
-        } else {
-          // 外部登录页面
-          // location.href = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=123456&connect_redirect=1#wechat_redirect'
-
-          /*测试专用*/
-          var info={
-               'city': '武汉',
-               'country': '中国',
-               'errorCode': 0,
-               'errorMessage': null,
-               'headimgurl': 'http://wx.qlogo.cn/mmopen/QAm7hEbaujS41jY5T0icQd9ySS9FaRJibTiclJGyysBmLoFmswkhLemAHAibYOQml4hibx3BqD2u8NRIwrAhTyeLgjavI70oxia8uk/0',
-               'nickname': '覃华',
-               'openid': 'oGnE80ixTvBXjQ_Dql0BcTlx',
-               'privilege': [],
-               'province': '湖北',
-               'sex': '1',
-               'subscribe': 0,
-               'subscribeTime': null,
-               'unionid': null
-             }
-          me.locals.set('ynWxUser', JSON.stringify({data: info, timeStamp: new Date().getTime()}))
+      if (me.isWeixin) {
+        // wx授权页面
+        vm.getWxInfo(function (info) {
+          /* 保存用户信息 */
+          vm.addUser(info)
+          me.locals.set('ynWxUser', JSON.stringify({data: info, timeStamp: me.formatDate(new Date(), null, 1)}))
+          // alert(JSON.stringify(info))
           vm.$router.push({path: '/home'})
+        })
+      } else {
+        // 外部登录页面
+        // location.href = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=123456&connect_redirect=1#wechat_redirect'
+
+        /*测试专用*/
+        var info = {
+          "openid": "oGnE80ixTvBXjQ_DqI0BcTlxqiu4",
+          "nickname": "覃华",
+          "sex": 1,
+          "language": "zh_CN",
+          "city": "武汉",
+          "province": "湖北",
+          "country": "中国",
+          "headimgurl": "http://wx.qlogo.cn/mmopen/vi_32/Q0j4TwGTfTIPsbt7BibERGzRjOLVtdWDp2W1chq8aoyMOz3sJYTqsHhmOjgugokeCiamkr0snBMNkUd6k2sHyELw/0",
+          "privilege": []
         }
+        me.locals.set('ynWxUser', JSON.stringify({data: info, timeStamp: me.formatDate(new Date(), null, 1)}))
+        vm.$router.push({path: '/home'})
+      }
 
       /*} else {
         vm.$router.push({path: '/home'})

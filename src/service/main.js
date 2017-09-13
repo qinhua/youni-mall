@@ -25,8 +25,10 @@ const nearbyApi = {
   sellerDetail: host + '/seller/view'
 }
 const ticketApi = {
-  tickets: host + '/home/list',
-  list: host + '/waterTicket/list',
+  list: host + '/home/ticketList',
+  user: host + '/userTicket/list',
+  buy: host + '/userTicket/add',
+  exchange: host + '/order/ticketExchange'
 }
 const orderApi = {
   list: host + '/order/list',
@@ -35,18 +37,25 @@ const orderApi = {
   del: host + '/order/del',
   push: host + '/order/push',
   cancel: host + '/order/cancel',
+  getCoupon: host + 'order/getCoupon',
   updateOrder: host + '/home/updateOrder'
 }
 const userApi = {
   userInfo: host + '/user/userInfo',
   bind: host + '/user/bindPhone',
   updateName: host + '/user/updateName',
-  couponList: host + '/user/couponList',
+  couponList: host + '/userCoupon/list',
+  userCoupon: host + '/userCoupon/add',
   addressList: host + '/user/addressList',
   setAddress: host + '/user/setAddress',
   setDefaultAddress: host + '/user/setDefaultAddress',
   delAddress: host + '/user/delAddress',
 }
+const depositApi = {
+  list: host + '/userDeposit/list',
+  add: host + '/userDeposit/add'
+}
+
 const cartApi = {
   view: host + '/cart/view',
   add: host + '/cart/add',
@@ -63,4 +72,4 @@ const commonApi = {
   sendSms: host + '/common/sendSms'
 }
 // console.log('当前域名：%c' + host, 'color:red;font-size:14px;font-weight:bold')
-export {commonApi,cartApi,homeApi, nearbyApi, ticketApi, orderApi, userApi, goodsApi}
+export {commonApi, cartApi, homeApi, nearbyApi, ticketApi, orderApi, userApi, depositApi, goodsApi}
