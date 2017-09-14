@@ -1,6 +1,8 @@
 <template>
   <div class="container">
-    <div class="btn flush-button" onclick="javascript:me.locals.clear();me.sessions.clear();me.lightPop('ok,已清理');">清理缓存</div>
+    <!--<div class="btn flush-button s02" onclick="javascript:me.locals.clear();me.sessions.clear();me.lightPop('ok,已清理');">-->
+      <!--清理缓存-->
+    <!--</div>-->
     <!--定位组件-->
     <geo :visible="false" :cache="true" @on-geo-end="getMap" v-if="$route.path!=='/auth'"></geo>
 
@@ -37,14 +39,16 @@
     <!--<transition :name="'vux-pop-' + (direction === 'forward' ? 'in' : 'out')">-->
     <transition>
       <keep-alive v-if="$route.meta.keepAlive">
-        <router-view v-wechat-title="$route.meta.title" :geoAddress="geoData.address" v-on:listenPage="getPageStatus"></router-view>
+        <router-view v-wechat-title="$route.meta.title" :geoAddress="geoData.address"
+                     v-on:listenPage="getPageStatus"></router-view>
       </keep-alive>
     </transition>
     <!-- 这里是不被缓存的视图组件，比如 Edit！ -->
     <!--<transition :name="'vux-pop-' + (direction === 'forward' ? 'in' : 'out')">-->
     <transition>
       <keep-alive v-if="!$route.meta.keepAlive">
-        <router-view v-wechat-title="$route.meta.title" :geoAddress="geoData.address" v-on:listenPage="getPageStatus"></router-view>
+        <router-view v-wechat-title="$route.meta.title" :geoAddress="geoData.address"
+                     v-on:listenPage="getPageStatus"></router-view>
       </keep-alive>
     </transition>
   </div>
@@ -65,7 +69,7 @@
     data() {
       return {
         geoData: {
-          address:'定位中…'
+          address: '定位中…'
         }, // 定位数据
         transitionName: 'fade', // 默认动态路由过渡
         // showTabbar: false, // 是否显示标签栏
@@ -74,7 +78,7 @@
         curCount: 0 // 当前购物车中商品数
       }
     },
-    components: {Geo,Tabbar, TabbarItem},
+    components: {Geo, Tabbar, TabbarItem},
     beforeMount() {
       // console.log(window.me)
     },
@@ -96,7 +100,7 @@
       getMap(data) {
         console.log(data, 'home geo info')
         this.geoData = data
-        this.$store.commit('storeData',{key:'geoData',data:data})
+        this.$store.commit('storeData', {key: 'geoData', data: data})
       },
       // 从子组件获取数据
       getPageStatus(data) {
@@ -109,16 +113,16 @@
       },
       '$route'(to, from) {
         /* let isBack = this.$router.isBack //  监听路由变化时的状态为前进还是后退
-        console.log(isBack)
-        if (isBack) {
-          vm.direction = 'reverse'
-        } else {
-          vm.direction = 'forward'
-        }
-        this.$router.isBack = false
-        const toDepth = to.path.split('/').length
-        const fromDepth = from.path.split('/').length
-        vm.direction = toDepth < fromDepth ? 'forward' : 'reverse' */
+         console.log(isBack)
+         if (isBack) {
+         vm.direction = 'reverse'
+         } else {
+         vm.direction = 'forward'
+         }
+         this.$router.isBack = false
+         const toDepth = to.path.split('/').length
+         const fromDepth = from.path.split('/').length
+         vm.direction = toDepth < fromDepth ? 'forward' : 'reverse' */
 //        vm.showTabbar = true
         switch (to.name) {
           case 'home':
@@ -137,8 +141,8 @@
             vm.curSelected = 5
             break
           /* default:
-            vm.showTabbar = false
-            break */
+           vm.showTabbar = false
+           break */
         }
       }
     }

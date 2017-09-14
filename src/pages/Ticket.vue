@@ -102,7 +102,7 @@
       vm.keepFresh(vm.$route.params.type)
       vm.initTab()
       vm.getTickets()
-      vm.$nextTick(() => {
+      vm.$nextTick(function () {
         vm.$refs.ticketScroller.finishInfinite(true)
         vm.$refs.ticketScroller.resize()
       })
@@ -123,11 +123,11 @@
     methods: {
       // 向父组件传值
       /*selectCategory(data) {
-        console.log(data, '当前水票种类')
-        vm.current = data.index
-        vm.params.waterTicketType = data.key
-        vm.getTickets()
-      },*/
+       console.log(data, '当前水票种类')
+       vm.current = data.index
+       vm.params.waterTicketType = data.key
+       vm.getTickets()
+       },*/
       toDetail(id) {
         vm.$router.push({path: '/detail/' + id})
       },
@@ -147,12 +147,12 @@
           paginationClickable: true,
           grabCursor: true,
           /*onInit: function (swiper) {
-            $(document).on('click', '.swiper-slide', function () {
-              var curIdx = $(this).index()
-              var $navs = $('.swiper-slide')
-              $navs.eq(curIdx).addClass('active').siblings('.swiper-slide').removeClass('active')
-            })
-          }*/
+           $(document).on('click', '.swiper-slide', function () {
+           var curIdx = $(this).index()
+           var $navs = $('.swiper-slide')
+           $navs.eq(curIdx).addClass('active').siblings('.swiper-slide').removeClass('active')
+           })
+           }*/
         })
       },
       keepFresh(data) {
@@ -167,21 +167,21 @@
       buy(e, id) {
         e.stopPropagation()
         /*if (!me.isWeixin) {
-          vm.toast('请在微信中操作！')
-          return
-        }*/
+         vm.toast('请在微信中操作！')
+         return
+         }*/
         if (vm.isPosting) return false
         vm.isPosting = true
-        if (!vm.isMe) {
+        if (vm.isMe) {
           vm.$router.push({
             name: 'confirm_ticket',
             query: {id: id}
           })
         } else {
-          vm.loadData(ticketApi.buy, {}, 'POST', function (res) {
+          vm.loadData(ticketApi.buy, {waterId: id}, 'POST', function (res) {
             vm.isPosting = false
-            var resD = res.data
-            vm.payOrder(resD)
+            // alert(JSON.stringify(res.data))
+            vm.payOrder(res.data)
           }, function () {
             vm.isPosting = false
           })

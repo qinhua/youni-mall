@@ -131,7 +131,7 @@
 //    },
     watch: {
       '$route'(to, from) {
-        if(to.name==='confirm_order') {
+        if (to.name === 'confirm_order') {
           vm.getAddress()
           vm.getGoods()
         }
@@ -143,7 +143,7 @@
         this.$emit('listenPage', data)
       },
       toAddress(type) {
-        me.sessions.set('ynTmpConfirm',vm.$route.query.thedata)
+        me.sessions.set('ynTmpConfirm', vm.$route.query.thedata)
         type === 1 ? vm.jump('myaddress', {from: 'confirm_order'}) : vm.jump('edit_address', {from: 'confirm_order'})
       },
       validate() {
@@ -156,9 +156,9 @@
           return false
         }
         /*if (!vm.params.couponId) {
-          vm.toast('请选择优惠券！', 'warn')
-          return false
-        } */
+         vm.toast('请选择优惠券！', 'warn')
+         return false
+         } */
         return true
       },
       switchData(data, value, target, isUpdate) {
@@ -189,15 +189,15 @@
         console.log('change', val)
       },
       getGoods() {
-        try{
+        try {
           vm.curCartData = vm.$route.query.thedata ? JSON.parse(window.decodeURIComponent(vm.$route.query.thedata)) : {}
           for (var i = 0; i < vm.curCartData.goods.length; i++) {
             vm.params.goods.push({goodsId: vm.curCartData.goods[i].goodsId})
           }
           console.log(vm.curCartData, '带过来的数据')
           vm.switchData(vm.coupons, vm.tmpCoupon, 'couponId')
-        }catch(e){
-            // console.log(e)
+        } catch (e) {
+          // console.log(e)
         }
       },
       getAddress() {
@@ -206,17 +206,17 @@
           vm.isPosting = false
           vm.processing(0, 1)
           var resD = res.data.itemList
-          if (resD.length>1) {
+          if (resD.length > 1) {
             for (let i = 0; i < resD.length; i++) {
               if (resD[i].defaultAddress) {
                 vm.address = resD[i]
                 vm.params.addressId = resD[i].id
-              }else{
+              } else {
                 vm.address = resD[0]
                 vm.params.addressId = resD[0].id
               }
             }
-          }else{
+          } else {
             vm.address = resD[0]
             vm.params.addressId = resD[0].id
           }
@@ -248,6 +248,7 @@
           vm.loadData(orderApi.add, vm.params, 'POST', function (res) {
             vm.isPosting = false
             if (res.success && res.data) {
+              // alert(JSON.stringify(res.data))
               vm.payOrder(res.data)
             } else {
               vm.toast(res.message || '生成订单失败！')
@@ -299,7 +300,7 @@
   @import '../../../static/css/tools.less';
 
   .confirm-order {
-    padding-bottom:100/@rem;
+    padding-bottom: 100/@rem;
   }
 
   .pick-address {

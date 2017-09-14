@@ -1,5 +1,6 @@
 <template>
-  <div class="seller-detail" ref="sellerDetail" @scroll="scrollHandler">
+  <!--<div class="seller-detail" ref="sellerDetail" @scroll="scrollHandler">-->
+  <div class="seller-detail" ref="sellerDetail">
     <!--banner-->
     <!--<div class="swiper-shop">-->
     <!--<swiper ref="slider02" skey="s03" :slides="banner" autoPlay="2500"></swiper>-->
@@ -36,27 +37,29 @@
     </div>
 
     <!--过滤条-->
-    <div class="goods-filter" ref="filters03">
-      <div class="v-filter-tabs">
-        <ul class="v-f-tabs">
-          <li class="f-img"></li>
-          <li :class="curFilterType==='categorys'?'mfilterActive':''" @click="showFilter('categorys',$event)">商品类目<i
-            class="ico-arr-down"></i>
-          </li>
-          <li :class="curFilterType==='brands'?'mfilterActive':''" @click="showFilter('brands',$event)">品牌<i
-            class="ico-arr-down"></i>
-          </li>
-        </ul>
-        <div class="filter-data" v-if="showFilterCon" :class="showFilterCon?'show':''">
-          <ul class="filter-tags" v-show="curFilterDict">
-            <li v-for="(data,idx) in curFilterDict" :class="curSelFilter[curFilterType].index==idx?'sfilterActive':''"
-                :data-key="data.key"
-                :data-value="data.value" @click="chooseFilter(idx,data.key,data.value,$event)">{{data.value}}
+    <sticky>
+      <div class="goods-filter" ref="filters03">
+        <div class="v-filter-tabs">
+          <ul class="v-f-tabs">
+            <li class="f-img"></li>
+            <li :class="curFilterType==='categorys'?'mfilterActive':''" @click="showFilter('categorys',$event)">商品类目<i
+              class="ico-arr-down"></i>
+            </li>
+            <li :class="curFilterType==='brands'?'mfilterActive':''" @click="showFilter('brands',$event)">品牌<i
+              class="ico-arr-down"></i>
             </li>
           </ul>
+          <div class="filter-data" v-if="showFilterCon" :class="showFilterCon?'show':''">
+            <ul class="filter-tags" v-show="curFilterDict">
+              <li v-for="(data,idx) in curFilterDict" :class="curSelFilter[curFilterType].index==idx?'sfilterActive':''"
+                  :data-key="data.key"
+                  :data-value="data.value" @click="chooseFilter(idx,data.key,data.value,$event)">{{data.value}}
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
-    </div>
+    </sticky>
 
     <!--店铺列表-->
     <div class="goods-list" ref="goodsList">
@@ -118,7 +121,7 @@
   let me
   let vm
   import Swiper from '../../components/Swiper'
-  import {Group, GroupTitle, Grid, GridItem, Marquee, MarqueeItem, XNumber, Scroller, LoadMore} from 'vux'
+  import {Group, GroupTitle, Grid, GridItem, Marquee, MarqueeItem, XNumber, Scroller, Sticky,LoadMore} from 'vux'
   import {goodsApi, nearbyApi,cartApi} from '../../service/main.js'
   import {mapState, mapMutations} from 'vuex'
 
@@ -256,6 +259,7 @@
       MarqueeItem,
       XNumber,
       Scroller,
+      Sticky,
       LoadMore
     },
     beforeMount() {
@@ -885,6 +889,7 @@
     }
 
     .goods-list {
+      height:100%!important;
       /*max-height:500px;*/
       overflow: auto;
       &.fixed {
@@ -937,13 +942,10 @@
             .middle {
               .flex-r(1);
               padding: 10/@rem 0;
-              .price {
-              }
               span {
                 &.price {
                   .c3;
                   .fz(24);
-                  .txt-del;
                 }
                 &.hasSell {
                   padding-left: 30/@rem;

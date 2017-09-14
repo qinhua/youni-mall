@@ -5,10 +5,10 @@
         <div class="swiper-container" v-show="details.imgurl">
           <div class="swiper-wrapper">
             <!--<div class="swiper-slide" v-for="(item, index) in details.imgurl" :key="index" :data-id="item.id">-->
-            <div class="swiper-slide">
+            <div class="swiper-slide" :style="'background-image:url('+details.imgurl+')'">
               <!--<a :href="item.linkUrl" target="blank">-->
               <a href="#" target="blank">
-                <img class="wd-img" :src="details.imgurl" alt="">
+                <!--<img class="wd-img" :src="details.imgurl" alt="">-->
               </a>
             </div>
           </div>
@@ -216,16 +216,17 @@
 //      })
     },
     /*computed: {
-      total() {
-        return vm.details.number ? vm.details.number * vm.details.price : 0
-      }
-    },*/
+     total() {
+     return vm.details.number ? vm.details.number * vm.details.price : 0
+     }
+     },*/
     watch: {
       '$route'(to, from) {
         if (to.name === 'goods_detail') {
           vm.getDetail(function () {
             vm.viewCart()
             vm.mySwiper()
+            vm.total = vm.details.number * vm.details.price
             // vm.swiperDetail()
             // vm.getAppraise()
           })
@@ -250,7 +251,7 @@
           observer: true,
           observeParents: true,
           // If we need pagination
-          pagination: '.swiper-detail .swiper-pagination',
+          pagination: '.banner-goods-detail .swiper-pagination',
           paginationClickable: true,
           // Navigation arrows
           // nextButton: '.swiper-button-next',
@@ -361,29 +362,29 @@
         vm.showPop = false
         // 判断当前是否填写了数量
         /*var lastD, tmp = []
-        if (vm.cartData && vm.cartData.goodsList.length) {
-          for (let i = 0; i < vm.cartData.goodsList.length; i++) {
-            let cur = vm.cartData.goodsList[i]
-            if (cur.goodsId === vm.details.id) {
-              tmp.push(cur)
-            }
-          }
-          lastD = {
-            sellerId: vm.details.sellerId,
-            sellerName: vm.details.sellerName,
-            totalPrice: vm.curBuyNum * vm.details.price,
-            goods: [{
-              goodsId: vm.details.id,
-              goodsNum: vm.curBuyNum,
-            }]
-          }
-          vm.$router.push({
-            name: 'confirm_order',
-            query: {thedata: encodeURIComponent(JSON.stringify(lastD))}
-          })
-        } else {
-          vm.toast('至少选一件哦！', 'warn')
-        }*/
+         if (vm.cartData && vm.cartData.goodsList.length) {
+         for (let i = 0; i < vm.cartData.goodsList.length; i++) {
+         let cur = vm.cartData.goodsList[i]
+         if (cur.goodsId === vm.details.id) {
+         tmp.push(cur)
+         }
+         }
+         lastD = {
+         sellerId: vm.details.sellerId,
+         sellerName: vm.details.sellerName,
+         totalPrice: vm.curBuyNum * vm.details.price,
+         goods: [{
+         goodsId: vm.details.id,
+         goodsNum: vm.curBuyNum,
+         }]
+         }
+         vm.$router.push({
+         name: 'confirm_order',
+         query: {thedata: encodeURIComponent(JSON.stringify(lastD))}
+         })
+         } else {
+         vm.toast('至少选一件哦！', 'warn')
+         }*/
 //        if (vm.curBuyNum) {
         var lastD = {
           sellerId: vm.details.sellerId,
@@ -401,8 +402,8 @@
           query: {thedata: encodeURIComponent(JSON.stringify(lastD))}
         })
         /*} else {
-          vm.toast('至少选1件哦！', 'warn')
-        }*/
+         vm.toast('至少选1件哦！', 'warn')
+         }*/
       },
       /* 购物车--start */
       // 同步购物车商品数量至详情
@@ -417,6 +418,7 @@
         } else {
           vm.details['number'] = 0
         }
+        vm.total = vm.details.number * vm.details.price
       },
       viewCart(cb) {
         vm.loadData(cartApi.view, null, 'POST', function (res) {
@@ -520,9 +522,9 @@
         inner.style.transform = 'translate3d(0,-10px,0)'
         el.addEventListener('transitionend', done)
         /* cartCls.toggle('bulbing')
-        setTimeout(() => {
-          cartCls.remove('bulbing')
-        }, 800) */
+         setTimeout(() => {
+         cartCls.remove('bulbing')
+         }, 800) */
       },
       /*初始化小球*/
       afterDrop(el) {
@@ -547,19 +549,30 @@
     .top {
       margin-bottom: 14/@rem;
       .banner-goods-detail {
+        margin-bottom: 10/@rem;
         height: 440/@rem !important;
         overflow: hidden;
-      }
-      .swiper-detail {
-        margin-bottom: 10/@rem;
+
         .swiper-container {
+          height: 440/@rem !important;
+          .swiper-slide {
+            height: 100%;
+            background-position: top center;
+            -webkit-background-size: cover;
+            background-size: cover;
+          }
           .swiper-pagination {
             bottom: 5px;
           }
+          .swiper-pagination-bullet {
+            background: rgba(255,255,255,.5);
+          }
           .swiper-pagination-bullet-active {
-            background: #eee;
+            opacity:1;
+            background: #fff !important;
           }
         }
+
       }
       .buy-con {
         padding: 20/@rem;
@@ -674,8 +687,8 @@
         .detail-con {
           .borBox;
           padding: 20/@rem;
-          ul,ol{
-            list-style:decimal;
+          ul, ol {
+            list-style: decimal;
             list-style-position: inside;
           }
         }

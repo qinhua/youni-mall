@@ -990,13 +990,25 @@ input[type="radio"] {
 }
 
 .flush-button {
-  //.fix;
-  top: 0;
-  z-index: 1000;
   width: 100%;
   padding: 30/@rem 0;
   .cf;
   background: red;
+  &.s01 {
+    .fix;
+    top: 0;
+    z-index: 1000;
+  }
+  &.s02 {
+    .fix;
+    .iblock;
+    width: auto;
+    padding: 10px;
+    font-size: 12px;
+    left: 0;
+    top: 50px;
+    z-index: 1000;
+  }
 }
 
 @-webkit-keyframes ball-beat {

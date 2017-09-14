@@ -50,7 +50,7 @@ export default new Router({
       component: Home,
       meta: {
         title: '首页',
-        keepAlive: false
+        keepAlive: true
       }
     },
     {
@@ -59,7 +59,7 @@ export default new Router({
       component: Home,
       meta: {
         title: '首页',
-        keepAlive: false
+        keepAlive: true
       }
     },
     {
@@ -104,7 +104,7 @@ export default new Router({
       component: My,
       meta: {
         title: '我的',
-        keepAlive: false
+        keepAlive: true
       }
       /* children: [{
        path: '/myaddress',
