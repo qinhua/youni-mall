@@ -203,6 +203,7 @@
             vm.params.goods.push({goodsId: vm.curCartData.goods[i].goodsId})
           }
           console.log(vm.curCartData, '带过来的数据')
+          vm.calcPrice(vm.curCartData.goods)
           vm.switchData(vm.coupons, vm.tmpCoupon, 'couponId')
         } catch (e) {
           // console.log(e)
@@ -266,6 +267,25 @@
             vm.isPosting = false
           })
         }
+      },
+      calcPrice(data) {
+        var goodsIds = {goods: []}
+        for (var i = 0; i < data.length; i++) {
+          var cur = data[i]
+          goodsIds.goods.push({goodsId: cur.goodsId})
+        }
+        vm.loadData(orderApi.calcPrice, goodsIds, 'POST', function (res) {
+          if (res.success && res.data.newUserCoupon) {
+            var resD = res.data
+            vm.firstData = resD
+            vm.curCartData.totalPrice = resD.payAmount
+          }
+          console.log(vm.firstData, '首单优惠数据')
+          cb ? cb(resD) : null
+        }, function () {
+          vm.onFetching = false
+          vm.processing(0, 1)
+        })
       },
       payOrder(data) {
         wx.config({

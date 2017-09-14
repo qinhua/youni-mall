@@ -1,15 +1,15 @@
 <template>
   <div class="my-coupons">
     <tab class="order-tab" active-color="#f34c18">
-      <tab-item :selected="!tmpType?true:false" @on-item-click="onItemClick">全部</tab-item>
-      <tab-item :selected="tmpType==1?true:false" @on-item-click="onItemClick(2)">现金券</tab-item>
-      <tab-item :selected="tmpType==2?true:false" @on-item-click="onItemClick(1)">红包</tab-item>
-      <tab-item :selected="tmpType==3?true:false" @on-item-click="onItemClick(3)">满减</tab-item>
-      <tab-item :selected="tmpType==4?true:false" @on-item-click="onItemClick(4)">水票</tab-item>
+      <tab-item :selected="!params.type?true:false" @on-item-click="onItemClick">全部</tab-item>
+      <tab-item :selected="params.type==1?true:false" @on-item-click="onItemClick(1)">红包</tab-item>
+      <tab-item :selected="params.type==2?true:false" @on-item-click="onItemClick(2)">现金券</tab-item>
+      <tab-item :selected="params.type==3?true:false" @on-item-click="onItemClick(3)">满减</tab-item>
+      <tab-item :selected="params.type==4?true:false" @on-item-click="onItemClick(4)">水票</tab-item>
     </tab>
     <div class="coupon-list">
       <scroller class="inner-scroller" ref="couponScroller" :on-refresh="refresh" :on-infinite="infinite"
-                refreshText="下拉刷新" noDataText="没有更多数据" snapping>
+                refreshText="下拉刷新" noDataText="没有更多数据" snapping v-if="coupons.length">
         <!-- content goes here -->
         <section class="v-items" v-for="(item, index) in coupons" :data-id="item.id" :data-couponid="item.couponId">
           <div :class="('stamp type0'+item.type) + (!item.status?' expired':'')">
@@ -34,6 +34,8 @@
           </div>
         </section>
       </scroller>
+      <div class="iconNoData abs-center-vh" v-if="!coupons.length"><i></i>
+        <p>暂无相关优惠</p></div>
     </div>
   </div>
 </template>
@@ -50,8 +52,7 @@
     data() {
       return {
         show: false,
-        tmpType: '',
-        types: ['coupon_type.2', 'coupon_type.1', 'coupon_type.3', 'coupon_type.4'],
+        types: ['coupon_type.1', 'coupon_type.2', 'coupon_type.3', 'coupon_type.4'],
 //        coupons: [],
         coupons: [
           {
@@ -70,7 +71,6 @@
             "couponId": "2"
           },],
         params: {
-          type: '',
           pagerSize: 10,
           pageNo: 1
         },
@@ -116,8 +116,8 @@
         }, 1000)
       },
       onItemClick(type) {
-        vm.tmpType = type
-        !type ? vm.params.type = '' : vm.params.type = vm.types[vm.tmpType]
+        type ? vm.params.type = vm.types[type - 1] : delete vm.params.type
+        console.log(vm.params.type)
         vm.getCoupons()
       },
       filterTicket(type, isMine) {
@@ -125,11 +125,12 @@
         vm.getCoupons()
       },
       getCoupons(isLoadMore) {
-        vm.params.type = vm.$route.params.type
         if (vm.isPosting) return false
         vm.processing()
         vm.isPosting = true
         vm.loadData(userApi.couponList, vm.params, 'POST', function (res) {
+          vm.isPosting = false
+          vm.processing(0, 1)
           var resD = res.data
           for (var i = 0; i < resD.length; i++) {
             // resD.expired = !me.compareCurrentDate(resD.expireTime)
@@ -153,8 +154,6 @@
             resD.itemList.length ? vm.coupons.concat(resD.itemList) : vm.noMore = true
           }
           console.log(vm.coupons, '优惠券数据')
-          vm.isPosting = false
-          vm.processing(0, 1)
         }, function () {
           vm.isPosting = false
           vm.processing(0, 1)

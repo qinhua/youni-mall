@@ -1,5 +1,5 @@
 <template>
-  <div class="home" ref="home" v-cloak>
+  <div class="home" ref="home" v-cloak @scroll="scrollHandler">
     <!--地图组件-->
     <div class="location-chooser">
       <p><span><i class="fa fa-map-marker"></i>&nbsp;您的位置：</span>{{address || geoAddress}}</p>
@@ -41,37 +41,36 @@
     </div>
 
     <!--过滤条-->
-    <!--<div style="height:44px;">-->
-      <sticky>
-        <div class="goods-filter" ref="filters01">
-          <div class="v-filter-tabs">
-            <ul class="v-f-tabs">
-              <li class="f-img"></li>
-              <li :class="curFilterType==='categorys'?'mfilterActive':''" @click="showFilter('categorys',$event)">商品类目<i
-                class="ico-arr-down"></i>
-              </li>
-              <li :class="curFilterType==='brands'?'mfilterActive':''" @click="showFilter('brands',$event)">品牌<i
-                class="ico-arr-down"></i>
-              </li>
-            </ul>
-            <div class="filter-data" v-if="showFilterCon" :class="showFilterCon?'show':''">
-              <ul class="filter-tags" v-show="curFilterDict">
-                <li v-for="(data,idx) in curFilterDict"
-                    :class="curSelFilter[curFilterType].index==idx?'sfilterActive':''"
-                    :data-key="data.key"
-                    :data-value="data.value" @click="chooseFilter(idx,data.key,data.value,$event)">{{data.value}}
-                </li>
-              </ul>
-            </div>
-          </div>
+    <div class="goods-filter" ref="filters01">
+      <div class="v-filter-tabs">
+        <ul class="v-f-tabs">
+          <li class="f-img"></li>
+          <li :class="curFilterType==='categorys'?'mfilterActive':''" @click="showFilter('categorys',$event)">商品类目<i
+            class="ico-arr-down"></i>
+          </li>
+          <li :class="curFilterType==='brands'?'mfilterActive':''" @click="showFilter('brands',$event)">品牌<i
+            class="ico-arr-down"></i>
+          </li>
+        </ul>
+        <div class="filter-data" v-if="showFilterCon" :class="showFilterCon?'show':''">
+          <ul class="filter-tags" v-show="curFilterDict">
+            <li v-for="(data,idx) in curFilterDict"
+                :class="curSelFilter[curFilterType].index==idx?'sfilterActive':''"
+                :data-key="data.key"
+                :data-value="data.value" @click="chooseFilter(idx,data.key,data.value,$event)">{{data.value}}
+            </li>
+          </ul>
         </div>
-      </sticky>
-    <!--</div>-->
+      </div>
+    </div>
 
     <!--商品列表-->
     <div class="goods-list" ref="goodsList">
-      <scroller class="inner-scroller" ref="goodsScroller" :on-refresh="refresh" :on-infinite="infinite"
-                refreshText="下拉刷新" noDataText="就这么多了" snapping v-if="goods.length">
+      <scroller class="inner-scroller" lock-x use-pullup use-pulldown :pullup-config="pullupConfig"
+                :pulldown-config="pulldownConfig"
+                @on-scroll="onScroll"
+                @on-pulldown-loading="onPullDown" @on-pullup-loading="onPullUp" @on-scroll-bottom="" ref="myScroll"
+                :scroll-bottom-offst="300">
         <div class="box">
           <section class="v-items" v-for="(item, index) in goods" :data-id="item.id">
             <section class="wrap">
@@ -99,10 +98,12 @@
               </group>
             </section>
           </section>
+          <div class="noMoreData" v-if="goods.length">{{noMore ? '就这么多了' : '上拉加载'}}</div>
+          <div class="iconNoData" v-else><i></i>
+            <p>暂无商品</p></div>
+          <!--<load-more tip="loading"></load-more>-->
         </div>
       </scroller>
-      <div class="iconNoData" v-if="!goods.length"><i></i>
-        <p>暂无商品</p></div>
     </div>
 
     <!--购物车效果-->
@@ -141,7 +142,8 @@
     XNumber,
     XSwitch,
     Sticky,
-    Scroller
+    Scroller,
+    LoadMore
   } from 'vux'
   import {homeApi, cartApi} from '../service/main.js'
   import {mapState, mapMutations} from 'vuex'
@@ -238,8 +240,28 @@
           }
         }, // 当前选择的过滤条件
         /* filter end */
+        scrollTop: 0,
         noMore: false,
         isPosting: false,
+        pulldownConfig: {
+          content: '下拉刷新',
+          height: 60,
+          autoRefresh: false,
+          downContent: '下拉刷新',
+          upContent: '松开以加载',
+          loadingContent: '加载中…',
+          clsPrefix: 'xs-plugin-pulldown-'
+        },
+        pullupConfig: {
+          content: '上滑加载更多',
+          height: 40,
+          pullUpHeight: 60,
+          autoRefresh: false,
+          downContent: '上滑加载',
+          upContent: '上滑加载',
+          loadingContent: '加载中…',
+          clsPrefix: 'xs-plugin-pullup-'
+        },
         curCount: 0,
         balls: [ //小球 设为3个
           {
@@ -264,7 +286,9 @@
       Marquee,
       MarqueeItem,
       XNumber,
-      Sticky
+      Sticky,
+      Scroller,
+      LoadMore
     },
     beforeMount() {
       me = window.me
@@ -287,15 +311,11 @@
         }
       }, false)
       vm.$nextTick(function () {
-        /*//获取筛选栏位置
+        //获取筛选栏位置
         setTimeout(function () {
           vm.filterOffset = vm.$refs.filters01.offsetTop
-        }, 300)*/
-        try {
-          vm.$refs.goodsScroller.finishInfinite(true)
-          vm.$refs.goodsScroller.resize()
-        } catch (e) {
-        }
+        }, 300)
+        vm.resetScroll()
       })
     },
     /*computed: {
@@ -312,6 +332,7 @@
     watch: {
       '$route'(to, from) {
         if (to.name === 'home') {
+          vm.resetScroll()
           vm.getMap()
           vm.getGoods()
           vm.viewCart()
@@ -341,6 +362,36 @@
       // 向父组件传值
       setPageStatus(data) {
         this.$emit('listenPage', data)
+      },
+      resetScroll() {
+        setTimeout(function () {
+          vm.$refs.myScroll.reset()
+          vm.$refs.myScroll.donePullup()
+          vm.$refs.myScroll.donePulldown()
+          let target = vm.$refs.filters01
+          let list = vm.$refs.goodsList
+          target.classList.remove('fixed')
+          list.classList.remove('fixed')
+          vm.$refs.myScroll.reset()
+        }, 100)
+      },
+      scrollHandler() {
+        // 监听dom的scroll事件
+        setTimeout(function () {
+          let scrollTop = vm.$refs.home.scrollTop
+          let target = vm.$refs.filters01
+          let list = vm.$refs.goodsList
+          if (vm.showFilterCon) {
+            vm.hideFilter()
+          }
+          if (scrollTop >= vm.filterOffset) {
+            target.classList.add('fixed')
+            list.classList.add('fixed')
+          } else {
+            target.classList.remove('fixed')
+            list.classList.remove('fixed')
+          }
+        }, 300)
       },
       toTopic(url) {
         if (vm.showFilterCon) return
@@ -424,22 +475,46 @@
         vm.getGoods()
       },
       onScroll(pos) {
+        this.scrollTop = pos.top
         vm.hideFilter()
+        if (this.scrollTop <= 0 && vm.$refs.filters01.classList.contains('fixed')) {
+          vm.$refs.filters01.classList.remove('fixed')
+          vm.$refs.goodsList.classList.remove('fixed')
+          vm.$refs.home.scrollTop = 250
+          return false
+        }
       },
       /* 上下拉刷新 */
-      refresh(done) {
-        // console.log('下拉加载')
-        setTimeout(function () {
-          vm.getGoods()
-          vm.$refs.goodsScroller.finishPullToRefresh()
-        }, 1200)
+      onPullDown() {
+        if (vm.onFetching) {
+          // do nothing
+          return false
+        } else {
+          // this.onFetching = true
+          setTimeout(function () {
+            vm.getGoods()
+            vm.$nextTick(function () {
+              vm.$refs.myScroll.reset({top: 0})
+              vm.$refs.myScroll.donePullup()
+              vm.$refs.myScroll.donePulldown()
+            })
+          }, 1500)
+        }
       },
-      infinite(done) {
-        // console.log('无限滚动')
-        setTimeout(function () {
-          vm.getGoods(true)
-          vm.$refs.goodsScroller.finishInfinite(true)
-        }, 1000)
+      onPullUp() {
+        if (vm.onFetching) {
+          // do nothing
+          return false
+        } else {
+          setTimeout(function () {
+            vm.getGoods(true)
+            vm.$nextTick(function () {
+              vm.$refs.myScroll.reset({bottom: 0})
+              vm.$refs.myScroll.donePullup()
+              vm.$refs.myScroll.donePulldown()
+            })
+          }, 200)
+        }
       },
       /* 购物车--start */
       // 同步购物车商品数量至列表
@@ -577,7 +652,7 @@
 
   .home {
     height: 100%;
-    /*overflow: scroll; // 此两个属性至关重要，不写@scroll监听不到滚动*/
+    overflow: scroll; // 此两个属性至关重要，不写@scroll监听不到滚动
   }
 
   .swiper-home {
@@ -767,14 +842,16 @@
   }
 
   .goods-list {
-    .rel;
-    height: 100%;
+    /*max-height:500px;*/
     overflow: auto;
-    &.hasContent {
-      height: 800px;
+    &.fixed {
+      .xs-container {
+        margin-top: 90/@rem;
+      }
     }
     .inner-scroller {
       .borBox;
+      .static;
       .v-items {
         padding: 20/@rem;
         .bf;

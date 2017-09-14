@@ -21,8 +21,8 @@
       <scroller class="inner-scroller" ref="ticketScroller" height="100%" :on-refresh="refresh"
                 :on-infinite="infinite"
                 refreshText="下拉刷新"
-                noDataText=""
-                snapping>
+                noDataText="就这么多了"
+                snapping v-if="tickets.length">
         <!-- content goes here -->
         <section class="v-items" v-for="(item, index) in tickets" :data-id="item.id">
           <section class="wrap">
@@ -103,8 +103,11 @@
       vm.initTab()
       vm.getTickets()
       vm.$nextTick(function () {
+        try{
         vm.$refs.ticketScroller.finishInfinite(true)
         vm.$refs.ticketScroller.resize()
+        }catch(e){
+        }
       })
     },
     /* computed: {

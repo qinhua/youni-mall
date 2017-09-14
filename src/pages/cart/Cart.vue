@@ -52,7 +52,8 @@
         </section>
       </scroller>
     </div>
-    <div class="iconNoData abs-center-vh" v-if="!goods.sellerId"><i></i><p>空空如也</p></div>
+    <div class="iconNoData abs-center-vh" v-if="!goods.sellerId"><i></i>
+      <p>空空如也</p></div>
     <div class="count-bar">
       <div class="wrap">
         <div class="txt-total">
@@ -86,11 +87,10 @@
           pageNo: 1*/
         },
         curCartData: [],
+        goodsIds: [],
         isEdit: false,
         isPosting: false,
-        onFetching: false,
-        labelPosition: '',
-        error: '',
+        onFetching: false
       }
     },
     components: {Tab, TabItem, XButton, Checker, CheckerItem, Swipeout, SwipeoutItem, SwipeoutButton},
@@ -229,13 +229,9 @@
           vm.processing(0, 1)
           var resD = res.data
           vm.goods = resD
-//          if (!isLoadMore) {
-//          } else {
-//            vm.goods.push(resD)
-//          }
-          cb ? cb() : null
           vm.countTotal()
           console.log(vm.goods, '购物车数据')
+          cb ? cb(resD) : null
         }, function () {
           vm.onFetching = false
           vm.processing(0, 1)

@@ -1,29 +1,31 @@
 <template>
   <div class="order-con" v-cloak>
+
+    <group>
+      <x-switch :title="'订单类别 ['+(isMilk?'奶':'水')+']'" v-model="isMilk" @on-click="changeType"></x-switch>
+    </group>
+
     <!--订单列表-->
     <div class="orders-list-con">
-      <sticky>
-        <group>
-          <x-switch :title="'订单类别 ['+(isMilk?'奶':'水')+']'" v-model="isMilk" @on-click="changeType"></x-switch>
-        </group>
+      <sticky class="bf">
         <tab class="order-tab" ref="orderTab" active-color="#FE6246" v-if="!isMilk">
           <tab-item :selected="!params.status?true:false" @on-item-click="onItemClick">全部</tab-item>
           <tab-item :selected="params.status==1?true:false" @on-item-click="onItemClick(1)">待支付</tab-item>
           <tab-item :selected="params.status==2?true:false" @on-item-click="onItemClick(2)">待派送</tab-item>
           <tab-item :selected="params.status==3?true:false" @on-item-click="onItemClick(3)">派送中</tab-item>
-          <tab-item :selected="params.status==4?true:false" @on-item-click="onItemClick(5)">已完成</tab-item>
+          <tab-item :selected="params.status==5?true:false" @on-item-click="onItemClick(5)">已完成</tab-item>
         </tab>
         <tab class="order-tab" active-color="#f34c18" v-else>
           <tab-item :selected="!params.status?true:false" @on-item-click="onItemClick">全部</tab-item>
-          <tab-item :selected="params.status==1?true:false" @on-item-click="onItemClick(3)">配送中</tab-item>
-          <tab-item :selected="params.status==2?true:false" @on-item-click="onItemClick(4)">已暂停</tab-item>
+          <tab-item :selected="params.status==3?true:false" @on-item-click="onItemClick(3)">配送中</tab-item>
+          <tab-item :selected="params.status==4?true:false" @on-item-click="onItemClick(4)">已暂停</tab-item>
           <tab-item :selected="params.status==4?true:false" @on-item-click="onItemClick(5)">已完成</tab-item>
         </tab>
       </sticky>
 
       <div class="order-list">
-        <scroller class="inner-scroller" ref="orderScroller01" :on-refresh="refresh" :on-infinite="infinite"
-                  refreshText="下拉刷新" noDataText="" snapping v-if="!isMilk">
+        <scroller class="inner-scroller" ref="orderScroller" :on-refresh="refresh" :on-infinite="infinite"
+                  refreshText="下拉刷新" noDataText="就这么多了" snapping v-if="orders.length&&!isMilk">
           <!-- content goes here -->
           <section class="v-items" v-for="(item, index) in orders" :data-id="item.orderId"
                    :data-orderNumber="item.appOrderNumber" :data-itemId="item.orderItemId">
@@ -41,7 +43,7 @@
                 <label>{{item.label}}</label>
               </div>
               <div class="price-con">
-                <p class="price">￥{{(item.goodsPrice * item.goodsAmount)|toFixed}}</p>
+                <p class="price">￥{{(item.goodsPrice * item.goodsAmount) | toFixed}}</p>
                 <p class="buy-count">x{{item.goodsAmount}}</p>
               </div>
             </section>
@@ -71,8 +73,8 @@
             </section>
           </section>
         </scroller>
-        <scroller class="inner-scroller" ref="orderScroller02" :on-refresh="refresh" :on-infinite="infinite"
-                  refreshText="下拉刷新" noDataText="" snapping v-else>
+        <scroller class="inner-scroller" ref="orderScroller" :on-refresh="refresh" :on-infinite="infinite"
+                  refreshText="下拉刷新" noDataText="就这么多了" snapping v-else-if="orders.length&&isMilk">
           <!-- content goes here -->
           <section class="v-items" v-for="(item, index) in orders" :data-id="item.orderId"
                    :data-orderNumber="item.appOrderNumber" :data-itemId="item.orderItemId">
@@ -90,7 +92,7 @@
                 <label>{{item.label}}</label>
               </div>
               <div class="price-con">
-                <p class="price">￥{{(item.goodsPrice * item.goodsAmount)|toFixed}}</p>
+                <p class="price">￥{{(item.goodsPrice * item.goodsAmount) | toFixed}}</p>
                 <p class="buy-count">x{{item.goodsAmount}}</p>
               </div>
             </section>
@@ -126,7 +128,7 @@
   /* eslint-disable */
   let me
   let vm
-  import {Tab, TabItem, Group, XInput,XSwitch,Sticky} from 'vux'
+  import {Tab, TabItem, Group, XInput, XSwitch, Sticky} from 'vux'
   import {orderApi, commonApi, depositApi} from '../service/main.js'
 
   export default {
@@ -151,10 +153,14 @@
     },
     mounted() {
       vm = this
+      me.attachClick()
       vm.getOrders()
       vm.$nextTick(function () {
-        vm.$refs.orderScroller.finishInfinite(true)
-        vm.$refs.orderScroller.resize()
+        try{
+          vm.$refs.orderScroller.finishInfinite(true)
+          vm.$refs.orderScroller.resize()
+        }catch(e){
+        }
       })
     },
     computed: {},
@@ -166,6 +172,7 @@
         }
       },
       isMilk() {
+        delete vm.params.status
         vm.params.goodsType = vm.isMilk ? 'goods_type.2' : 'goods_type.1'
         vm.getOrders()
       }
@@ -178,18 +185,16 @@
       toAppraise(id) {
         this.$router.push({path: '/appraise' + (param ? '/' + param : '')})
       },
+      changeType() {},
       refresh(done) {
-        console.log('下拉加载')
+        // console.log('下拉加载')
         setTimeout(function () {
           vm.getOrders()
           vm.$refs.orderScroller.finishPullToRefresh()
         }, 1200)
       },
-      changeType() {
-        // vm.getOrders()
-      },
       infinite(done) {
-        console.log('无限滚动')
+        // console.log('无限滚动')
         setTimeout(function () {
           vm.getOrders(true)
           vm.$refs.orderScroller.finishInfinite(true)
@@ -212,9 +217,6 @@
             for (var i = 0; i < resD.itemList.length; i++) {
               var cur = resD.itemList[i]
               switch (cur.status) {
-                case -1:
-                  cur.statusName = '已取消'
-                  break
                 case 1:
                   cur.statusName = '待支付'
                   break
@@ -224,10 +226,10 @@
                 case 3:
                   cur.statusName = '派送中'
                   break
-                /*case 3:
-                 cur.statusName = '待评价'
-                 break*/
                 case 4:
+                  cur.statusName = '已暂停'
+                  break
+                case 5:
                   cur.statusName = '已完成'
                   break
               }
@@ -277,16 +279,16 @@
         })
       },
       pushOrder(id) {
-        if (vm.isPosting) return false
+        /*if (vm.isPosting) return false
         vm.confirm('确认催单？', '请不要频繁催单！', function () {
           vm.isPosting = true
-          vm.loadData(orderApi.push, {id: id}, 'POST', function (res) {
-            vm.toast('催单成功')
-            vm.isPosting = false
-          }, function () {
-            vm.isPosting = false
-          })
+          vm.loadData(orderApi.push, {id: id}, 'POST', function (res) {*/
+        vm.toast('催单成功')
+        /*  vm.isPosting = false
+        }, function () {
+          vm.isPosting = false
         })
+      })*/
       },
       payDeposite(id) {
         if (vm.isPosting) return false
@@ -379,8 +381,8 @@
     .vux-x-switch {
       .fz(24) !important;
       .weui-switch:checked {
-        border-color: #fe6246;
-        background-color: #fe6246;
+        border-color: #fd826c;
+        background-color: #fd826c;
       }
     }
     .weui-cells {

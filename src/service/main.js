@@ -28,6 +28,7 @@ const ticketApi = {
   list: host + '/home/ticketList',
   user: host + '/userTicket/list',
   buy: host + '/userTicket/add',
+  calcPrice: host + '/userTicket/calcuPrice',
   exchange: host + '/order/ticketExchange'
 }
 const orderApi = {
@@ -37,7 +38,8 @@ const orderApi = {
   del: host + '/order/del',
   push: host + '/order/push',
   cancel: host + '/order/cancel',
-  getCoupon: host + 'order/getCoupon',
+  calcPrice: host + '/order/calcuPrice',
+  getCoupon: host + '/order/getCoupon',
   updateOrder: host + '/home/updateOrder'
 }
 const userApi = {

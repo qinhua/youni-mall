@@ -3762,12 +3762,10 @@ body {
 .xs-plugin-pullup-container {
   line-height: 40px;
 }
-.home .inner-scroller .box,
 .nearby .inner-scroller .box,
 .seller-detail .inner-scroller .box {
   padding-bottom: 120px !important;
 }
-.home .inner-scroller .xs-plugin-pullup-container,
 .nearby .inner-scroller .xs-plugin-pullup-container,
 .seller-detail .inner-scroller .xs-plugin-pullup-container {
   display: none !important;
@@ -4102,7 +4100,7 @@ body {
   position: fixed;
   left: 32px;
   bottom: 22px;
-  z-index: 200;
+  z-index: 500;
   transition: all 0.4s cubic-bezier(0.49, -0.29, 0.75, 0.41);
   /*贝塞尔曲线*/
 }

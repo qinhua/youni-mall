@@ -17,7 +17,7 @@
       <section class="v-items">
         <h4 class="item-top" v-if="curCartData.goods"><i
           class="ico-store"></i>&nbsp;{{curCartData.sellerName}}&nbsp;&nbsp;<i
-          class="fa fa-angle-right cc"></i><!--<span>{{isEdit ? '完成' : '编辑'}}</span>-->
+          class="fa fa-angle-right cc"></i><span class="tag-bonus" v-if="firstData.newUserCoupon">首单优惠</span>
         </h4>
         <ul class="has-list">
           <li v-for="(item,index) in curCartData.goods">
@@ -44,10 +44,14 @@
     </div>
     <div class="others-col">
       <group>
+        <popup-picker title="优惠券" :data="coupons" :columns="1" v-model="tmpCoupon" ref="picker1" @on-show=""
+                      @on-hide="" @on-change="changeCoupon" v-if="!firstData.newUserCoupon"></popup-picker>
+        <div class="bonus-tips" v-else><p><span
+          class="tit"><i
+          class="fa fa-cc-discover"></i>&nbsp;首单专享&nbsp;<i>(已优惠{{firstData.totalAmount - firstData.payAmount}}元)</i></span><span
+          class="price">￥{{firstData.payAmount | toFixed}}</span></p></div>
         <datetime title="配送时间" format="YYYY-MM-DD HH:mm" minute-row v-model="params.dispatchTime"
                   @on-change="changeTime"></datetime>
-        <popup-picker title="优惠券" :data="coupons" :columns="1" v-model="tmpCoupon" ref="picker1" @on-show=""
-                      @on-hide="" @on-change="changeCoupon"></popup-picker>
         <!--<x-input title="商品名称：" placeholder="商品名称" required text-align="right" v-model="params.name"></x-input>-->
         <x-textarea title="留言：" :max="20" placeholder="一些想对卖家说的话…" @on-blur="" v-model="params.userMessage"
                     show-clear></x-textarea>
@@ -63,6 +67,7 @@
     </div>
   </div>
 </template>
+
 <!--/* eslint-disable no-unused-vars */-->
 <script>
   /* eslint-disable */
@@ -76,7 +81,8 @@
     data() {
       return {
         address: null,
-        goods: null,
+        firstData: {},
+        goodsIds: [],
         params: {
           goods: [],
           addressId: null,
@@ -88,6 +94,12 @@
         isPosting: false,
         onFetching: false,
         tmpCoupon: ['未选择'],
+        types: {
+          'goods_type.1': '买5送1',
+          'goods_type.2': '买10送2',
+          'goods_type.3': '买100送35',
+          'goods_type.4': '买100送40',
+        },
         coupons: [{
           key: '',
           value: '未选择',
@@ -196,6 +208,8 @@
           }
           console.log(vm.curCartData, '带过来的数据')
           vm.switchData(vm.coupons, vm.tmpCoupon, 'couponId')
+          vm.calcPrice()
+          vm.getCoupon()
         } catch (e) {
           // console.log(e)
         }
@@ -236,6 +250,50 @@
           var resD = res.data
           vm.goods = resD
           console.log(vm.goods, '购物车数据')
+        }, function () {
+          vm.onFetching = false
+          vm.processing(0, 1)
+        })
+      },
+      getCoupon() {
+        vm.loadData(orderApi.getCoupon, {goods: vm.params.goods}, 'POST', function (res) {
+          if (res.success && res.data.itemList.length) {
+            for (var i = 0; i < res.data.itemList.length; i++) {
+              var cur = res.data.itemList[i]
+              cur=[{
+                "id": "rp03h48gq6ifeqe1lvbg0ht2m7",
+                "userId": "562bedbb7b4611e78a0f0242ac110002",
+                "status": 0,
+                "createTime": "2017-09-13 23:11:50",
+                "updateTime": "2017-09-13 23:11:50",
+                "goodsType": "goods_type.2",
+                "sellerType": 1,
+                "type": 2,
+                "couponNote": "aaa",
+                "maxAmount": 60,
+                "discountRate": 1,
+                "couponId": "3"
+              }]
+              vm.coupons.push({key: cur.id, value: vm.types[cur.goodsType], label: vm.types[cur.goodsType]})
+            }
+            var resD = res.data
+            console.log(vm.coupons, '可用的优惠券数据')
+          }
+          cb ? cb(resD) : null
+        }, function () {
+          vm.onFetching = false
+          vm.processing(0, 1)
+        })
+      },
+      calcPrice() {
+        vm.loadData(orderApi.calcPrice, {goods: vm.params.goods}, 'POST', function (res) {
+          if (res.success && res.data.newUserCoupon) {
+            var resD = res.data
+            vm.firstData = resD
+            vm.curCartData.totalPrice = resD.payAmount
+          }
+          console.log(vm.firstData, '首单优惠数据')
+          cb ? cb(resD) : null
         }, function () {
           vm.onFetching = false
           vm.processing(0, 1)
@@ -381,6 +439,11 @@
           padding-left: 40/@rem;
           .fz(22);
           .cdiy(@c2);
+          &.tag-bonus {
+            padding: 0 2px;
+            .bor(1px, solid, @c2);
+            .borR(2px)
+          }
         }
       }
       .has-list {
@@ -448,12 +511,40 @@
   }
 
   .others-col {
+    .bonus-tips {
+      .borBox;
+      padding: 30/@rem 24/@rem;
+      .bf;
+      p {
+        .fz(28);
+      }
+      .tit {
+        .cdiy(@c2);
+        .fa-cc-discover {
+          .cdiy(@c2);
+        }
+        i {
+          font-style: normal;
+          .c9
+        }
+        span {
+          .fz(24);
+        }
+      }
+      .price {
+        .fr;
+        .fz(30);
+      }
+    }
+
     .vux-no-group-title {
       margin-top: 0;
     }
+
     .vux-x-input, .address-area, .vux-datetime, .vux-selector, .vux-cell-box, .vux-x-textarea {
       .fz(26);
     }
+
   }
 
   .count-bar {
