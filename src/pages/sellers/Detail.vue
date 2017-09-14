@@ -675,13 +675,10 @@
           }
           .middle {
             .flex-r(1);
-            .price {
-            }
             span {
               &.price {
                 .cf;
-                .fz(24);
-                .txt-del;
+                .fz(26);
               }
               &.hasSell {
                 .ce;

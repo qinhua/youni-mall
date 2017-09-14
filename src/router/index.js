@@ -39,7 +39,7 @@ export default new Router({
       name: 'author',
       component: Auth,
       meta: {
-        title: '微信授权',
+        title: '授权中…',
         keepAlive: false // 是否需要缓存
       }
     },

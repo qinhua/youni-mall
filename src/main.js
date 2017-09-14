@@ -105,17 +105,17 @@ Vue.prototype.$axios = Axios
 window.loadData = Vue.prototype.loadData = function (url, params, type, sucCb, errCb) {
   params = params || {}
   setTimeout(function () {
-    var winAuth = window.youniMall.userAuth || store.state.global.wxInfo
+    var winAuth = me.locals.get('ynWxUser') ? JSON.parse(me.locals.get('ynWxUser')) : store.state.global.wxInfo
     /* 【cur5656Geo-当前定位的位置信息，cur5656SelArea-用户选择的位置信息，cur5656Ips-当前定位的ip和城市】 */
-    var localGeo = me.sessions.get('cur5656Geo') ? JSON.parse(me.sessions.get('cur5656Geo')) : null
-    var localUserSel = me.locals.get('cur5656Position') ? JSON.parse(me.locals.get('cur5656Position')) : null
-    var localIps = me.sessions.get('cur5656Ips') ? JSON.parse(me.sessions.get('cur5656Ips')) : null
-    var lastD = localUserSel ? localUserSel : localGeo
+    var localGeo = me.sessions.get('cur5656Geo') ? JSON.parse(me.sessions.get('cur5656Geo')) : {}
+    var localUserSel = me.locals.get('cur5656Position') ? JSON.parse(me.locals.get('cur5656Position')) : {}
+    var localIps = me.sessions.get('cur5656Ips') ? JSON.parse(me.sessions.get('cur5656Ips')) : {}
+    var lastD = localUserSel.lng ? localUserSel : localGeo
     var localParams = {
-      ip: localIps.cip,
-      cityCode: lastD.cityCode || localIps.cid,
-      lon: lastD.lng,
-      lat: lastD.lat
+      ip: localIps.cip || '',
+      cityCode: lastD.cityCode || (localIps.cid || '100000'),
+      lon: lastD.lng || '',
+      lat: lastD.lat || '',
     }
     $.extend(params, winAuth)
     // console.log('%c'+JSON.stringify(params, null, 2), 'color:#fff;background:purple')
