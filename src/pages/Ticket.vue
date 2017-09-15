@@ -22,19 +22,40 @@
                 :on-infinite="infinite"
                 refreshText="下拉刷新"
                 noDataText="就这么多了"
-                snapping v-if="tickets.length">
+                snapping v-if="tickets.length&&!isMe">
         <!-- content goes here -->
-        <section class="v-items" v-for="(item, index) in tickets" :data-id="item.id">
+        <section class="v-items" v-for="(item, index) in tickets" :data-id="item.id" :data-waterid="item.waterId">
           <section class="wrap">
             <img :src="item.imgurl">
             <section class="infos">
               <h3>{{item.name}}<span class="count">数量：<i>{{item.waterNum}}桶</i></span></h3>
               <section class="middle">
-                <span class="price">￥{{item.price}}</span>
+                <span class="price">￥{{item.price|toFixed}}</span>
                 <span class="sale-count">已售：<i>{{item.saleCount}}件</i></span>
-                <button type="button" class="btn btn-buy" @click="buy($event,item.id)">{{isMe ? '兑换' : '购买'}}</button>
+                <button type="button" class="btn btn-buy" @click="buy($event,item.id)">购买</button>
               </section>
               <label>{{item.waterNote}}</label>
+            </section>
+          </section>
+        </section>
+      </scroller>
+      <scroller class="inner-scroller" ref="ticketScroller" height="100%" :on-refresh="refresh"
+                :on-infinite="infinite"
+                refreshText=""
+                noDataText="就这么多了"
+                snapping v-if="tickets.length&&isMe">
+        <!-- content goes here -->
+        <section class="v-items" v-for="(item, index) in tickets" :data-id="item.id" :data-waterid="item.waterId">
+          <section class="wrap">
+            <img :src="item.ticketImage">
+            <section class="infos">
+              <h3>{{item.ticketName}}<span class="count">数量：<i>{{item.totalWaterNum}}桶</i></span></h3>
+              <section class="middle">
+                <span class="price txt-del c9">￥{{item.totalAmount|toFixed}}</span>
+                <span class="sale-count">已兑换：<i>{{item.exchangeWaterNum}}桶</i></span>
+                <button type="button" class="btn btn-buy" @click="buy($event,item.id)">兑换</button>
+              </section>
+              <label>￥{{item.payAmount|toFixed}}</label>
             </section>
           </section>
         </section>
@@ -103,10 +124,11 @@
       vm.initTab()
       vm.getTickets()
       vm.$nextTick(function () {
-        try{
-        vm.$refs.ticketScroller.finishInfinite(true)
-        vm.$refs.ticketScroller.resize()
-        }catch(e){
+        try {
+          vm.$refs.ticketScroller.finishInfinite(true)
+          vm.$refs.ticketScroller.resize()
+        } catch (e) {
+          // console.log(e)
         }
       })
     },
@@ -119,18 +141,12 @@
       '$route'(to, from) {
         vm.current = 0
         vm.params.waterTicketType = vm.navs[0].key
+        vm.tickets = []
         vm.keepFresh(vm.$route.params.type)
         vm.getTickets()
       }
     },
     methods: {
-      // 向父组件传值
-      /*selectCategory(data) {
-       console.log(data, '当前水票种类')
-       vm.current = data.index
-       vm.params.waterTicketType = data.key
-       vm.getTickets()
-       },*/
       toDetail(id) {
         vm.$router.push({path: '/detail/' + id})
       },
@@ -167,20 +183,78 @@
           vm.curApi = ticketApi.list
         }
       },
+      refresh(done) {
+        // console.log('下拉加载')
+        setTimeout(function () {
+          !vm.isMe ? vm.getTickets() : null
+          vm.$refs.ticketScroller.finishPullToRefresh()
+        }, 1200)
+      },
+      infinite(done) {
+        // console.log('无限滚动')
+        setTimeout(function () {
+          !vm.isMe ? vm.getTickets(true) : null
+          vm.$refs.ticketScroller.finishInfinite(true)
+        }, 1000)
+      },
+      onItemClick(type) {
+        vm.current = 0
+        vm.params.waterTicketType = vm.navs[0].key
+        if (type === 0) {
+          vm.$router.push({path: '/ticket'})
+        }
+        vm.keepFresh(type)
+        vm.getTickets(vm.isMe)
+      },
+      filterTicket(obj) {
+        vm.current = obj.index
+        vm.params.waterTicketType = obj.key
+        vm.getTickets()
+      },
+      getTickets(isLoadMore) {
+        if (vm.isPosting) return false
+        // 根据isMe判断不同的水票类型
+        vm.isPosting = true
+        vm.processing()
+        vm.loadData(vm.curApi, vm.params, 'POST', function (res) {
+          vm.isPosting = false
+          vm.processing(0, 1)
+          if (vm.isMe) {
+            vm.tickets = res.data.itemList
+          } else {
+            var resD = res.data.pager
+            if (!isLoadMore) {
+              vm.tickets = res.data.itemList
+              if (resD.totalCount < vm.params.pageSize) {
+                vm.noMore = true
+              } else {
+                vm.noMore = false
+              }
+              vm.tickets = resD.itemList
+            } else {
+              resD.itemList.length ? vm.tickets.concat(resD.itemList) : vm.noMore = true
+            }
+          }
+          console.log(vm.tickets, '水票数据')
+        }, function () {
+          vm.isPosting = false
+        })
+      },
       buy(e, id) {
         e.stopPropagation()
-        /*if (!me.isWeixin) {
-         vm.toast('请在微信中操作！')
-         return
-         }*/
         if (vm.isPosting) return false
         vm.isPosting = true
         if (vm.isMe) {
+          vm.isPosting = false
           vm.$router.push({
             name: 'confirm_ticket',
             query: {id: id}
           })
         } else {
+          if (!me.isWeixin) {
+            vm.toast('请在微信中操作！')
+            return
+          }
           vm.loadData(ticketApi.buy, {waterId: id}, 'POST', function (res) {
             vm.isPosting = false
             // alert(JSON.stringify(res.data))
@@ -222,60 +296,6 @@
           // alert(JSON.stringify(res))
         })
       },
-      refresh(done) {
-        console.log('下拉加载')
-        setTimeout(function () {
-          vm.getTickets()
-          vm.$refs.ticketScroller.finishPullToRefresh()
-        }, 1200)
-      },
-      infinite(done) {
-        console.log('无限滚动')
-        setTimeout(function () {
-          vm.getTickets(true)
-          vm.$refs.ticketScroller.finishInfinite(true)
-        }, 1000)
-      },
-      onItemClick(type) {
-        vm.current = 0
-        vm.params.waterTicketType = vm.navs[0].key
-        if (type === 0) {
-          vm.$router.push({path: '/ticket'})
-        }
-        vm.keepFresh(type)
-        vm.getTickets()
-      },
-      filterTicket(obj) {
-        vm.current = obj.index
-        vm.params.waterTicketType = obj.key
-        vm.getTickets()
-      },
-      getTickets(isLoadMore) {
-        vm.isMe = this.$route.params.type ? true : false
-        if (vm.isPosting) return false
-        // 根据isMine判断不同的水票类型
-        vm.isPosting = true
-        vm.processing()
-        vm.loadData(vm.curApi, vm.params, 'POST', function (res) {
-          vm.isPosting = false
-          vm.processing(0, 1)
-          var resD = res.data.pager
-          if (!isLoadMore) {
-            vm.tickets = res.data.itemList
-            if (resD.totalCount < vm.params.pageSize) {
-              vm.noMore = true
-            } else {
-              vm.noMore = false
-            }
-            vm.tickets = resD.itemList
-          } else {
-            resD.itemList.length ? vm.tickets.concat(resD.itemList) : vm.noMore = true
-          }
-          console.log(vm.tickets, '水票数据')
-        }, function () {
-          vm.isPosting = false
-        })
-      }
     }
   }
 </script>

@@ -14,7 +14,7 @@
     <!--中间入口-->
     <div class="middle-entry">
       <grid :rows="4">
-        <grid-item label="订水" link="/home" @on-item-click="setPageStatus(1)">
+        <grid-item label="订水" link="/ticket" @on-item-click="setPageStatus(1)">
           <img slot="icon" src="../../static/img/item_water.png">
         </grid-item>
         <grid-item label="订奶" link="/nearby" @on-item-click="setPageStatus(2)">

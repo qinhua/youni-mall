@@ -1,122 +1,119 @@
 <template>
   <div class="order-con" v-cloak>
 
-    <group>
-      <x-switch :title="'订单类别 ['+(isMilk?'奶':'水')+']'" v-model="isMilk" @on-click="changeType"></x-switch>
-    </group>
-
     <!--订单列表-->
-    <div class="orders-list-con">
-      <sticky class="bf">
-        <tab class="order-tab" ref="orderTab" active-color="#FE6246" v-if="!isMilk">
-          <tab-item :selected="!params.status?true:false" @on-item-click="onItemClick">全部</tab-item>
-          <tab-item :selected="params.status==1?true:false" @on-item-click="onItemClick(1)">待支付</tab-item>
-          <tab-item :selected="params.status==2?true:false" @on-item-click="onItemClick(2)">待派送</tab-item>
-          <tab-item :selected="params.status==3?true:false" @on-item-click="onItemClick(3)">派送中</tab-item>
-          <tab-item :selected="params.status==5?true:false" @on-item-click="onItemClick(5)">已完成</tab-item>
-        </tab>
-        <tab class="order-tab" active-color="#f34c18" v-else>
-          <tab-item :selected="!params.status?true:false" @on-item-click="onItemClick">全部</tab-item>
-          <tab-item :selected="params.status==3?true:false" @on-item-click="onItemClick(3)">配送中</tab-item>
-          <tab-item :selected="params.status==4?true:false" @on-item-click="onItemClick(4)">已暂停</tab-item>
-          <tab-item :selected="params.status==4?true:false" @on-item-click="onItemClick(5)">已完成</tab-item>
-        </tab>
-      </sticky>
+    <div class="orders-tab-con">
+      <group>
+        <x-switch :title="'订单类别 ['+(isMilk?'奶':'水')+']'" v-model="isMilk" @on-click="changeType"></x-switch>
+      </group>
+      <tab class="order-tab" ref="orderTab" active-color="#FE6246" v-if="!isMilk">
+        <tab-item :selected="!params.status?true:false" @on-item-click="onItemClick">全部</tab-item>
+        <tab-item :selected="params.status==1?true:false" @on-item-click="onItemClick(1)">待支付</tab-item>
+        <tab-item :selected="params.status==2?true:false" @on-item-click="onItemClick(2)">待派送</tab-item>
+        <tab-item :selected="params.status==3?true:false" @on-item-click="onItemClick(3)">派送中</tab-item>
+        <tab-item :selected="params.status==5?true:false" @on-item-click="onItemClick(5)">已完成</tab-item>
+      </tab>
+      <tab class="order-tab" active-color="#f34c18" v-else>
+        <tab-item :selected="!params.status?true:false" @on-item-click="onItemClick">全部</tab-item>
+        <tab-item :selected="params.status==3?true:false" @on-item-click="onItemClick(3)">配送中</tab-item>
+        <tab-item :selected="params.status==4?true:false" @on-item-click="onItemClick(4)">已暂停</tab-item>
+        <tab-item :selected="params.status==4?true:false" @on-item-click="onItemClick(5)">已完成</tab-item>
+      </tab>
+    </div>
 
-      <div class="order-list">
-        <scroller class="inner-scroller" ref="orderScroller" :on-refresh="refresh" :on-infinite="infinite"
-                  refreshText="下拉刷新" noDataText="就这么多了" snapping v-if="orders.length&&!isMilk">
-          <!-- content goes here -->
-          <section class="v-items" v-for="(item, index) in orders" :data-id="item.orderId"
-                   :data-orderNumber="item.appOrderNumber" :data-itemId="item.orderItemId">
-            <!--<h4 class="item-top"><i class="ico-store"></i>&nbsp;{{item.sellerName}}&nbsp;&nbsp;<i class="fa fa-angle-right cc"></i><span>{{item.statusName}}</span></h4>-->
-            <section class="item-middle">
-              <div class="img-con">
-                <img :src="item.goodsImage">
-              </div>
-              <div class="info-con">
-                <h3>{{item.goodsName}}</h3>
-                <section class="middle">
-                  <span class="unit-price">￥{{item.goodsPrice}}</span>
-                  <span class="order-info">{{item.info}}</span>
-                </section>
-                <label>{{item.label}}</label>
-              </div>
-              <div class="price-con">
-                <p class="price">￥{{(item.goodsPrice * item.goodsAmount) | toFixed}}</p>
-                <p class="buy-count">x{{item.goodsAmount}}</p>
-              </div>
-            </section>
-            <section class="item-bottom">
-              <!--<div class="extra-info">
-                <p v-for="(ext, idx) in item.extras">{{ext.name}}<span>￥{{ext.type ? '-' : ''}}{{ext.value}}.00</span></p>
-              </div>-->
-              <!--<a class="btn btn-del" @click="cancelOrder(item.orderId)">取消订单</a>-->
-              <!--<a class="btn btn-del" @click="delOrder(item.orderId)">删除订单</a>-->
-              <!--<a class="btn btn-del" @click="payDeposite(item.sellerId)">交押金</a>-->
-              <div class="btns" v-if="item.status===1">
-                <a class="btn btn-cancel" @click="payOrder(item.orderId)">支付</a>
-              </div>
-              <!--<div class="btns" v-if="item.status===0">
-                <a class="btn btn-pay" @click="payOrder(item.orderId)">支付</a>
-                <a class="btn btn-cancel" @click="cancelOrder(item.orderId)">取消订单</a>
-              </div>-->
-              <div class="btns" v-if="item.status===2">
-                <a class="btn btn-cancel" @click="pushOrder(item.orderId)">催单</a>
-              </div>
-              <div class="btns" v-if="item.status===3">
-                <a class="btn btn-cancel" @click="pushOrder(item.orderId)">查看</a>
-              </div>
-              <div class="btns" v-if="item.status===5">
-                <a class="btn btn-appraise" @click="toAppraise(item.orderId)">评价</a>
-              </div>
-            </section>
+    <div class="order-list-con">
+      <scroller class="inner-scroller" ref="orderScroller" :on-refresh="refresh" :on-infinite="infinite"
+                refreshText="下拉刷新" noDataText="就这么多了" snapping v-if="orders.length&&!isMilk">
+        <!-- content goes here -->
+        <section class="v-items" v-for="(item, index) in orders" :data-id="item.orderId"
+                 :data-orderNumber="item.appOrderNumber" :data-itemId="item.orderItemId">
+          <h4 class="item-top"><i class="ico-seller" :style="item.sellerImage?'background-image:url('+item.sellerImage+')':''"></i>&nbsp;{{item.sellerName}}&nbsp;&nbsp;<i
+            class="fa fa-angle-right cc"></i><span>{{item.statusName}}</span></h4>
+          <section class="item-middle">
+            <div class="img-con">
+              <img :src="item.goodsImage">
+            </div>
+            <div class="info-con">
+              <h3>{{item.goodsName}}</h3>
+              <section class="middle">
+                <span class="unit-price">￥{{item.goodsPrice}}</span>
+                <span class="order-info">{{item.info}}</span>
+              </section>
+              <label>{{item.label}}</label>
+            </div>
+            <div class="price-con">
+              <p class="price">￥{{(item.goodsPrice * item.goodsAmount) | toFixed}}</p>
+              <p class="buy-count">x{{item.goodsAmount}}</p>
+            </div>
           </section>
-        </scroller>
-        <scroller class="inner-scroller" ref="orderScroller" :on-refresh="refresh" :on-infinite="infinite"
-                  refreshText="下拉刷新" noDataText="就这么多了" snapping v-else-if="orders.length&&isMilk">
-          <!-- content goes here -->
-          <section class="v-items" v-for="(item, index) in orders" :data-id="item.orderId"
-                   :data-orderNumber="item.appOrderNumber" :data-itemId="item.orderItemId">
-            <!--<h4 class="item-top"><i class="ico-store"></i>&nbsp;{{item.sellerName}}&nbsp;&nbsp;<i class="fa fa-angle-right cc"></i><span>{{item.statusName}}</span></h4>-->
-            <section class="item-middle">
-              <div class="img-con">
-                <img :src="item.goodsImage">
-              </div>
-              <div class="info-con">
-                <h3>{{item.goodsName}}</h3>
-                <section class="middle">
-                  <span class="unit-price">￥{{item.goodsPrice}}</span>
-                  <span class="order-info">{{item.info}}</span>
-                </section>
-                <label>{{item.label}}</label>
-              </div>
-              <div class="price-con">
-                <p class="price">￥{{(item.goodsPrice * item.goodsAmount) | toFixed}}</p>
-                <p class="buy-count">x{{item.goodsAmount}}</p>
-              </div>
-            </section>
-            <section class="item-bottom">
-              <!--<div class="extra-info">
-                <p v-for="(ext, idx) in item.extras">{{ext.name}}<span>￥{{ext.type ? '-' : ''}}{{ext.value}}.00</span></p>
-              </div>-->
-              <div class="btns" v-if="item.status===1">
-                <a class="btn btn-cancel" @click="payOrder(item.orderId)">支付</a>
-              </div>
-              <div class="btns" v-if="item.status===2">
-                <a class="btn btn-cancel" @click="pushOrder(item.orderId)">催单</a>
-              </div>
-              <div class="btns" v-if="item.status===4">
-                <a class="btn btn-del" @click="delOrder(item.orderId)">恢复配送</a>
-              </div>
-              <div class="btns" v-if="item.status===5">
-                <a class="btn btn-appraise" @click="toAppraise(item.orderId)">评价</a>
-              </div>
-            </section>
+          <section class="item-bottom">
+            <!--<div class="extra-info">
+              <p v-for="(ext, idx) in item.extras">{{ext.name}}<span>￥{{ext.type ? '-' : ''}}{{ext.value}}.00</span></p>
+            </div>-->
+            <!--<a class="btn btn-del" @click="cancelOrder(item.orderId)">取消订单</a>-->
+            <!--<a class="btn btn-del" @click="delOrder(item.orderId)">删除订单</a>-->
+            <!--<a class="btn btn-del" @click="payDeposite(item.sellerId)">交押金</a>-->
+            <div class="btns" v-if="item.status===1">
+              <a class="btn btn-cancel" @click="payOrder(item.orderId)">支付</a>
+            </div>
+            <!--<div class="btns" v-if="item.status===0">
+              <a class="btn btn-pay" @click="payOrder(item.orderId)">支付</a>
+              <a class="btn btn-cancel" @click="cancelOrder(item.orderId)">取消订单</a>
+            </div>-->
+            <div class="btns" v-if="item.status===2">
+              <a class="btn btn-cancel" @click="pushOrder(item.orderId)">催单</a>
+            </div>
+            <div class="btns" v-if="item.status===3">
+              <a class="btn btn-cancel" @click="pushOrder(item.orderId)">查看</a>
+            </div>
+            <div class="btns" v-if="item.status===5">
+              <a class="btn btn-appraise" @click="toAppraise(item.orderId)">评价</a>
+            </div>
           </section>
-        </scroller>
-      </div>
-
+        </section>
+      </scroller>
+      <scroller class="inner-scroller" ref="orderScroller" :on-refresh="refresh" :on-infinite="infinite"
+                refreshText="下拉刷新" noDataText="就这么多了" snapping v-else-if="orders.length&&isMilk">
+        <!-- content goes here -->
+        <section class="v-items" v-for="(item, index) in orders" :data-id="item.orderId"
+                 :data-orderNumber="item.appOrderNumber" :data-itemId="item.orderItemId">
+          <h4 class="item-top"><i class="ico-seller" :style="item.sellerImage?'background-image:url('+item.sellerImage+')':''"></i>&nbsp;{{item.sellerName}}&nbsp;&nbsp;<i class="fa fa-angle-right cc"></i><span>{{item.statusName}}</span></h4>
+          <section class="item-middle">
+            <div class="img-con">
+              <img :src="item.goodsImage">
+            </div>
+            <div class="info-con">
+              <h3>{{item.goodsName}}</h3>
+              <section class="middle">
+                <span class="unit-price">￥{{item.goodsPrice}}</span>
+                <span class="order-info">{{item.info}}</span>
+              </section>
+              <label>{{item.label}}</label>
+            </div>
+            <div class="price-con">
+              <p class="price">￥{{(item.goodsPrice * item.goodsAmount) | toFixed}}</p>
+              <p class="buy-count">x{{item.goodsAmount}}</p>
+            </div>
+          </section>
+          <section class="item-bottom">
+            <!--<div class="extra-info">
+              <p v-for="(ext, idx) in item.extras">{{ext.name}}<span>￥{{ext.type ? '-' : ''}}{{ext.value}}.00</span></p>
+            </div>-->
+            <div class="btns" v-if="item.status===1">
+              <a class="btn btn-cancel" @click="payOrder(item.orderId)">支付</a>
+            </div>
+            <div class="btns" v-if="item.status===2">
+              <a class="btn btn-cancel" @click="pushOrder(item.orderId)">催单</a>
+            </div>
+            <div class="btns" v-if="item.status===4">
+              <a class="btn btn-del" @click="delOrder(item.orderId)">恢复配送</a>
+            </div>
+            <div class="btns" v-if="item.status===5">
+              <a class="btn btn-appraise" @click="toAppraise(item.orderId)">评价</a>
+            </div>
+          </section>
+        </section>
+      </scroller>
     </div>
     <div class="iconNoData abs-center-vh" v-if="!orders.length"><i></i>
       <p>暂无订单</p></div>
@@ -156,10 +153,10 @@
       me.attachClick()
       vm.getOrders()
       vm.$nextTick(function () {
-        try{
+        try {
           vm.$refs.orderScroller.finishInfinite(true)
           vm.$refs.orderScroller.resize()
-        }catch(e){
+        } catch (e) {
         }
       })
     },
@@ -185,7 +182,8 @@
       toAppraise(id) {
         this.$router.push({path: '/appraise' + (param ? '/' + param : '')})
       },
-      changeType() {},
+      changeType() {
+      },
       refresh(done) {
         // console.log('下拉加载')
         setTimeout(function () {
@@ -280,15 +278,15 @@
       },
       pushOrder(id) {
         /*if (vm.isPosting) return false
-        vm.confirm('确认催单？', '请不要频繁催单！', function () {
-          vm.isPosting = true
-          vm.loadData(orderApi.push, {id: id}, 'POST', function (res) {*/
+         vm.confirm('确认催单？', '请不要频繁催单！', function () {
+         vm.isPosting = true
+         vm.loadData(orderApi.push, {id: id}, 'POST', function (res) {*/
         vm.toast('催单成功')
         /*  vm.isPosting = false
-        }, function () {
-          vm.isPosting = false
-        })
-      })*/
+         }, function () {
+         vm.isPosting = false
+         })
+         })*/
       },
       payDeposite(id) {
         if (vm.isPosting) return false
@@ -374,6 +372,12 @@
 
   .order-con {
     height: 100%;
+    .orders-tab-con {
+      .fix;
+      width: 100%;
+      top: 0;
+      z-index: 20;
+    }
     .orders-list-con {
       height: 100%;
     }
@@ -399,12 +403,12 @@
       }
     }
 
-    .order-list {
+    .order-list-con {
       .rel;
       height: 100%;
       .inner-scroller {
         .borBox;
-        padding: 0 0 50px;
+        padding: 86px 0 50px;
         .v-items {
           .borBox;
           margin-bottom: 20/@rem;
@@ -418,15 +422,6 @@
             .c3;
             .fz(24);
             .bor-b;
-            .ico-store {
-              .fl;
-              display: inline-block;
-              margin-top: 2/@rem;
-              font-size: inherit;
-              .size(30, 30);
-              background: url(../../static/img/ico_store.png);
-              .ele-base;
-            }
             span {
               .fr;
               .fz(22);

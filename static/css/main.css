@@ -3681,6 +3681,30 @@ body {
   top: 8px;
   left: 7px;
 }
+.ico-store {
+  float: left;
+  display: inline-block;
+  margin-top: 0.0625rem;
+  font-size: inherit;
+  width: 0.9375rem;
+  height: 0.9375rem;
+  background: url(../../static/img/ico_store.png);
+  -webkit-background-size: cover;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+.ico-seller {
+  float: left;
+  display: inline-block;
+  margin-top: 0.0625rem;
+  font-size: inherit;
+  width: 0.9375rem;
+  height: 0.9375rem;
+  background: url(../../static/img/ico_seller.png);
+  -webkit-background-size: cover;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
 .ico-cart {
   display: inline-block;
   font-style: normal;
@@ -3690,6 +3714,19 @@ body {
   background: url(../../static/img/ico_cart.png) no-repeat center;
   -webkit-background-size: 100% 100%;
   background-size: 100% 100%;
+}
+.ico-avatar {
+  float: left;
+  display: inline-block;
+  margin-top: 0.0625rem;
+  font-size: inherit;
+  width: 0.9375rem;
+  height: 0.9375rem;
+  background: url(../../static/img/ico_avatar.png);
+  -webkit-background-size: cover;
+  background-size: cover;
+  background-repeat: no-repeat;
+  border-radius: 50%;
 }
 .location-chooser {
   position: relative;

@@ -48,7 +48,7 @@
                       @on-hide="" @on-change="changeCoupon" v-if="!firstData.newUserCoupon"></popup-picker>
         <div class="bonus-tips" v-else><p><span
           class="tit"><i
-          class="fa fa-cc-discover"></i>&nbsp;首单专享&nbsp;<i>(已优惠{{firstData.totalAmount - firstData.payAmount}}元)</i></span><span
+          class="fa fa-thumbs-o-up"></i>&nbsp;首单专享&nbsp;<i>(已优惠{{firstData.totalAmount - firstData.payAmount}}元)</i></span><span
           class="price">￥{{firstData.payAmount | toFixed}}</span></p></div>
         <datetime title="配送时间" format="YYYY-MM-DD HH:mm" minute-row v-model="params.dispatchTime"
                   @on-change="changeTime"></datetime>
@@ -60,7 +60,7 @@
     <div class="count-bar">
       <div class="wrap">
         <div class="txt-total">
-          <h4>合计：<span>￥{{(curCartData.totalPrice || 0) | toFixed}}</span><!--<i></i>--></h4>
+          <h4>合计：<span>￥{{(firstData.payAmount||curCartData.totalPrice || 0) | toFixed}}</span><!--<i></i>--></h4>
         </div>
         <div class="btn btn-toPay" @click="generateOrder">提交订单</div>
       </div>
@@ -256,42 +256,49 @@
         })
       },
       getCoupon() {
-        vm.loadData(orderApi.getCoupon, {goods: vm.params.goods}, 'POST', function (res) {
-          if (res.success && res.data.itemList.length) {
-            for (var i = 0; i < res.data.itemList.length; i++) {
-              var cur = res.data.itemList[i]
-              cur=[{
-                "id": "rp03h48gq6ifeqe1lvbg0ht2m7",
-                "userId": "562bedbb7b4611e78a0f0242ac110002",
-                "status": 0,
-                "createTime": "2017-09-13 23:11:50",
-                "updateTime": "2017-09-13 23:11:50",
-                "goodsType": "goods_type.2",
-                "sellerType": 1,
-                "type": 2,
-                "couponNote": "aaa",
-                "maxAmount": 60,
-                "discountRate": 1,
-                "couponId": "3"
-              }]
+        /*vm.loadData(orderApi.getCoupon, {goods: vm.params.goods}, 'POST', function (res) {
+          if (res.success && res.data.itemList.length) {*/
+//            var resD=res.data.itemList
+            var resD= [{
+              "id": "rp03h48gq6ifeqe1lvbg0ht2m7",
+              "userId": "562bedbb7b4611e78a0f0242ac110002",
+              "status": 0,
+              "createTime": "2017-09-13 23:11:50",
+              "updateTime": "2017-09-13 23:11:50",
+              "goodsType": "goods_type.2",
+              "sellerType": 1,
+              "type": 2,
+              "couponNote": "aaa",
+              "maxAmount": 60,
+              "discountRate": 1,
+              "couponId": "3"
+            }]
+            for (var i = 0; i < resD.length; i++) {
+              var cur = resD[i]
               vm.coupons.push({key: cur.id, value: vm.types[cur.goodsType], label: vm.types[cur.goodsType]})
             }
             var resD = res.data
             console.log(vm.coupons, '可用的优惠券数据')
-          }
+        /*  }
           cb ? cb(resD) : null
         }, function () {
           vm.onFetching = false
           vm.processing(0, 1)
-        })
+        })*/
       },
       calcPrice() {
         vm.loadData(orderApi.calcPrice, {goods: vm.params.goods}, 'POST', function (res) {
           if (res.success && res.data.newUserCoupon) {
             var resD = res.data
             vm.firstData = resD
-            vm.curCartData.totalPrice = resD.payAmount
           }
+          /*else {
+            vm.firstData = {
+              newUserCoupon: true,
+              payAmount: 8,
+              totalAmount: 20
+            }
+          }*/
           console.log(vm.firstData, '首单优惠数据')
           cb ? cb(resD) : null
         }, function () {
@@ -516,11 +523,11 @@
       padding: 30/@rem 24/@rem;
       .bf;
       p {
-        .fz(28);
+        .fz(26);
       }
       .tit {
         .cdiy(@c2);
-        .fa-cc-discover {
+        .fa-thumbs-o-up {
           .cdiy(@c2);
         }
         i {
