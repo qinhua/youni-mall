@@ -30,9 +30,9 @@
             <section class="infos">
               <h3>{{item.name}}<span class="count">数量：<i>{{item.waterNum}}桶</i></span></h3>
               <section class="middle">
-                <span class="price">￥{{item.price|toFixed}}</span>
+                <span class="price">￥{{item.price | toFixed}}</span>
                 <span class="sale-count">已售：<i>{{item.saleCount}}件</i></span>
-                <button type="button" class="btn btn-buy" @click="buy($event,item.id)">购买</button>
+                <button type="button" class="btn btn-buy" @click="onButtonClick($event,item.id)">购买</button>
               </section>
               <label>{{item.waterNote}}</label>
             </section>
@@ -51,11 +51,11 @@
             <section class="infos">
               <h3>{{item.ticketName}}<span class="count">数量：<i>{{item.totalWaterNum}}桶</i></span></h3>
               <section class="middle">
-                <span class="price txt-del c9">￥{{item.totalAmount|toFixed}}</span>
+                <span class="price txt-del c9">￥{{item.totalAmount | toFixed}}</span>
                 <span class="sale-count">已兑换：<i>{{item.exchangeWaterNum}}桶</i></span>
-                <button type="button" class="btn btn-buy" @click="buy($event,item.id)">兑换</button>
+                <button type="button" class="btn btn-buy" @click="onButtonClick($event,item.id,item)">兑换</button>
               </section>
-              <label>￥{{item.payAmount|toFixed}}</label>
+              <label>￥{{item.payAmount | toFixed}}</label>
             </section>
           </section>
         </section>
@@ -111,7 +111,8 @@
           pageNo: 1
         },
         noMore: false,
-        isPosting: false
+        isPosting: false,
+        onFetching: false
       }
     },
     components: {Tab, TabItem},
@@ -187,14 +188,22 @@
         // console.log('下拉加载')
         setTimeout(function () {
           !vm.isMe ? vm.getTickets() : null
-          vm.$refs.ticketScroller.finishPullToRefresh()
+          try {
+            vm.$refs.ticketScroller.finishPullToRefresh()
+          } catch (e) {
+            console.log(e)
+          }
         }, 1200)
       },
       infinite(done) {
         // console.log('无限滚动')
         setTimeout(function () {
           !vm.isMe ? vm.getTickets(true) : null
-          vm.$refs.ticketScroller.finishInfinite(true)
+          try {
+            vm.$refs.ticketScroller.finishInfinite(true)
+          } catch (e) {
+            console.log(e)
+          }
         }, 1000)
       },
       onItemClick(type) {
@@ -212,12 +221,12 @@
         vm.getTickets()
       },
       getTickets(isLoadMore) {
-        if (vm.isPosting) return false
+        if (vm.onFetching) return false
         // 根据isMe判断不同的水票类型
-        vm.isPosting = true
+        vm.onFetching = true
         vm.processing()
         vm.loadData(vm.curApi, vm.params, 'POST', function (res) {
-          vm.isPosting = false
+          vm.onFetching = false
           vm.processing(0, 1)
           if (vm.isMe) {
             vm.tickets = res.data.itemList
@@ -237,34 +246,40 @@
           }
           console.log(vm.tickets, '水票数据')
         }, function () {
+          vm.onFetching = false
+        })
+      },
+      onButtonClick(e, id, lineData) {
+        e.stopPropagation()
+        if (vm.isMe) {
+          /*如果已支付，直接兑换，没有支付先支付*/
+          if (lineData.payStatus) {
+            vm.$router.push({
+              name: 'confirm_ticket',
+              query: {thedata: window.encodeURIComponent(JSON.stringify(lineData))}
+            })
+          } else {
+            vm.payOrder(id)
+          }
+        } else {
+          vm.payOrder(id)
+        }
+      },
+      payOrder(id) {
+        if (!me.isWeixin) {
+          vm.toast('请在微信中操作！')
+          return
+        }
+        if (vm.isPosting) return false
+        vm.isPosting = true
+        vm.loadData(ticketApi.buy, {waterId: id}, 'POST', function (res) {
+          vm.isPosting = false
+          vm.pay(res.data)
+        }, function () {
           vm.isPosting = false
         })
       },
-      buy(e, id) {
-        e.stopPropagation()
-        if (vm.isPosting) return false
-        vm.isPosting = true
-        if (vm.isMe) {
-          vm.isPosting = false
-          vm.$router.push({
-            name: 'confirm_ticket',
-            query: {id: id}
-          })
-        } else {
-          if (!me.isWeixin) {
-            vm.toast('请在微信中操作！')
-            return
-          }
-          vm.loadData(ticketApi.buy, {waterId: id}, 'POST', function (res) {
-            vm.isPosting = false
-            // alert(JSON.stringify(res.data))
-            vm.payOrder(res.data)
-          }, function () {
-            vm.isPosting = false
-          })
-        }
-      },
-      payOrder(data) {
+      pay(data) {
         wx.config({
           debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
           appId: data.appId, // 必填，公众号的唯一标识
@@ -286,7 +301,8 @@
             paySign: data.paySign, // 支付签名
             success: function (res) {
               // 支付成功后的回调函数
-              vm.$router.push({path: '/order'})
+              // vm.$router.push({path: '/order'})
+              vm.keepFresh(true)
             }
           })
         })

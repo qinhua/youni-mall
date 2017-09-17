@@ -28,13 +28,13 @@
                       <div class="info-con">
                         <h3>{{item.goodsName}}</h3>
                         <section class="middle">
-                          <span class="unit-price">￥{{item.price}}</span>
+                          <span class="unit-price">￥{{item.price}}元</span>
                           <span class="order-info">{{item.info}}</span>
                         </section>
                         <!--<label>{{item.label}}</label>-->
                       </div>
                       <div class="price-con">
-                        <p class="price">￥{{item.price * item.goodsNum}}</p>
+                        <p class="price">总价：￥{{item.price * item.goodsNum}}</p>
                         <p class="buy-count" v-show="!isEdit">x{{item.goodsNum}}</p>
                         <div class="checker-con" v-show="isEdit">
                           <label @click="updateGoods(item.goodsId, 'minus')"><i class="fa fa-minus"></i></label>
@@ -427,7 +427,7 @@
           width: 100%;
           .borBox;
           /*padding: 14/@rem 20/@rem 14/@rem 60/@rem*/;
-          padding: 14/@rem 20/@rem 14/@rem 20/@rem;
+          padding: 14/@rem 20/@rem 14/@rem 14/@rem;
           .flex;
           .img-con {
             .rel;

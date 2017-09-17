@@ -34,13 +34,14 @@ const ticketApi = {
 const orderApi = {
   list: host + '/order/list',
   add: host + '/order/add',
+  repay: host + '/order/repay',
   score: host + '/order/score',
   del: host + '/order/del',
-  push: host + '/order/push',
+  push: host + '/order/remind',
   cancel: host + '/order/cancel',
   calcPrice: host + '/order/calcuPrice',
   getCoupon: host + '/order/getCoupon',
-  updateOrder: host + '/home/updateOrder'
+  updateOrderStatus: host + '/order/userStopOrder'
 }
 const userApi = {
   userInfo: host + '/user/userInfo',

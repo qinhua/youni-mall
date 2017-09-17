@@ -17,6 +17,9 @@ import store from './store'
 import VueScroller from 'vue-scroller'
 import {AlertPlugin, ConfirmPlugin, ToastPlugin, LoadingPlugin} from 'vux'
 
+const FastClick = require('fastclick')
+FastClick.attach(document.body)
+
 Vue.use(require('vue-wechat-title'))
 Vue.use(ConfirmPlugin)
 Vue.use(AlertPlugin)
@@ -53,7 +56,7 @@ router.beforeEach((to, from, next) => {
 
   /* 判断授权是否存在或过期(页面刷新就会触发过期检查，不包含切换账号后的检查) */
   if (store.state.global.expired) {
-    var localAuth = me.locals.get('ynWxUser') ? JSON.parse(me.locals.get('ynWxUser')) : null
+    var localAuth = me.locals.get('ynWxUser') ? JSON.parse(me.locals.get('ynWxUser')): null
     if (to.path === '/author') {
       if (localAuth) {
         /* 检查本地token是否过期(7天保质期) */
@@ -94,7 +97,7 @@ router.beforeEach((to, from, next) => {
       }
     }
   } else {
-    window.youniMall.userAuth = store.state.global.wxInfo
+    window.youniMall.userAuth = store.state.global.wxInfo ? store.state.global.wxInfo : (me.locals.get('ynWxUser') ? JSON.parse(me.locals.get('ynWxUser')).data : {})
     next()
   }
 })
@@ -102,26 +105,26 @@ router.beforeEach((to, from, next) => {
 /* ----- 封装一些方法 -------- */
 /* ajax请求 */
 Vue.prototype.$axios = Axios
-window.loadData = Vue.prototype.loadData = function (url, params, type, sucCb, errCb) {
+window.loadData = Vue.prototype.loadData = function (url, params, type, sucCb, errCb, noAuthInfo) {
   params = params || {}
+  var winAuth = window.youniMall.userAuth || (me.locals.get('ynWxUser') ? JSON.parse(me.locals.get('ynWxUser')).data : null)
+  if (!winAuth) {
+    vm.$router.push({path: '/author'})
+  }
+  /* 【cur5656Geo-当前定位的位置信息，cur5656SelArea-用户选择的位置信息，cur5656Ips-当前定位的ip和城市】 */
+  var localGeo = me.sessions.get('cur5656Geo') ? JSON.parse(me.sessions.get('cur5656Geo')) : {}
+  var localUserSel = me.locals.get('cur5656Position') ? JSON.parse(me.locals.get('cur5656Position')) : {}
+  var localIps = me.sessions.get('cur5656Ips') ? JSON.parse(me.sessions.get('cur5656Ips')) : {}
+  var lastD = localUserSel.lng ? localUserSel : localGeo
+  var localParams = {
+    ip: localIps.cip || '',
+    cityCode: lastD.cityCode || (localIps.cid || '100000'),
+    lon: lastD.lng || '',
+    lat: lastD.lat || '',
+  }
+  !noAuthInfo ? $.extend(params, winAuth) : null
+  // console.log('%c'+JSON.stringify(params, null, 2), 'color:#fff;background:purple')
   setTimeout(function () {
-    var winAuth = window.youniMall.userAuth
-    if (!winAuth) {
-      vm.$router.push({path: '/author'})
-    }
-    /* 【cur5656Geo-当前定位的位置信息，cur5656SelArea-用户选择的位置信息，cur5656Ips-当前定位的ip和城市】 */
-    var localGeo = me.sessions.get('cur5656Geo') ? JSON.parse(me.sessions.get('cur5656Geo')) : {}
-    var localUserSel = me.locals.get('cur5656Position') ? JSON.parse(me.locals.get('cur5656Position')) : {}
-    var localIps = me.sessions.get('cur5656Ips') ? JSON.parse(me.sessions.get('cur5656Ips')) : {}
-    var lastD = localUserSel.lng ? localUserSel : localGeo
-    var localParams = {
-      ip: localIps.cip || '',
-      cityCode: lastD.cityCode || (localIps.cid || '100000'),
-      lon: lastD.lng || '',
-      lat: lastD.lat || '',
-    }
-    $.extend(params, winAuth)
-    // console.log('%c'+JSON.stringify(params, null, 2), 'color:#fff;background:purple')
     $.ajax({
       url: url + me.param(localParams, '?'),
       type: type || 'POST',
@@ -352,8 +355,12 @@ Vue.filter('couponType', function (type) {
   }
 })
 /* 保留小数位 */
-Vue.filter('toFixed', function (data, num) {
-  return (data > 0 && parseInt(data) === data) ? data.toFixed(num || 2) : data
+Vue.filter('toFixed', function (data, num, float) {
+  if (float) {
+    return data ? data.toFixed(num || 2) : data
+  } else {
+    return (data > 0 && parseInt(data) === data) ? data.toFixed(num || 2) : data
+  }
 })
 // main.js
 new Vue({
@@ -368,10 +375,10 @@ new Vue({
     !vm.$store.state.global.dict ? vm.getDict() : null
     vm.addUser(window.youniMall.userAuth)
   },
-  watch: {
+  /*watch: {
     'router'() {
     }
-  },
+  },*/
   mounted() {
     vm = this
     // console.log(XXX)

@@ -28,13 +28,15 @@
               <div class="info-con">
                 <h3>{{item.goodsName}}</h3>
                 <section class="middle">
-                  <span class="unit-price">￥{{item.price}}</span>
+                  <span class="unit-price">￥{{item.price}}元</span>
                   <span class="order-info">{{item.info}}</span>
                 </section>
+                <input :id="'dispatch-'+item.goodsId" class="dispatch-number" type="number" placeholder="请输入每日配送数"
+                       @change="changeDispatchNum(item.goodsId)" v-if="item.goodsType==='goods_type.2'">
                 <!--<label>{{item.label}}</label>-->
               </div>
               <div class="price-con">
-                <p class="price">￥{{item.price * item.goodsNum}}</p>
+                <p class="price">总价：￥{{item.price * item.goodsNum}}</p>
                 <p class="buy-count">x{{item.goodsNum}}</p>
               </div>
             </section>
@@ -45,8 +47,9 @@
     <div class="others-col">
       <group>
         <popup-picker title="优惠券" :data="coupons" :columns="1" v-model="tmpCoupon" ref="picker1" @on-show=""
-                      @on-hide="" @on-change="changeCoupon" v-if="!firstData.newUserCoupon"></popup-picker>
-        <div class="bonus-tips" v-else><p><span
+                      @on-hide="" @on-change="changeCoupon"
+                      v-if="!firstData.newUserCoupon&&coupons.length>1"></popup-picker>
+        <div class="bonus-tips" v-if="firstData.newUserCoupon"><p><span
           class="tit"><i
           class="fa fa-thumbs-o-up"></i>&nbsp;首单专享&nbsp;<i>(已优惠{{firstData.totalAmount - firstData.payAmount}}元)</i></span><span
           class="price">￥{{firstData.payAmount | toFixed}}</span></p></div>
@@ -60,7 +63,7 @@
     <div class="count-bar">
       <div class="wrap">
         <div class="txt-total">
-          <h4>合计：<span>￥{{(firstData.payAmount||curCartData.totalPrice || 0) | toFixed}}</span><!--<i></i>--></h4>
+          <h4>合计：<span>￥{{(firstData.payAmount || curCartData.totalPrice || 0) | toFixed}}</span><!--<i></i>--></h4>
         </div>
         <div class="btn btn-toPay" @click="generateOrder">提交订单</div>
       </div>
@@ -98,24 +101,12 @@
           'goods_type.1': '买5送1',
           'goods_type.2': '买10送2',
           'goods_type.3': '买100送35',
-          'goods_type.4': '买100送40',
+          'goods_type.4': '买100送40'
         },
         coupons: [{
           key: '',
           value: '未选择',
           name: '未选择'
-        }, {
-          key: '028283447c4311e7aa18d8cb8a971933',
-          value: '满减20元',
-          name: '满减20元'
-        }, {
-          key: '038283447c4311e7aa18d8cb8a971936',
-          value: '水票10元',
-          name: '水票10元'
-        }, {
-          key: '018283447c4311e7aa18d8cb8a941930',
-          value: '首单7折',
-          name: '首单7折'
         }]
       }
     },
@@ -196,9 +187,21 @@
       changeCoupon(val) {
         vm.switchData(vm.coupons, vm.tmpCoupon, 'couponId')
         console.log(val, vm.params.couponId)
+        vm.calcPrice(vm.params.couponId)
       },
       changeTime(val) {
         console.log('change', val)
+      },
+      changeDispatchNum(id) {
+        // console.log('change', id)
+        var curVal = document.getElementById('dispatch-' + id).value
+        for (var i = 0; i < vm.curCartData.goods.length; i++) {
+          var cur = vm.curCartData.goods[i]
+          if (id === cur.goodsId) {
+            cur.dispatchDayNum = curVal
+          }
+        }
+        console.log(vm.curCartData.goods)
       },
       getGoods() {
         try {
@@ -256,38 +259,25 @@
         })
       },
       getCoupon() {
-        /*vm.loadData(orderApi.getCoupon, {goods: vm.params.goods}, 'POST', function (res) {
-          if (res.success && res.data.itemList.length) {*/
-//            var resD=res.data.itemList
-            var resD= [{
-              "id": "rp03h48gq6ifeqe1lvbg0ht2m7",
-              "userId": "562bedbb7b4611e78a0f0242ac110002",
-              "status": 0,
-              "createTime": "2017-09-13 23:11:50",
-              "updateTime": "2017-09-13 23:11:50",
-              "goodsType": "goods_type.2",
-              "sellerType": 1,
-              "type": 2,
-              "couponNote": "aaa",
-              "maxAmount": 60,
-              "discountRate": 1,
-              "couponId": "3"
-            }]
+        vm.loadData(orderApi.getCoupon, {goods: vm.params.goods}, 'POST', function (res) {
+          if (res.success && res.data.itemList.length) {
+            var resD = res.data.itemList
             for (var i = 0; i < resD.length; i++) {
               var cur = resD[i]
-              vm.coupons.push({key: cur.id, value: vm.types[cur.goodsType], label: vm.types[cur.goodsType]})
+              vm.coupons.push({key: cur.couponId, value: vm.types[cur.goodsType], name: vm.types[cur.goodsType]})
             }
-            var resD = res.data
-            console.log(vm.coupons, '可用的优惠券数据')
-        /*  }
+            console.log(JSON.stringify(vm.coupons), '可用的优惠券数据')
+          }
           cb ? cb(resD) : null
         }, function () {
           vm.onFetching = false
           vm.processing(0, 1)
-        })*/
+        })
       },
-      calcPrice() {
-        vm.loadData(orderApi.calcPrice, {goods: vm.params.goods}, 'POST', function (res) {
+      calcPrice(couponId) {
+        var data
+        couponId ? data = {couponId: couponId, goods: vm.params.goods} : data = {goods: vm.params.goods}
+        vm.loadData(orderApi.calcPrice, data, 'POST', function (res) {
           if (res.success && res.data.newUserCoupon) {
             var resD = res.data
             vm.firstData = resD
@@ -316,7 +306,14 @@
               // alert(JSON.stringify(res.data))
               vm.payOrder(res.data)
             } else {
-              vm.toast(res.message || '生成订单失败！')
+              if (res.errorCode == 304) {
+                vm.toast('请先绑定手机号！')
+                setTimeout(function () {
+                  vm.jump('bind')
+                }, 800)
+              } else {
+                vm.toast(res.data || '生成订单失败！')
+              }
             }
           }, function () {
             vm.toast('提交失败！')
@@ -492,9 +489,15 @@
             .ellipsis-clamp-2;
             .unit-price {
               padding-right: 40/@rem;
-              .c3;
+              .cdiy(@c2);
               .fz(24);
             }
+          }
+          .dispatch-number {
+            margin-top: 6/@rem;
+            padding: 0 5px;
+            .bor;
+            .borR(3px);
           }
         }
         .price-con {

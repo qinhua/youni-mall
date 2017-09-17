@@ -23,7 +23,7 @@
         <grid-item label="购物车" link="/cart">
           <img slot="icon" src="../../static/img/item_cart.png">
         </grid-item>
-        <grid-item label="红包" link="/coupons">
+        <grid-item label="红包" link="/bind">
           <img slot="icon" src="../../static/img/item_redpacket.png">
         </grid-item>
       </grid>
@@ -42,30 +42,30 @@
 
     <!--过滤条-->
     <!--<div style="height:44px;">-->
-      <sticky>
-        <div class="goods-filter" ref="filters01">
-          <div class="v-filter-tabs">
-            <ul class="v-f-tabs">
-              <li class="f-img"></li>
-              <li :class="curFilterType==='categorys'?'mfilterActive':''" @click="showFilter('categorys',$event)">商品类目<i
-                class="ico-arr-down"></i>
-              </li>
-              <li :class="curFilterType==='brands'?'mfilterActive':''" @click="showFilter('brands',$event)">品牌<i
-                class="ico-arr-down"></i>
+    <sticky>
+      <div class="goods-filter" ref="filters01">
+        <div class="v-filter-tabs">
+          <ul class="v-f-tabs">
+            <li class="f-img"></li>
+            <li :class="curFilterType==='types'?'mfilterActive':''" @click="showFilter('types',$event)">商品类目<i
+              class="ico-arr-down"></i>
+            </li>
+            <li :class="curFilterType==='brands'?'mfilterActive':''" @click="showFilter('brands',$event)">品牌<i
+              class="ico-arr-down"></i>
+            </li>
+          </ul>
+          <div class="filter-data" v-if="showFilterCon" :class="showFilterCon?'show':''">
+            <ul class="filter-tags" v-show="curFilterDict">
+              <li v-for="(data,idx) in curFilterDict"
+                  :class="curSelFilter[curFilterType].index==idx?'sfilterActive':''"
+                  :data-key="data.key"
+                  :data-value="data.value" @click="chooseFilter(idx,data.key,data.value,$event)">{{data.value}}
               </li>
             </ul>
-            <div class="filter-data" v-if="showFilterCon" :class="showFilterCon?'show':''">
-              <ul class="filter-tags" v-show="curFilterDict">
-                <li v-for="(data,idx) in curFilterDict"
-                    :class="curSelFilter[curFilterType].index==idx?'sfilterActive':''"
-                    :data-key="data.key"
-                    :data-value="data.value" @click="chooseFilter(idx,data.key,data.value,$event)">{{data.value}}
-                </li>
-              </ul>
-            </div>
           </div>
         </div>
-      </sticky>
+      </div>
+    </sticky>
     <!--</div>-->
 
     <!--商品列表-->
@@ -94,8 +94,12 @@
               <group class="buy-count">
                 <x-number button-style="round" :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0"
                           :max="50" :value="item.number" align="right" :dataId="item.id"
-                          :dataSellerId="item.sellerId"
+                          :dataSellerId="item.sellerId" :linedata="item"
                           @on-change="changeCount"></x-number>
+                <!--<x-number button-style="round" :min="0"
+                          :max="50" :value="item.number" align="right" :dataId="item.id"
+                          :dataSellerId="item.sellerId" :linedata="item"
+                          @on-change="changeCount"></x-number>-->
               </group>
             </section>
           </section>
@@ -103,6 +107,19 @@
       </scroller>
       <div class="iconNoData" v-if="!goods.length"><i></i>
         <p>暂无商品</p></div>
+    </div>
+
+    <!--底部pop-checker-->
+    <div v-transfer-dom>
+      <popup v-model="showPop" position="bottom" max-height="50%">
+        <group class="number-con">
+          <x-input id="curMilkAmount" title="数量：" placeholder="请输入商品数量" required text-align="right" type="number"
+                   v-model="params.curMilkAmount"></x-input>
+        </group>
+        <button type="button" class="btn btn-addcart" style="padding: 10px;"
+                @click="goConfirm">立即购买
+        </button>
+      </popup>
     </div>
 
     <!--购物车效果-->
@@ -140,8 +157,11 @@
     MarqueeItem,
     XNumber,
     XSwitch,
+    XInput,
     Sticky,
-    Scroller
+    Scroller,
+    Popup,
+    TransferDom
   } from 'vux'
   import {homeApi, cartApi} from '../service/main.js'
   import {mapState, mapMutations} from 'vuex'
@@ -153,20 +173,23 @@
         geoData: null,
         address: '',
         cartData: '',
+        curMilkAmount: null,
         banner: [],
         notice: [],
         goods: [],
+        showPop: false,
+        curLinedata: null,
         params: {
           pageSize: 5,
           pageNo: 1,
-          /*goodsCategory: '',
+          /*goodsType: '',
            brandId: ''*/
         },
         /* filter start */
         showFilterCon: false,
         filterOffset: 0,
         filters: {
-          categorys: [
+          types: [
             {
               key: '',
               value: '全部'
@@ -226,7 +249,7 @@
         curFilterType: '', // 当前筛选分类
         curFilterDict: null, // 当前的filter数据
         curSelFilter: {
-          categorys: {
+          types: {
             index: '',
             key: '',
             value: ''
@@ -254,6 +277,9 @@
         dropBalls: []
       }
     },
+    directives: {
+      TransferDom
+    },
     props: ['geoAddress'],
     components: {
       Swiper,
@@ -264,7 +290,9 @@
       Marquee,
       MarqueeItem,
       XNumber,
-      Sticky
+      XInput,
+      Sticky,
+      Popup
     },
     beforeMount() {
       me = window.me
@@ -346,6 +374,13 @@
         if (vm.showFilterCon) return
         location.href = url
       },
+      swDialog(type) {
+//        if(vm.showPop){
+//          vm.showPop = false
+//        }else{
+        vm.showPop = true
+//        }
+      },
       toDetail(id) {
         if (vm.showFilterCon) return
         vm.$router.push({name: 'goods_detail', query: {id: id}})
@@ -417,8 +452,8 @@
         vm.curSelFilter[vm.curFilterType].index = idx
         vm.curSelFilter[vm.curFilterType].key = key
         vm.curSelFilter[vm.curFilterType].value = value
-        console.error(JSON.stringify(vm.curSelFilter, null, 2))
-        vm.curSelFilter.categorys.key ? vm.params.goodsCategory = vm.curSelFilter.categorys.key : delete vm.params.goodsCategory
+        // console.error(JSON.stringify(vm.curSelFilter, null, 2))
+        vm.curSelFilter.types.key ? vm.params.goodsType = vm.curSelFilter.types.key : delete vm.params.goodsType
         vm.curSelFilter.brands.key ? vm.params.brandId = vm.curSelFilter.brands.key : delete vm.params.brandId
         vm.hideFilter()
         vm.getGoods()
@@ -431,14 +466,20 @@
         // console.log('下拉加载')
         setTimeout(function () {
           vm.getGoods()
-          vm.$refs.goodsScroller.finishPullToRefresh()
+          try {
+            vm.$refs.goodsScroller.finishPullToRefresh()
+          } catch (e) {
+          }
         }, 1200)
       },
       infinite(done) {
         // console.log('无限滚动')
         setTimeout(function () {
           vm.getGoods(true)
-          vm.$refs.goodsScroller.finishInfinite(true)
+          try {
+            vm.$refs.goodsScroller.finishInfinite(true)
+          } catch (e) {
+          }
         }, 1000)
       },
       /* 购物车--start */
@@ -473,24 +514,13 @@
           vm.isPosting = false
         })
       },
-      changeCount(obj) {
-        if (vm.isPosting) return
-        vm.isPosting = true
-        if (obj.type === 'add') {
-          if (vm.cartData.sellerId && vm.cartData.sellerId !== obj.sellerId) {
-            //vm.toast('购物车中已有其他店铺商品，请先清空')
-            vm.confirm('温馨提示', '当前购物车中已有其他店铺商品，请先清空！', function () {
-              vm.isPosting = true
-              vm.loadData(cartApi.clear, null, 'POST', function (res) {
-                vm.viewCart()
-                vm.isPosting = false
-              }, function () {
-                vm.isPosting = false
-              })
-            })
-            return
-          }
-          vm.loadData(cartApi.add, {goodsId: obj.id}, 'POST', function (res) {
+      goConfirm() {
+        // 判断当前是否填写了数量
+        if (vm.params.curMilkAmount) {
+          vm.loadData(cartApi.add, {
+            goodsId: vm.curLinedata.id,
+            goodsNum: vm.params.curMilkAmount
+          }, 'POST', function (res) {
             if (res.success) {
               vm.viewCart()
               vm.additem(obj.event)
@@ -501,13 +531,53 @@
           }, function () {
             vm.isPosting = false
           })
+          vm.showPop = false
         } else {
-          vm.loadData(cartApi.minus, {goodsId: obj.id}, 'POST', function (res) {
-            vm.viewCart()
-            vm.isPosting = false
-          }, function () {
-            vm.isPosting = false
-          })
+          vm.toast('至少选1件哦！', 'warn')
+        }
+      },
+      changeCount(obj) {
+        console.log(obj)
+        vm.curLinedata = obj
+        if (obj.linedata.type === 'goods_type.2' && obj.type === 'add') {
+          vm.swDialog()
+          return
+        } else {
+          if (vm.isPosting) return
+          vm.isPosting = true
+          if (obj.type === 'add') {
+            if (vm.cartData.sellerId && vm.cartData.sellerId !== obj.sellerId) {
+              //vm.toast('购物车中已有其他店铺商品，请先清空')
+              vm.confirm('温馨提示', '当前购物车中已有其他店铺商品，请先清空！', function () {
+                vm.isPosting = true
+                vm.loadData(cartApi.clear, null, 'POST', function (res) {
+                  vm.viewCart()
+                  vm.isPosting = false
+                }, function () {
+                  vm.isPosting = false
+                })
+              })
+              return
+            }
+            vm.loadData(cartApi.add, {goodsId: obj.id}, 'POST', function (res) {
+              if (res.success) {
+                vm.viewCart()
+                vm.additem(obj.event)
+              } else {
+                vm.toast(res.message || '购物车中已有其他店铺商品，请先清空')
+              }
+              vm.isPosting = false
+            }, function () {
+              vm.isPosting = false
+            })
+          } else {
+            vm.loadData(cartApi.minus, {goodsId: obj.id}, 'POST', function (res) {
+              vm.viewCart()
+              vm.isPosting = false
+            }, function () {
+              vm.isPosting = false
+            })
+          }
         }
       },
       additem(event) {
@@ -737,7 +807,7 @@
         width: 100%;
         .bf;
         border-top: 1px solid #eee;
-        .bsd(0, 10px, 18px, 0, #ccc);
+        .bsd(0, 10px, 18px, 0, rgba(0, 0, 0, 0.25));
         .transi(.2s);
         &.show {
           opacity: 1;

@@ -39,6 +39,11 @@ export default {
     clearData(state, key) {
       state[key] = null
     },
+    logout(state) {
+      state.wxInfo = null
+      state.tmpConfirm = false
+      me.locals.remove('ynWxUser')
+    },
     /* 更新路由方向 */
     updateDirection(state, payload) {
       state.direction = payload.direction

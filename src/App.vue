@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <!--<div class="btn flush-button s02" onclick="javascript:me.locals.clear();me.sessions.clear();me.lightPop('ok,已清理');">-->
-      <!--清理缓存-->
+    <!--清理缓存-->
     <!--</div>-->
     <!--定位组件-->
     <geo :visible="false" :cache="true" @on-geo-end="getMap" v-if="$route.path!=='/auth'"></geo>
@@ -13,7 +13,7 @@
         <img slot="icon-active" src="../static/img/ico_home_sel.png">
         <span slot="label">首页</span>
       </tabbar-item>
-      <tabbar-item :selected="(curSelected===2||$route.path=='/nearby')?true:false" show-dot link="/nearby">
+      <tabbar-item :selected="(curSelected===2||$route.path=='/nearby')?true:false" link="/nearby">
         <img slot="icon" src="../static/img/ico_nearby.png">
         <img slot="icon-active" src="../static/img/ico_nearby_sel.png">
         <span slot="label">附近</span>
@@ -23,12 +23,12 @@
         <img slot="icon-active" src="../static/img/ico_ticket_sel.png">
         <span slot="label">水票</span>
       </tabbar-item>
-      <tabbar-item :selected="(curSelected===4||$route.path=='/order')?true:false" badge="2" link="/order">
+      <tabbar-item :selected="(curSelected===4||$route.path=='/order')?true:false" show-dot link="/order">
         <img slot="icon" src="../static/img/ico_order.png">
         <img slot="icon-active" src="../static/img/ico_order_sel.png">
         <span slot="label">订单</span>
       </tabbar-item>
-      <tabbar-item :selected="(curSelected===5||$route.path=='/user')?true:false" show-dot link="/user">
+      <tabbar-item :selected="(curSelected===5||$route.path=='/user')?true:false" link="/user">
         <img slot="icon" src="../static/img/ico_my.png">
         <img slot="icon-active" src="../static/img/ico_my_sel.png">
         <span slot="label">我的</span>
@@ -140,9 +140,8 @@
           case 'user':
             vm.curSelected = 5
             break
-          /* default:
-           vm.showTabbar = false
-           break */
+          default:
+            vm.curSelected = 1
         }
       }
     }

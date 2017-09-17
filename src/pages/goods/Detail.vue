@@ -232,7 +232,7 @@
           })
         }
       },
-      'details.number'(){
+      'details.number'() {
         vm.total = vm.details.number * vm.details.price
       }
     },
@@ -305,10 +305,13 @@
         vm.loadData(goodsApi.detail, {id: vm.id}, 'POST', function (res) {
           vm.isPosting = false
           vm.processing(0, 1)
-          res.data.categoryName = res.data.category === 'goods_category_1' ? '水' : '奶'
-          vm.details = res.data
-          vm.getSeller(res.data.sellerId)
-          console.log(vm.details, '商品详情')
+          if (res.success) {
+            var resD = res.data
+            resD.categoryName = (resD.type === 'goods_type.1') ? '水' : '奶'
+            vm.details = resD
+            vm.getSeller(res.data.sellerId)
+            console.log(vm.details, '商品详情')
+          }
           cb ? cb() : null
         }, function () {
           vm.isPosting = false
@@ -565,10 +568,10 @@
             bottom: 5px;
           }
           .swiper-pagination-bullet {
-            background: rgba(255,255,255,.5);
+            background: rgba(255, 255, 255, .5);
           }
           .swiper-pagination-bullet-active {
-            opacity:1;
+            opacity: 1;
             background: #fff !important;
           }
         }

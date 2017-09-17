@@ -31,8 +31,8 @@
           </div>
         </div>
       </div>
-      <div class="contacts">
-        <p>配送电话：<a :href="'tel:'+seller.phone">{{seller.phone}}</a>，楼梯房需收取上楼费</p>
+      <div class="notice-con">
+        <p>{{seller.notice}}</p>
       </div>
     </div>
 
@@ -42,7 +42,7 @@
         <div class="v-filter-tabs">
           <ul class="v-f-tabs">
             <li class="f-img"></li>
-            <li :class="curFilterType==='categorys'?'mfilterActive':''" @click="showFilter('categorys',$event)">商品类目<i
+            <li :class="curFilterType==='types'?'mfilterActive':''" @click="showFilter('types',$event)">商品类目<i
               class="ico-arr-down"></i>
             </li>
             <li :class="curFilterType==='brands'?'mfilterActive':''" @click="showFilter('brands',$event)">品牌<i
@@ -91,7 +91,8 @@
             </section>
           </section>
           <div class="noMoreData" v-if="goods.length">{{noMore ? '就这么多了' : '上拉加载'}}</div>
-          <div class="iconNoData" v-else><i></i><p>暂无商品</p></div>
+          <div class="iconNoData" v-else><i></i>
+            <p>暂无商品</p></div>
         </div>
       </scroller>
     </div>
@@ -121,8 +122,8 @@
   let me
   let vm
   import Swiper from '../../components/Swiper'
-  import {Group, GroupTitle, Grid, GridItem, Marquee, MarqueeItem, XNumber, Scroller, Sticky,LoadMore} from 'vux'
-  import {goodsApi, nearbyApi,cartApi} from '../../service/main.js'
+  import {Group, GroupTitle, Grid, GridItem, Marquee, MarqueeItem, XNumber, Scroller, Sticky, LoadMore} from 'vux'
+  import {goodsApi, nearbyApi, cartApi} from '../../service/main.js'
   import {mapState, mapMutations} from 'vuex'
 
   export default {
@@ -137,24 +138,24 @@
           sellerId: null,
           pageSize: 5,
           pageNo: 1,
-          /*goodsCategory: '',
+          /*goodsType: '',
            brandId: ''*/
         },
         /* filter start */
         showFilterCon: false,
         filterOffset: 0,
         filters: {
-          categorys: [
+          types: [
             {
               key: '',
               value: '全部'
             },
             {
-              key: 1,
+              key: 'goods_type.1',
               value: '桶装水'
             },
             {
-              key: 2,
+              key: 'goods_type.2',
               value: '奶'
             }
           ],
@@ -204,7 +205,7 @@
         curFilterType: '', // 当前筛选分类
         curFilterDict: null, // 当前的filter数据
         curSelFilter: {
-          categorys: {
+          types: {
             index: '',
             key: '',
             value: ''
@@ -282,9 +283,9 @@
       }, false)
       vm.$nextTick(function () {
         //获取筛选栏位置
-        setTimeout(function(){
+        setTimeout(function () {
           vm.filterOffset = vm.$refs.filters03.offsetTop
-        },300)
+        }, 300)
         vm.resetScroll()
       })
     },
@@ -356,7 +357,10 @@
       },
       toMore() {
         if (vm.showFilterCon) return
-        vm.$router.push({name: 'seller_detail_more', query: {thedata:window.encodeURIComponent(JSON.stringify(vm.seller))}})
+        vm.$router.push({
+          name: 'seller_detail_more',
+          query: {thedata: window.encodeURIComponent(JSON.stringify(vm.seller))}
+        })
       },
       /* 页面数据 */
       getSeller() {
@@ -383,7 +387,7 @@
                 resD.serviceTypeName = '奶'
                 break
               case 'seller_service_type.3':
-                resD.serviceTypeName = '水+奶'
+                resD.serviceTypeName = '水&奶'
                 break
             }
             vm.seller = resD
@@ -444,7 +448,7 @@
         vm.curSelFilter[vm.curFilterType].key = key
         vm.curSelFilter[vm.curFilterType].value = value
         console.error(JSON.stringify(vm.curSelFilter, null, 2))
-        vm.curSelFilter.categorys.key ? vm.params.goodsCategory = vm.curSelFilter.categorys.key : delete vm.params.goodsCategory
+        vm.curSelFilter.types.key ? vm.params.goodsType = vm.curSelFilter.types.key : delete vm.params.goodsType
         vm.curSelFilter.brands.key ? vm.params.brandId = vm.curSelFilter.brands.key : delete vm.params.brandId
         vm.hideFilter()
         vm.getGoods()
@@ -612,9 +616,9 @@
         inner.style.transform = 'translate3d(-10px,-80px,0)'
         el.addEventListener('transitionend', done)
         cartCls.toggle('bulbing')
-        setTimeout(function(){
+        setTimeout(function () {
           cartCls.remove('bulbing')
-        },800)
+        }, 800)
       },
       /*初始化小球*/
       afterDrop(el) {
@@ -699,7 +703,7 @@
                 .fl;
                 margin-right: 10/@rem;
                 .cdiy(#ff9900);
-                .fz(24);
+                .rfz(16);
                 &.gray {
                   .c9;
                 }
@@ -765,13 +769,13 @@
           }
         }
       }
-      .contacts {
+      .notice-con {
         padding: 5px 20/@rem;
         .fz(20);
         .cf;
         background: rgba(0, 0, 0, .5);
         p {
-          .ellipsis-clamp-2;
+          .ellipsis-clamp-1;
         }
         a {
           .cdiy(#38aee8);
@@ -859,7 +863,7 @@
           width: 100%;
           .bf;
           border-top: 1px solid #eee;
-          .bsd(0, 10px, 18px, 0, #ccc);
+          .bsd(0, 10px, 18px, 0, rgba(0, 0, 0, 0.25));
           .transi(.2s);
           &.show {
             opacity: 1;
@@ -889,7 +893,7 @@
     }
 
     .goods-list {
-      height:100%!important;
+      height: 100% !important;
       /*max-height:500px;*/
       overflow: auto;
       &.fixed {
@@ -899,7 +903,7 @@
       }
       .inner-scroller {
         .borBox;
-        height:100%!important;
+        height: 100% !important;
         .v-items {
           padding: 20/@rem;
           .bf;

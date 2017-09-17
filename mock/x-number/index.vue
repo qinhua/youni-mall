@@ -50,7 +50,7 @@
         default: 1
       },
       value: {
-        validator (value) {
+        validator(value) {
           if (typeof value === 'number') {
             return true
           } else if (typeof value === 'string') {
@@ -64,6 +64,9 @@
       dataSellerId: String,
       name: String,
       title: String,
+      linedata: {
+        type: Object,
+      },
       fillable: {
         type: Boolean,
         default: false
@@ -85,10 +88,10 @@
         default: 'right'
       }
     },
-    created () {
+    created() {
       this.currentValue = this.value
     },
-    data () {
+    data() {
       return {
         type: '',
         itemId: '',
@@ -96,20 +99,20 @@
       }
     },
     computed: {
-      disabledMin () {
+      disabledMin() {
         return typeof this.min === 'undefined' ? false : (this.currentValue === '' ? true : this.currentValue <= this.min)
       },
-      disabledMax () {
+      disabledMax() {
         return typeof this.max === 'undefined' ? false : (this.currentValue === '' ? true : this.currentValue >= this.max)
       },
-      labelClass () {
+      labelClass() {
         return {
           'vux-cell-justify': this.$parent.labelAlign === 'justify' || this.$parent.$parent.labelAlign === 'justify'
         }
       }
     },
     watch: {
-      currentValue (newValue, old) {
+      currentValue(newValue, old) {
         if (newValue !== '') {
           if (typeof this.min !== 'undefined' && this.currentValue < this.min) {
             this.currentValue = this.min
@@ -118,33 +121,53 @@
             this.currentValue = this.max
           }
         }
-        this.$emit('input', {id: this.dataId, type: 'input', value: this.currentValue, event: this.event})
+        this.$emit('input', {
+          id: this.dataId,
+          type: 'input',
+          value: this.currentValue,
+          linedata: this.linedata,
+          event: this.event
+        })
         //this.$emit('on-change', {id: this.dataId, type: this.type, value: this.currentValue, event: this.event})
       },
-      value (newValue) {
+      value(newValue) {
         this.currentValue = newValue
       }
     },
     methods: {
-      add (e) {
+      add(e) {
         this.type = 'add'
         this.event = e
         if (!this.disabledMax) {
           const x = new Big(this.currentValue)
-          !this.disabled?this.currentValue = x.plus(this.step) * 1:null
+          !this.disabled ? this.currentValue = x.plus(this.step) * 1 : null
         }
-        this.$emit('on-change', {id: this.dataId, sellerId: this.dataSellerId, type: this.type, value: this.currentValue, event: this.event})
+        this.$emit('on-change', {
+          id: this.dataId,
+          sellerId: this.dataSellerId,
+          type: this.type,
+          linedata: this.linedata,
+          value: this.currentValue,
+          event: this.event
+        })
       },
-      sub (e) {
+      sub(e) {
         this.type = 'sub'
         this.event = e
         if (!this.disabledMin) {
           const x = new Big(this.currentValue)
           this.currentValue = x.minus(this.step) * 1
         }
-        this.$emit('on-change', {id: this.dataId, sellerId: this.dataSellerId, type: this.type, value: this.currentValue, event: this.event})
+        this.$emit('on-change', {
+          id: this.dataId,
+          sellerId: this.dataSellerId,
+          type: this.type,
+          linedata: this.linedata,
+          value: this.currentValue,
+          event: this.event
+        })
       },
-      blur () {
+      blur() {
         if (this.currentValue === '') {
           this.currentValue = 0
         }

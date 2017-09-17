@@ -99,6 +99,15 @@ export default new Router({
       }
     },
     {
+      path: '/order/:status',
+      name: 'order',
+      component: Order,
+      meta: {
+        title: '订单',
+        keepAlive: false
+      }
+    },
+    {
       path: '/user',
       name: 'user',
       component: My,

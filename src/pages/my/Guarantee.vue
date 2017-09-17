@@ -15,7 +15,9 @@
         </thead>
         <tbody>
         <tr v-for="(item,index) in list" :data-id="item.id" :data-ordernumber="item.orderNumber" :index="index">
-          <td><div class="name">{{item.sellerName}}</div></td>
+          <td>
+            <div class="name">{{item.sellerName}}</div>
+          </td>
           <td>{{item.bucketNum}}</td>
           <td>{{item.bucketAmount}}</td>
           <td>{{item.totalAmount}}</td>
@@ -42,7 +44,7 @@
   /* eslint-disable no-unused-vars */
   let me
   let vm
-  import {Group, Cell,XTable} from 'vux'
+  import {Group, Cell, XTable} from 'vux'
   import {depositApi} from '../../service/main.js'
 
   export default {
@@ -52,37 +54,7 @@
         address: null,
         onFetching: false,
         isPosting: false,
-//        list: [],
-        list: [{
-          "id": "0akcmhdocqhqoorqlrhihsk6hv",
-          "userId": "562bedbb7b4611e78a0f0242ac110002",
-          "sellerName": "大河人家",
-          "sellerId": "dcd95c4c7c3911e7aa18d8cb8a971933",
-          "bucketNum": 12,
-          "status": 0,
-          "createTime": "2017-09-12 22:32:14",
-          "updateTime": "2017-09-12 22:32:14",
-          "payStatus": 0,
-          "type": 0,
-          "bucketAmount": 50,
-          "totalAmount": 600,
-          "orderNumber": "20170912223214172003"
-        },
-          {
-            "id": "3nj6b3t76uhaarlk20pp240quj",
-            "userId": "562bedbb7b4611e78a0f0242ac110002",
-            "sellerName": "冰冰有力",
-            "sellerId": "dcd95c4c7c3911e7aa18d8cb8a971933",
-            "bucketNum": 12,
-            "status": 0,
-            "createTime": "2017-09-12 22:30:13",
-            "updateTime": "2017-09-12 22:30:13",
-            "payStatus": 0,
-            "type": 0,
-            "bucketAmount": 50,
-            "totalAmount": 600,
-            "orderNumber": "20170912223013318002"
-          }],
+        list: []
       }
     },
     components: {Group, Cell, XTable},
@@ -152,8 +124,8 @@
       tr {
         .fz(24);
         td {
-          .name{
-            padding:1px;
+          .name {
+            padding: 1px;
             line-height: 1.5;
             max-width: 200/@rem;
             .ellipsis-clamp-2;

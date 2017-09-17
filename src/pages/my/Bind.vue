@@ -119,7 +119,6 @@
     height: 100%;
     overflow-x: hidden;
     .f-wrap {
-      height: 100%;
       padding-bottom: 50px;
     }
     .bottom {

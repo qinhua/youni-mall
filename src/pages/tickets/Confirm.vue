@@ -13,39 +13,48 @@
         class="fa fa-plus"></i>&nbsp;添加收货地址
       </div>
     </div>
-    <!--<div class="goods-info">
+    <div class="goods-info">
       <section class="v-items">
-        <h4 class="item-top" v-if="curCartData.goods"><i
-          class="ico-store"></i>&nbsp;{{curCartData.sellerName}}&nbsp;&nbsp;<i
-          class="fa fa-angle-right cc"></i>&lt;!&ndash;<span>{{isEdit ? '完成' : '编辑'}}</span>&ndash;&gt;
-        </h4>
+        <!--<h4 class="item-top" v-if="tickets"><i
+          class="ico-store"></i>&nbsp;{{tickets.sellerName}}&nbsp;&nbsp;<i
+          class="fa fa-angle-right cc"></i><span class="tag-bonus" v-if="firstData.newUserCoupon">首单优惠</span>
+        </h4>-->
         <ul class="has-list">
-          <li v-for="(item,index) in curCartData.goods">
+          <li :data-id="tickets.waterId">
+
             <section class="item-middle">
               <div class="img-con">
-                <img :src="item.goodsImage">
+                <img :src="tickets.ticketImage">
               </div>
               <div class="info-con">
-                <h3>{{item.goodsName}}</h3>
+                <h3>{{tickets.ticketName}}</h3>
                 <section class="middle">
-                  <span class="unit-price">￥{{item.price}}</span>
-                  <span class="order-info">{{item.info}}</span>
+                  <span class="unit-price">总价：￥{{tickets.totalAmount | toFixed}}</span>
+                  <!--<span class="order-info">已兑换：{{tickets.payAmount | toFixed}}桶</span>-->
                 </section>
-                &lt;!&ndash;<label>{{item.label}}</label>&ndash;&gt;
+                <label
+                  class="number-info"><span>总数：{{tickets.totalWaterNum}}桶</span><span>已兑换：{{tickets.exchangeWaterNum}}桶</span></label>
               </div>
               <div class="price-con">
-                <p class="price">￥{{item.price * item.goodsNum}}</p>
-                <p class="buy-count">x{{item.goodsNum}}</p>
+                <!--<p class="price">￥{{tickets.price * tickets.goodsNum}}</p>-->
+                <p class="buy-count">￥{{tickets.payAmount | toFixed}}</p>
               </div>
             </section>
           </li>
         </ul>
       </section>
-    </div>-->
+    </div>
     <div class="others-col">
       <group>
+        <popup-picker title="优惠券" :data="coupons" :columns="1" v-model="tmpCoupon" ref="picker1" @on-show=""
+                      @on-hide="" @on-change="changeCoupon"
+                      v-if="!firstData.newUserCoupon&&coupons.length>1"></popup-picker>
+        <div class="bonus-tips" v-if="firstData.newUserCoupon"><p><span
+          class="tit"><i
+          class="fa fa-thumbs-o-up"></i>&nbsp;首单专享&nbsp;<i>(已优惠{{firstData.totalAmount - firstData.payAmount}}元)</i></span><span
+          class="price">￥{{firstData.payAmount | toFixed}}</span></p></div>
         <x-input title="兑换数量：" placeholder="多少桶" required type="number" text-align="right"
-                 v-model="params.exchangeWaterNum"></x-input>
+                 v-model="params.exchangeWaterNum" @on-change="checkNumber"></x-input>
         <datetime title="配送时间" format="YYYY-MM-DD HH:mm" minute-row v-model="params.dispatchTime"
                   @on-change="changeTime"></datetime>
         <!-- <popup-picker title="优惠券" :data="coupons" :columns="1" v-model="tmpCoupon" ref="picker1" @on-show=""
@@ -57,9 +66,9 @@
     <div class="count-bar">
       <div class="wrap">
         <div class="txt-total">
-          <h4>合计：<span>￥{{(curCartData.totalPrice || 0) | toFixed}}</span><!--<i></i>--></h4>
+          <h4>总价：<span>￥{{(tickets.payAmount || 0) | toFixed}}</span><!--<i></i>--></h4>
         </div>
-        <div class="btn btn-toPay" @click="generateOrder">提交订单</div>
+        <div class="btn btn-toPay" @click="generateOrder">立即兑换</div>
       </div>
     </div>
   </div>
@@ -77,36 +86,31 @@
     data() {
       return {
         address: null,
-        goods: null,
+        firstData: {},
+        goodsIds: [],
+        tickets: {},
         params: {
           // goods: [],
           id: null,
           addressId: null,
-          exchangeWaterNum: null,
+          exchangeWaterNum: 1,
           dispatchTime: '',
           userMessage: '',
           // couponId: ''
         },
-        curCartData: {},
+        curBucketCount: 0,
         isPosting: false,
         onFetching: false,
-        tmpCoupon: ['未选择'],
+        types: {
+          'goods_type.1': '买5送1',
+          'goods_type.2': '买10送2',
+          'goods_type.3': '买100送35',
+          'goods_type.4': '买100送40'
+        },
         coupons: [{
           key: '',
           value: '未选择',
           name: '未选择'
-        }, {
-          key: '028283447c4311e7aa18d8cb8a971933',
-          value: '满减20元',
-          name: '满减20元'
-        }, {
-          key: '038283447c4311e7aa18d8cb8a971936',
-          value: '水票10元',
-          name: '水票10元'
-        }, {
-          key: '018283447c4311e7aa18d8cb8a941930',
-          value: '首单7折',
-          name: '首单7折'
         }]
       }
     },
@@ -118,33 +122,32 @@
       vm = this
       this.$nextTick(function () {
         vm.getAddress()
-        vm.params.id = vm.$route.query.id
-        // vm.getGoods()
+        vm.getGoods()
       })
     },
-//    computed: {
-//      theTotalPrice () {
-//        let tmp=0
-//        if(this.curCartData.goods){
-//          for (let i = 0; i < vm.curCartData.goods.length; i++) {
-//            tmp += (vm.curCartData.goods[i].price*vm.curCartData.goods[i].goodsNum)
-//          }
-//        }
-//        return tmp
-//      }
-//    },
+    computed: {
+      curBucketNum() {
+        return this.tickets.totalWaterNum - this.tickets.exchangeWaterNum
+      }
+    },
     watch: {
       '$route'(to, from) {
+        vm.getGoods()
         if (to.name === 'confirm-ticket') {
           vm.getAddress()
-          // vm.getGoods()
         }
       }
     },
     methods: {
-      // 向父组件传值
-      setPageStatus(data) {
-        this.$emit('listenPage', data)
+      checkNumber(val) {
+        if (val < 1) {
+          vm.toast('至少兑换一桶')
+          vm.params.exchangeWaterNum = 1
+        }
+        if (val > this.curBucketNum) {
+          vm.toast('最多能兑换' + this.curBucketNum + '桶')
+          vm.params.exchangeWaterNum = 1
+        }
       },
       toAddress(type) {
         me.sessions.set('ynTmpConfirm', vm.$route.query.thedata)
@@ -192,19 +195,17 @@
       changeCoupon(val) {
         vm.switchData(vm.coupons, vm.tmpCoupon, 'couponId')
         console.log(val, vm.params.couponId)
+        vm.calcPrice(vm.params.couponId)
       },
       changeTime(val) {
         console.log('change', val)
       },
       getGoods() {
         try {
-          vm.curCartData = vm.$route.query.thedata ? JSON.parse(window.decodeURIComponent(vm.$route.query.thedata)) : {}
-          for (var i = 0; i < vm.curCartData.goods.length; i++) {
-            vm.params.goods.push({goodsId: vm.curCartData.goods[i].goodsId})
-          }
-          console.log(vm.curCartData, '带过来的数据')
-          vm.calcPrice(vm.curCartData.goods)
-          vm.switchData(vm.coupons, vm.tmpCoupon, 'couponId')
+          vm.tickets = vm.$route.query.thedata ? JSON.parse(window.decodeURIComponent(vm.$route.query.thedata)) : {}
+          vm.tickets.userMessage = ''
+          vm.params.id = vm.tickets.id
+          console.log(vm.tickets, '带过来的数据')
         } catch (e) {
           // console.log(e)
         }
@@ -229,24 +230,9 @@
             vm.address = resD[0]
             vm.params.addressId = resD[0].id
           }
-          console.log(vm.address, '地址数据')
+          // console.log(vm.address, '地址数据')
         }, function () {
           vm.isPosting = false
-          vm.processing(0, 1)
-        })
-      },
-      getCart(isLoadMore) {
-        if (vm.onFetching) return false
-        vm.processing()
-        vm.onFetching = true
-        vm.loadData(cartApi.view, vm.params, 'POST', function (res) {
-          vm.onFetching = false
-          vm.processing(0, 1)
-          var resD = res.data
-          vm.goods = resD
-          console.log(vm.goods, '购物车数据')
-        }, function () {
-          vm.onFetching = false
           vm.processing(0, 1)
         })
       },
@@ -261,31 +247,12 @@
               // 成功后到订单页
               vm.$router.push({path: '/order'})
             } else {
-              vm.toast(res.message || '兑换失败！')
+              vm.toast(res.data || '兑换失败！')
             }
           }, function () {
             vm.isPosting = false
           })
         }
-      },
-      calcPrice(data) {
-        var goodsIds = {goods: []}
-        for (var i = 0; i < data.length; i++) {
-          var cur = data[i]
-          goodsIds.goods.push({goodsId: cur.goodsId})
-        }
-        vm.loadData(orderApi.calcPrice, goodsIds, 'POST', function (res) {
-          if (res.success && res.data.newUserCoupon) {
-            var resD = res.data
-            vm.firstData = resD
-            vm.curCartData.totalPrice = resD.payAmount
-          }
-          console.log(vm.firstData, '首单优惠数据')
-          cb ? cb(resD) : null
-        }, function () {
-          vm.onFetching = false
-          vm.processing(0, 1)
-        })
       },
       payOrder(data) {
         wx.config({
@@ -409,6 +376,11 @@
           padding-left: 40/@rem;
           .fz(22);
           .cdiy(@c2);
+          &.tag-bonus {
+            padding: 0 2px;
+            .bor(1px, solid, @c2);
+            .borR(2px)
+          }
         }
       }
       .has-list {
@@ -424,6 +396,9 @@
         .borBox;
         padding: 14/@rem 20/@rem 14/@rem 20/@rem;
         .flex;
+        h3 {
+          .fz(26);
+        }
         .img-con {
           .rel;
           padding: 10/@rem 0;
@@ -445,13 +420,21 @@
             .ellipsis-clamp-2;
           }
           .middle {
+            padding-bottom: 10/@rem;
             .c9;
             .fz(22);
             .ellipsis-clamp-2;
             .unit-price {
               padding-right: 40/@rem;
-              .c3;
+              .cdiy(@c2);
               .fz(24);
+            }
+          }
+          .number-info {
+            span {
+              padding-right: 20/@rem;
+              .fz(24);
+              .c9;
             }
           }
         }

@@ -12,7 +12,7 @@
           <li :class="curFilterType==='types'?'mfilterActive':''" @click="showFilter('types',$event)">店铺分类<i
             class="ico-arr-down"></i>
           </li>
-          <li :class="curFilterType==='services'?'mfilterActive':''" @click="showFilter('services',$event)">主营类目<i
+          <li :class="curFilterType==='services'?'mfilterActive':''" @click="showFilter('services',$event)">业务分类<i
             class="ico-arr-down"></i>
           </li>
           <li :class="curFilterType==='sorts'?'mfilterActive':''" @click="showFilter('sorts',$event)">排序<i
@@ -30,7 +30,7 @@
     </div>
     <!--店铺列表-->
     <div class="sellers-list" ref="sellerList">
-      <scroller class="inner-scroller" lock-x scrollbarY use-pullup use-pulldown :pullup-config="pullupConfig"
+      <scroller class="inner-scroller" lock-x use-pullup use-pulldown :pullup-config="pullupConfig"
                 :pulldown-config="pulldownConfig"
                 @on-scroll="onScroll"
                 @on-pulldown-loading="onPullDown" @on-pullup-loading="onPullUp" @on-scroll-bottom="" ref="myScroll"
@@ -40,16 +40,15 @@
             <section class="wrap">
               <img :src="item.headimgurl">
               <section class="infos">
-                <h3>{{item.name}}<span
-                  class="distance">{{item.distance ? ((item.distance / 1000) | toFixed(1)) : item.distance}}km</span>
+                <h3>{{item.name}}
+                  <span class="distance">{{(item.distance ? (item.distance / 1000) : 0) | toFixed(1, true)}}km</span>
                 </h3>
                 <section class="middle">
                   <ol class="star">
-                    <li class="gray" v-for="star in 5" v-if="!item.score">★</li>
-                    <li v-for="star in 5" v-else>★</li>
+                    <li v-for="star in item.score" v-if="item.score">★</li>
+                    <li class="gray" v-for="star in 5" v-else>★{{}}</li>
                   </ol>
-                  <span
-                    class="hasSell"><i>{{((item.score || 0) / 1000) | toFixed(1)}}分</i>已售{{item.sellerCount}}单</span>
+                  <span class="hasSell"><i>{{item.score | toFixed(1)}}分</i>已售{{item.sellerCount}}单</span>
                 </section>
                 <div class="tags">
                   <!--<label class="c2">{{item.authLevelName}}</label>-->
@@ -129,7 +128,7 @@
           ],
           services: [
             {
-              key: 'seller_service_type.3',
+              key: '',
               value: '全部'
             },
             {
@@ -139,6 +138,10 @@
             {
               key: 'seller_service_type.2',
               value: '奶'
+            },
+            {
+              key: 'seller_service_type.3',
+              value: '水&奶'
             }
           ],
           sorts: [
@@ -269,7 +272,7 @@
       setPageStatus(data) {
         this.$emit('listenPage', data)
       },
-      resetScroll(){
+      resetScroll() {
         setTimeout(function () {
           vm.$refs.myScroll.reset()
           vm.$refs.myScroll.donePullup()
@@ -315,22 +318,25 @@
           vm.isPosting = false
           vm.processing(0, 1)
           var resD = res.data.pager
-          /*if (resD.itemList.length) {
-           for (var i = 0; i < resD.itemList.length; i++) {
-           var cur = resD.itemList[i]
-           switch (cur.authLevel) {
-           case 'seller_level.1':
-           cur.authLevelName = '普通店铺'
-           break
-           case 'seller_level.2':
-           cur.authLevelName = '官方认证'
-           break
-           case 'seller_level.3':
-           cur.authLevelName = '金牌店铺'
-           break
-           }
-           }
-           }*/
+          if (resD.itemList.length) {
+            for (var i = 0; i < resD.itemList.length; i++) {
+              var cur = resD.itemList[i]
+              switch (cur.authLevel) {
+                case 'seller_level.1':
+                  cur.authLevelName = '普通店铺'
+                  break
+                case 'seller_level.2':
+                  cur.authLevelName = '官方认证'
+                  break
+                case 'seller_level.3':
+                  cur.authLevelName = '金牌店铺'
+                  break
+              }
+              if (!cur.score) {
+                cur.score = window.me.Rdn.rdnBetween(1, 6)
+              }
+            }
+          }
           if (!isLoadMore) {
             if (resD.totalCount < vm.params.pageSize) {
               vm.noMore = true
@@ -393,7 +399,7 @@
           // this.isPosting = true
           setTimeout(function () {
             // vm.bottomCount += 10
-            vm.getSeller()
+            vm.getSellers()
             vm.$nextTick(function () {
               vm.$refs.myScroll.reset({top: 0})
               vm.$refs.myScroll.donePullup()
@@ -410,7 +416,7 @@
           // vm.isPosting = true
           setTimeout(function () {
             // vm.bottomCount += 10
-            vm.getSeller(true)
+            vm.getSellers(true)
             vm.$nextTick(function () {
               vm.$refs.myScroll.reset({bottom: 0})
               vm.$refs.myScroll.donePullup()
@@ -510,7 +516,7 @@
           width: 100%;
           .bf;
           border-top: 1px solid #eee;
-          .bsd(0, 10px, 18px, 0, #ccc);
+          .bsd(0, 10px, 18px, 0, rgba(0, 0, 0, 0.25));
           .transi(.2s);
           &.show {
             opacity: 1;
@@ -540,7 +546,7 @@
     }
 
     .sellers-list {
-      height: auto;
+      height: 100%;
       &.fixed {
         .xs-container {
           margin-top: 90/@rem;
@@ -641,7 +647,7 @@
                   .fl;
                   margin-right: 10/@rem;
                   .cdiy(#ff9900);
-                  .fz(24);
+                  .rfz(16);
                   &.gray {
                     .c9;
                   }

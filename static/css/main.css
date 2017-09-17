@@ -3692,6 +3692,7 @@ body {
   -webkit-background-size: cover;
   background-size: cover;
   background-repeat: no-repeat;
+  border-radius: 50%;
 }
 .ico-seller {
   float: left;
@@ -3704,6 +3705,7 @@ body {
   -webkit-background-size: cover;
   background-size: cover;
   background-repeat: no-repeat;
+  border-radius: 50%;
 }
 .ico-cart {
   display: inline-block;

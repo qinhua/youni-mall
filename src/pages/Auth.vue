@@ -38,8 +38,7 @@
           vm.addUser(info)
           window.youniMall.userAuth = vm.$store.state.global.wxInfo = info
           me.locals.set('ynWxUser', JSON.stringify({data: info, timeStamp: me.formatDate(new Date(), null, 1)}))
-          // alert(JSON.stringify(info))
-          vm.$router.push({path: '/home'})
+          vm.goBeforePage()
         })
       } else {
         // 外部登录页面
@@ -59,6 +58,7 @@
         }
         window.youniMall.userAuth = vm.$store.state.global.wxInfo = info
         me.locals.set('ynWxUser', JSON.stringify({data: info, timeStamp: me.formatDate(new Date(), null, 1)}))
+        // vm.goBeforePage()
         vm.$router.push({path: '/home'})
       }
     },
@@ -94,7 +94,7 @@
       // 02.wx外部登录
       login() {
       },
-      goBeforeLoginUrl() {
+      goBeforePage() {
         let url = me.locals.get('beforeLoginUrl')
         if (!url || url.indexOf('/author') !== -1) {
           this.$router.push({path: '/home'})
@@ -103,10 +103,7 @@
           me.locals.set('beforeLoginUrl', '')
         }
       }
-    },
-    /*watch: {
-       '$route' (to, from) {}
-    }*/
+    }
   }
 </script>
 

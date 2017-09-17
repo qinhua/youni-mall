@@ -4,8 +4,8 @@
     <div class="user-modal">
       <div class="user-inner">
         <img :src="avatar">
-        <p class="user-name" :data-userId="255" v-jump="['edit_user', ['userId'], 3]">{{nickName}}<i
-          class="fa fa-pencil-square-o"></i></p>
+        <!--<p class="user-name" :data-userId="255" v-jump="['edit_user', ['userId'], 3]">{{nickName}}<i class="fa fa-pencil-square-o"></i></p>-->
+        <p class="user-name">{{nickName}}</p>
       </div>
       <canvas id="canvas" style="position:absolute;bottom:0px;left:0px;z-index:1;"></canvas>
     </div>
@@ -36,24 +36,30 @@
     </div>
     <group class="list-modal">
       <cell title="我的卡券" link="/mycoupons">
-        <i slot="icon" width="20" style="margin-right:5px;" class="fa fa-credit-card"></i>
-        3
+        <!--<i slot="icon" width="20" style="margin-right:5px;" class="fa fa-credit-card"></i>-->
       </cell>
       <cell title="我的水票" link="/ticket/2">
-        <i slot="icon" width="20" style="margin-right:5px;" class="fa fa-ticket"></i>
-        1
+        <!--<i slot="icon" width="20" style="margin-right:5px;" class="fa fa-ticket"></i>-->
       </cell>
       <cell title="我的押金" link="/myguarantee">
-        <i slot="icon" width="20" style="margin-right:5px;" class="fa fa-money"></i>
+        <!--<i slot="icon" width="20" style="margin-right:5px;" class="fa fa-money"></i>-->
       </cell>
-      <cell title="收货地址" link="/myaddress"><i slot="icon" width="20" style="margin-right:5px;"
-                                              class="fa fa-map-signs"></i></cell>
+      <cell title="收货地址" link="/myaddress">
+        <!--<i slot="icon" width="20" style="margin-right:5px;" class="fa fa-map-signs"></i>-->
+      </cell>
       <!--<cell title="我的收藏" link="/myfavor"><i slot="icon" width="20" style="margin-right:5px;"
                                             class="fa fa-star"></i></cell>-->
-      <cell title="使用帮助" link="/help"><i slot="icon" width="20" style="margin-right:5px;"
-                                         class="fa fa-question-circle"></i></cell>
-      <cell title="关于友你" link="/aboutus"><i slot="icon" width="20" style="margin-right:5px;"
-                                            class="fa fa-info-circle"></i></cell>
+      <cell title="使用帮助" link="/help">
+        <!--<i slot="icon" width="20" style="margin-right:5px;" class="fa fa-question-circle"></i>-->
+      </cell>
+      <cell title="关于友你" link="/aboutus">
+        <!--<i slot="icon" width="20" style="margin-right:5px;" class="fa fa-info-circle"></i>-->
+      </cell>
+    </group>
+    <group class="bottom">
+      <cell title="清理缓存" style="color:#666" @click.native="logout">
+        <!--<i slot="icon" width="20" style="margin-right:5px;" class="fa fa-shower"></i>-->
+      </cell>
     </group>
   </div>
 </template>
@@ -139,7 +145,14 @@
           window.requestAnimFrame(loop)
         }
         loop()
-      }
+      },
+      logout() {
+        vm.confirm('确认清除？', '清除后将重新拉取授权', function () {
+          vm.$store.commit('logout')
+          vm.jump('author')
+        }, function () {
+        })
+      },
     }
   }
 </script>
@@ -224,14 +237,17 @@
       }
     }
     .list-modal {
-      .weui-cells {
-        margin-top: 10/@rem;
-        padding: 0;
-      }
-      .weui-cell {
-        padding: 24/@rem !important;
-        .fz(24) !important;
-      }
+    }
+    .weui-cells {
+      margin-top: 10/@rem;
+      padding: 0;
+    }
+    .weui-cell {
+      padding: 24/@rem !important;
+      .fz(24) !important;
+    }
+    .bottom {
+      margin-top: 10/@rem;
     }
   }
 
