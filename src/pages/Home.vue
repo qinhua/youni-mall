@@ -180,6 +180,7 @@
         showPop: false,
         curLinedata: null,
         params: {
+          status:1,
           pageSize: 5,
           pageNo: 1,
           /*goodsType: '',

@@ -37,7 +37,7 @@
                           <span class="unit-price">￥{{itm.goodsPrice | toFixed}}元</span>
                           <span class="order-info">{{itm.info}}</span>
                           <div class="dispatch-info" v-if="itm.goodsType==='goods_type.2'">
-                            <span>已送：{{itm.totalDispatcheNum}}件</span><span>待送：{{itm.totalDispatcheNum}}件</span>
+                            <span>已送：{{itm.totalDispatcheNum}}件</span><span>待送：{{itm.waitDispatcheNum}}件</span>
                           </div>
                         </section>
                         <!--<label>{{itm.label}}</label>-->
@@ -75,6 +75,7 @@
                   <div class="btns" v-if="item.status===5">
                     <button type="button" class="btn btn-appraise" @click="toAppraise(item.orderId)">评价</button>
                   </div>
+                  <span class="timestamp">{{item.createTime}}</span>
                 </section>
               </section>
             </li>
@@ -506,6 +507,13 @@
                 .c9;
               }
             }
+          }
+          .timestamp {
+            display: block;
+            padding: 0 22/@rem 20/@rem;
+            .right;
+            .c9;
+            .fz(22);
           }
         }
       }
