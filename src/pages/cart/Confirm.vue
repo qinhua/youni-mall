@@ -195,8 +195,8 @@
       changeDispatchNum(id) {
         // console.log('change', id)
         var curVal = document.getElementById('dispatch-' + id).value
-        for (var i = 0; i < vm.curCartData.goods.length; i++) {
-          var cur = vm.curCartData.goods[i]
+        for (var i = 0; i < vm.params.goods.length; i++) {
+          var cur = vm.params.goods[i]
           if (id === cur.goodsId) {
             cur.dispatchDayNum = curVal
           }

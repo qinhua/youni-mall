@@ -274,7 +274,18 @@
         vm.isPosting = true
         vm.loadData(ticketApi.buy, {waterId: id}, 'POST', function (res) {
           vm.isPosting = false
-          vm.pay(res.data)
+          if (res.success && res.data) {
+            vm.pay(res.data)
+          } else {
+            if (res.errorCode == 304) {
+              vm.toast('请先绑定手机号！')
+              setTimeout(function () {
+                vm.jump('bind')
+              }, 800)
+            } else {
+              vm.toast(res.data || '生成订单失败！')
+            }
+          }
         }, function () {
           vm.isPosting = false
         })
