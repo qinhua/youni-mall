@@ -31,7 +31,7 @@
           </div>
         </div>
       </div>
-      <div class="notice-con">
+      <div class="notice-con" v-if="seller.notice">
         <p>{{seller.notice}}</p>
       </div>
     </div>
@@ -304,6 +304,7 @@
       '$route'(to, from) {
         if (to.name === 'seller_detail') {
           vm.getSeller()
+          vm.getGoods()
         }
       },
       goods() {
