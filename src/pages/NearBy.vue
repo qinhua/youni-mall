@@ -1,39 +1,43 @@
 <template>
-  <div class="nearby" ref="nearby" v-cloak @scroll="scrollHandler">
-    <!--定位组件-->
-    <div class="location-chooser">
-      <p><span><i class="fa fa-map-marker"></i>&nbsp;您的位置：</span>{{address || geoAddress}}</p>
-      <a @click.prevent="toMap"><i class="right-arrow"></i></a>
-    </div>
-    <!--过滤条-->
-    <div class="sellers-filter" ref="filters02">
-      <div class="v-filter-tabs">
-        <ul class="v-f-tabs">
-          <li :class="curFilterType==='types'?'mfilterActive':''" @click="showFilter('types',$event)">店铺分类<i
-            class="ico-arr-down"></i>
-          </li>
-          <li :class="curFilterType==='services'?'mfilterActive':''" @click="showFilter('services',$event)">业务分类<i
-            class="ico-arr-down"></i>
-          </li>
-          <li :class="curFilterType==='sorts'?'mfilterActive':''" @click="showFilter('sorts',$event)">排序<i
-            class="ico-arr-down"></i></li>
-        </ul>
-        <div class="filter-data" v-if="showFilterCon" :class="showFilterCon?'show':''">
-          <ul class="filter-tags" v-show="curFilterDict">
-            <li v-for="(data,idx) in curFilterDict" :class="curSelFilter[curFilterType].index==idx?'sfilterActive':''"
-                :data-key="data.key"
-                :data-value="data.value" @click="chooseFilter(idx,data.key,data.value,$event)">{{data.value}}
+  <div class="nearby" ref="nearby" v-cloak>
+
+    <div class="top-con">
+      <!--定位组件-->
+      <div class="location-chooser">
+        <p><span><i class="fa fa-map-marker"></i>&nbsp;您的位置：</span>{{address || geoAddress}}</p>
+        <a @click.prevent="toMap"><i class="right-arrow"></i></a>
+      </div>
+      <!--过滤条-->
+      <div class="sellers-filter" ref="filters02">
+        <div class="v-filter-tabs">
+          <ul class="v-f-tabs">
+            <li :class="curFilterType==='types'?'mfilterActive':''" @click="showFilter('types',$event)">店铺分类<i
+              class="ico-arr-down"></i>
             </li>
+            <li :class="curFilterType==='services'?'mfilterActive':''" @click="showFilter('services',$event)">业务分类<i
+              class="ico-arr-down"></i>
+            </li>
+            <li :class="curFilterType==='sorts'?'mfilterActive':''" @click="showFilter('sorts',$event)">排序<i
+              class="ico-arr-down"></i></li>
           </ul>
+          <div class="filter-data" v-if="showFilterCon" :class="showFilterCon?'show':''">
+            <ul class="filter-tags" v-show="curFilterDict">
+              <li v-for="(data,idx) in curFilterDict" :class="curSelFilter[curFilterType].index==idx?'sfilterActive':''"
+                  :data-key="data.key"
+                  :data-value="data.value" @click="chooseFilter(idx,data.key,data.value,$event)">{{data.value}}
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
+
     <!--店铺列表-->
     <div class="sellers-list" ref="sellerList">
       <scroller class="inner-scroller" lock-x use-pullup use-pulldown :pullup-config="pullupConfig"
                 :pulldown-config="pulldownConfig"
                 @on-scroll="onScroll"
-                @on-pulldown-loading="onPullDown" @on-pullup-loading="onPullUp" @on-scroll-bottom="" ref="myScroll"
+                @on-pulldown-loading="onPullDown" @on-pullup-loading="onPullUp" @on-scroll-bottom="" ref="sellerScroll"
                 :scroll-bottom-offst="300">
         <div class="box">
           <section class="v-items" v-for="(item, index) in sellers" :data-id="item.id" @click="toDetail(item.id)">
@@ -274,14 +278,14 @@
       },
       resetScroll() {
         setTimeout(function () {
-          vm.$refs.myScroll.reset()
-          vm.$refs.myScroll.donePullup()
-          vm.$refs.myScroll.donePulldown()
+          vm.$refs.sellerScroll.reset()
+          vm.$refs.sellerScroll.donePullup()
+          vm.$refs.sellerScroll.donePulldown()
           let target = vm.$refs.filters02
           let list = vm.$refs.sellerList
           target.classList.remove('fixed')
           list.classList.remove('fixed')
-          vm.$refs.myScroll.reset()
+          vm.$refs.sellerScroll.reset()
         }, 100)
       },
       scrollHandler() {
@@ -380,7 +384,7 @@
         vm.curSelFilter[vm.curFilterType].index = idx
         vm.curSelFilter[vm.curFilterType].key = key
         vm.curSelFilter[vm.curFilterType].value = value
-        console.error(JSON.stringify(vm.curSelFilter, null, 2))
+        // console.error(JSON.stringify(vm.curSelFilter, null, 2))
         vm.curSelFilter.types.key ? vm.params.sellerLevel = vm.curSelFilter.types.key : delete vm.params.sellerLevel
         vm.curSelFilter.services.key ? vm.params.sellerType = vm.curSelFilter.services.key : delete vm.params.sellerType
         vm.curSelFilter.sorts.key ? vm.params.sortType = vm.curSelFilter.sorts.key : delete vm.params.sortType
@@ -388,7 +392,7 @@
         vm.getSellers()
       },
       onScroll(pos) {
-        this.scrollTop = pos.top
+        // this.scrollTop = pos.top
         vm.hideFilter()
       },
       onPullDown() {
@@ -398,12 +402,11 @@
         } else {
           // this.isPosting = true
           setTimeout(function () {
-            // vm.bottomCount += 10
             vm.getSellers()
             vm.$nextTick(function () {
-              vm.$refs.myScroll.reset({top: 0})
-              vm.$refs.myScroll.donePullup()
-              vm.$refs.myScroll.donePulldown()
+              vm.$refs.sellerScroll.reset({top: 0})
+              vm.$refs.sellerScroll.donePullup()
+              vm.$refs.sellerScroll.donePulldown()
             })
           }, 1500)
         }
@@ -415,12 +418,11 @@
         } else {
           // vm.isPosting = true
           setTimeout(function () {
-            // vm.bottomCount += 10
             vm.getSellers(true)
             vm.$nextTick(function () {
-              vm.$refs.myScroll.reset({bottom: 0})
-              vm.$refs.myScroll.donePullup()
-              vm.$refs.myScroll.donePulldown()
+              vm.$refs.sellerScroll.reset({bottom: 0})
+              vm.$refs.sellerScroll.donePullup()
+              vm.$refs.sellerScroll.donePulldown()
             })
           }, 200)
         }
@@ -437,13 +439,19 @@
     height: 100%;
     overflow: scroll; // 此两个属性至关重要，不写@scroll监听不到滚动
 
+    .top-con {
+      .fix;
+      top: 0;
+      z-index: 50;
+      width: 100%;
+      .bf5;
+    }
     .location-chooser {
       margin-bottom: 10/@rem;
     }
     .sellers-filter {
       .rel;
       z-index: 10;
-      margin-bottom: 10/@rem;
       .transi(.2s);
       &.fixed {
         width: 100%;
@@ -554,6 +562,7 @@
       }
       .inner-scroller {
         .borBox;
+        padding: 172/@rem 0 50px;
         height: 100% !important;
         .v-items {
           .rel;

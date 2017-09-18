@@ -236,16 +236,18 @@
         .cdiy(#212225);
       }
     }
+
     .list-modal {
+      .weui-cells {
+        margin-top: 10/@rem;
+        padding: 0;
+      }
+      .weui-cell {
+        padding: 26/@rem !important;
+        .fz(26) !important;
+      }
     }
-    .weui-cells {
-      margin-top: 10/@rem;
-      padding: 0;
-    }
-    .weui-cell {
-      padding: 24/@rem !important;
-      .fz(24) !important;
-    }
+
     .bottom {
       margin-top: 10/@rem;
     }

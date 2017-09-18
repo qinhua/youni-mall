@@ -5,43 +5,68 @@
         <div class="wrap">
           <img :src="seller.headimgurl">
           <div class="infos">
-            <h3>{{seller.name}}({{seller.serviceTypeName}})<span
-              class="distance">{{seller.distance ? ((seller.distance / 1000) | toFixed(1)) : seller.distance}}km</span>
+            <h3>{{seller.name}}<span
+              :class="['service_type',seller.serviceTypeCls]">{{seller.serviceTypeName}}</span><span class="distance">{{seller.distance ? ((seller.distance / 1000) | toFixed(1)) : seller.distance}}km</span>
             </h3>
             <div class="middle">
               <ol class="star">
-                <li class="gray" v-for="star in 5" v-if="!seller.score">★</li>
-                <li v-for="star in 5" v-else>★</li>
+                <li v-for="star in seller.score" v-if="seller.score">★</li>
+                <li class="gray" v-for="star in 5" v-else>★</li>
               </ol>
               <span
-                class="hasSell"><i>{{((seller.score || 0) / 1000) | toFixed(1)}}分</i>已售{{seller.sellerCount}}单</span>
+                class="hasSell"><i>{{(seller.score || 0) | toFixed(1)}}分</i>已售{{seller.sellerCount}}单</span>
             </div>
             <div class="tags">
               <label class="c2">{{seller.authLevelName}}</label>
               <span class="dispatchTime">平均{{seller.dispatchTime || 22}}分钟送达</span>
             </div>
           </div>
-          <div class="bottom">
+          <!--<div class="bottom">
             <label class="note" v-if="seller.note">{{seller.note || '商家特惠'}}</label>
-          </div>
+          </div>-->
         </div>
       </div>
       <div class="contacts">
-        <p>地址：{{seller.address}}</p>
         <p>配送电话：<a :href="'tel:'+seller.phone">{{seller.phone}}</a>，楼梯房需收取上楼费</p>
       </div>
     </div>
 
     <div class="operate-con">
-      <h3><i class="fa fa-hand-o-right"></i>&nbsp;您可以在此处给店铺缴付押金
+      <h3><i class="fa fa-hand-o-right"></i>&nbsp;您可以在此处给店铺缴付押金({{seller.mortgage}}元)
         <button type="button" class="btn btn-deposite" @click="payDeposite(seller.id)">交押金</button>
       </h3>
+    </div>
+    <div class="bottom" v-if="seller.businessLicense">
+      <div class="detail-txt">
+        <div class="title"><h3>基本信息</h3></div>
+        <div class="content basics">
+          <p><i>公司名称：</i><span>{{seller.companyName}}</span></p>
+          <p><i>公司地址：</i><span>{{seller.address}}</span></p>
+          <p><i>联系电话：</i><span>{{seller.phone}}</span><a class="btn btn-dial" :href="'tel:'+seller.phone"><i
+            class="fa fa-phone"></i>&nbsp;拨打</a></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom" v-if="seller.businessLicense">
+      <div class="detail-txt">
+        <div class="title"><h3>营业执照</h3></div>
+        <div class="content license">
+          <div>
+            <img class="previewer-demo-img" :src="seller.businessLicense" width="100"
+                 @click="preview(0)">
+            <div v-transfer-dom>
+              <previewer :list="list" ref="previewer" :options="options"></previewer>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="bottom">
       <div class="detail-txt">
         <div class="title"><h3>店铺介绍</h3></div>
-        <div class="content">{{seller.description}}</div>
+        <div class="content">{{seller.note}}</div>
       </div>
     </div>
   </div>
@@ -52,32 +77,60 @@
   /* eslint-disable */
   let me
   let vm
-  //  import {Group, XInput,Marquee, MarqueeItem} from 'vux'
+  import {Previewer, TransferDom } from 'vux'
   import {depositApi} from '../../service/main.js'
 
   export default {
     name: 'seller-detail-more',
+    directives: {
+      TransferDom
+    },
     data() {
       return {
         seller: {},
         isPosting: false,
-        noMore: false
+        noMore: false,
+        list: [{src: null}],
+        options: {
+          getThumbBoundsFn (index) {
+            // find thumbnail element
+            let thumbnail = document.querySelectorAll('.previewer-demo-img')[index]
+            // get window scroll Y
+            let pageYScroll = window.pageYOffset || document.documentElement.scrollTop
+            // optionally get horizontal scroll
+            // get position of element relative to viewport
+            let rect = thumbnail.getBoundingClientRect()
+            // w = width
+            return {x: rect.left, y: rect.top + pageYScroll, w: rect.width}
+            // Good guide on how to get element coordinates:
+            // http://javascript.info/tutorial/coordinates
+          }
+        }
       }
     },
-    // components:{Group, XInput,Marquee, MarqueeItem},
+    components: {Previewer},
     beforeMount() {
       me = window.me
     },
     mounted() {
       vm = this
-      // me.attachClick()
       vm.getSeller()
     },
+    watch: {
+      '$route'(to, from) {
+        if (to.name === 'seller_detail_more') {
+          vm.getSeller()
+        }
+      }
+    },
     methods: {
-      /* 页面数据 */
+      preview (index) {
+        this.$refs.previewer.show(index)
+      },
       getSeller() {
         try {
           vm.seller = vm.$route.query.thedata ? JSON.parse(window.decodeURIComponent(vm.$route.query.thedata)) : {}
+          vm.list[0].src=vm.seller.businessLicense
           console.log(vm.seller, '带过来的数据')
         } catch (e) {
           // console.log(e)
@@ -167,7 +220,7 @@
     }
     .seller-info {
       background: url(../../../static/img/bg_user.jpg) no-repeat top center;
-      .rbg-size(100%);
+      .rbg-size(100%, 100%);
       .v-items {
         .rel;
         padding: 20/@rem;
@@ -222,7 +275,7 @@
                 .fl;
                 margin-right: 10/@rem;
                 .cdiy(#ff9900);
-                .fz(24);
+                .fz(30);
                 &.gray {
                   .c9;
                 }
@@ -279,13 +332,31 @@
             .abs;
             .block;
             left: 0;
-            top: 12/@rem;
+            top: 16/@rem;
             content: '惠';
             .size(26, 26);
             .center;
             line-height: 26/@rem;
             background: #f38918;
           }
+        }
+      }
+      .service_type {
+        margin-left: 4px;
+        padding: 0 2px;
+        font-weight: normal;
+        .cf;
+        .fz(22);
+        background: #2acaad;
+        .borR(2px);
+        &.water {
+          background: #2acaad;
+        }
+        &.milk {
+          background: #74c361;
+        }
+        &.water-milk {
+          background: #ad64d2;
         }
       }
       .contacts {
@@ -301,6 +372,7 @@
         }
       }
     }
+
     .operate-con {
       .borBox;
       padding: 30/@rem 26/@rem;
@@ -317,10 +389,22 @@
         .cf;
         .block;
         padding: 10/@rem 20/@rem;
-        background: #ff9800;
-        .borR(5px);
+        background: #f9a11e;
+        .borR(4px);
       }
     }
+
+    .list-modal {
+      .weui-cells {
+        margin-top: 10/@rem;
+        padding: 0;
+      }
+      .weui-cell {
+        padding: 26/@rem !important;
+        .fz(26) !important;
+      }
+    }
+
     .bottom {
       margin-top: 14/@rem;
       .title {
@@ -342,8 +426,38 @@
         min-height: 100/@rem;
         .fz(24);
         .c3;
-        .indent;
         .bf;
+        &.basics {
+          .c3;
+          p {
+            .rel;
+            padding: 12/@rem 0;
+            > i {
+              font-style: normal;
+              .fl;
+            }
+            span {
+              .block;
+              .c6;
+              overflow: hidden;
+            }
+          }
+          .btn-dial {
+            .abs-center-vertical;
+            right: 0;
+            .fz(24);
+            .cf;
+            .block;
+            padding: 10/@rem 20/@rem;
+            background: #5bc331;
+            .borR(4px);
+          }
+        }
+        &.license {
+          img {
+            width: 30%;
+          }
+        }
       }
     }
   }

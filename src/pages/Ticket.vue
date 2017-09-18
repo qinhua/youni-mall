@@ -22,43 +22,40 @@
                 :on-infinite="infinite"
                 refreshText="下拉刷新"
                 noDataText="就这么多了"
-                snapping v-if="tickets.length&&!isMe">
+                snapping>
         <!-- content goes here -->
-        <section class="v-items" v-for="(item, index) in tickets" :data-id="item.id" :data-waterid="item.waterId">
-          <section class="wrap">
-            <img :src="item.imgurl">
-            <section class="infos">
-              <h3>{{item.name}}<span class="count">数量：<i>{{item.waterNum}}桶</i></span></h3>
-              <section class="middle">
-                <span class="price">￥{{item.price | toFixed}}</span>
-                <span class="sale-count">已售：<i>{{item.saleCount}}件</i></span>
-                <button type="button" class="btn btn-buy" @click="onButtonClick($event,item.id)">购买</button>
+        <div v-if="tickets.length&&!isMe">
+          <section class="v-items" v-for="(item, index) in tickets" :data-id="item.id" :data-waterid="item.waterId">
+            <section class="wrap">
+              <img :src="item.imgurl">
+              <section class="infos">
+                <h3>{{item.name}}<span class="count">数量：<i>{{item.waterNum}}桶</i></span></h3>
+                <section class="middle">
+                  <span class="price">￥{{item.price | toFixed}}元</span>
+                  <span class="sale-count">已售：<i>{{item.saleCount}}件</i></span>
+                  <button type="button" class="btn btn-buy" @click="onButtonClick($event,item.id)">购买</button>
+                </section>
+                <label>{{item.waterNote}}</label>
               </section>
-              <label>{{item.waterNote}}</label>
             </section>
           </section>
-        </section>
-      </scroller>
-      <scroller class="inner-scroller" ref="ticketScroller" height="100%" :on-refresh="refresh"
-                :on-infinite="infinite"
-                refreshText=""
-                noDataText="就这么多了"
-                snapping v-if="tickets.length&&isMe">
-        <!-- content goes here -->
-        <section class="v-items" v-for="(item, index) in tickets" :data-id="item.id" :data-waterid="item.waterId">
-          <section class="wrap">
-            <img :src="item.ticketImage">
-            <section class="infos">
-              <h3>{{item.ticketName}}<span class="count">数量：<i>{{item.totalWaterNum}}桶</i></span></h3>
-              <section class="middle">
-                <span class="price txt-del c9">￥{{item.totalAmount | toFixed}}</span>
-                <span class="sale-count">已兑换：<i>{{item.exchangeWaterNum}}桶</i></span>
-                <button type="button" class="btn btn-buy" @click="onButtonClick($event,item.id,item)">兑换</button>
+        </div>
+        <div v-if="tickets.length&&isMe">
+          <section class="v-items" v-for="(item, index) in tickets" :data-id="item.id" :data-waterid="item.waterId">
+            <section class="wrap">
+              <img :src="item.ticketImage">
+              <section class="infos">
+                <h3>{{item.ticketName}}<span class="count">数量：<i>{{item.totalWaterNum}}桶</i></span></h3>
+                <section class="middle">
+                  <span class="price txt-del c9">￥{{item.totalAmount | toFixed}}元</span>
+                  <span class="sale-count">已兑换：<i>{{item.exchangeWaterNum}}桶</i></span>
+                  <button type="button" class="btn btn-buy" @click="onButtonClick($event,item.id,item)">兑换</button>
+                </section>
+                <label>￥{{item.payAmount | toFixed}}</label>
               </section>
-              <label>￥{{item.payAmount | toFixed}}</label>
             </section>
           </section>
-        </section>
+        </div>
       </scroller>
     </div>
     <div class="iconNoData abs-center-vh" v-if="!tickets.length"><i></i>
@@ -106,7 +103,6 @@
         params: {
           waterTicketType: 'water_ticket_type.1',
           userType: 1,
-          status: 0,
           pagerSize: 10,
           pageNo: 1
         },

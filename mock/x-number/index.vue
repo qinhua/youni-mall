@@ -65,7 +65,7 @@
       name: String,
       title: String,
       linedata: {
-        type: Object,
+        type: Object
       },
       fillable: {
         type: Boolean,

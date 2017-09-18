@@ -21,6 +21,7 @@ import Bind from '@/pages/my/Bind'
 import MyFavorite from '@/pages/my/Favorite'
 import Help from '@/pages/my/Help'
 import About from '@/pages/my/About'
+import Appraise from '@/pages/orders/Appraise'
 import GoodsDetail from '@/pages/goods/Detail'
 import SellerDetail from '@/pages/sellers/Detail'
 import SellerDetailMore from '@/pages/sellers/MoreDetail'
@@ -126,7 +127,7 @@ export default new Router({
       name: 'edit_user',
       component: EditUser,
       meta: {
-        title: '我的',
+        title: '修改资料',
         keepAlive: false
       }
     },
@@ -145,6 +146,15 @@ export default new Router({
       component: MyGuarantee,
       meta: {
         title: '我的押金',
+        keepAlive: false
+      }
+    },
+    {
+      path: '/appraise',
+      name: 'appraise',
+      component: Appraise,
+      meta: {
+        title: '订单评价',
         keepAlive: false
       }
     },

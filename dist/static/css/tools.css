@@ -862,6 +862,27 @@ input[type="radio"] {
   background-color: #f1f1f1;
   border-radius: 4px;
 }
+.flush-button {
+  width: 100%;
+  padding: 0.9375rem 0;
+  color: #fff;
+  background: red;
+}
+.flush-button.s01 {
+  position: fixed;
+  top: 0;
+  z-index: 1000;
+}
+.flush-button.s02 {
+  position: fixed;
+  display: inline-block;
+  width: auto;
+  padding: 10px;
+  font-size: 12px;
+  left: 0;
+  top: 50px;
+  z-index: 1000;
+}
 @-webkit-keyframes ball-beat {
   50% {
     opacity: 0.2;

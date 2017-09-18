@@ -10,16 +10,17 @@
         <div class="wrap">
           <img :src="seller.headimgurl">
           <div class="infos">
-            <h3>{{seller.name}}({{seller.serviceTypeName}})<span
-              class="distance">{{seller.distance ? ((seller.distance / 1000) | toFixed(1)) : seller.distance}}km</span>
+            <h3>{{seller.name}}<span
+              :class="['service_type',seller.serviceTypeCls]">{{seller.serviceTypeName}}</span><span
+              class="distance">{{seller.distance / 1000 | toFixed(1)}}km</span>
             </h3>
             <div class="middle">
               <ol class="star">
-                <li class="gray" v-for="star in 5" v-if="!seller.score">★</li>
-                <li v-for="star in 5" v-else>★</li>
+                <li v-for="star in seller.score" v-if="seller.score">★</li>
+                <li class="gray" v-for="star in 5" v-else>★</li>
               </ol>
               <span
-                class="hasSell"><i>{{((seller.score || 0) / 1000) | toFixed(1)}}分</i>已售{{seller.sellerCount}}单</span>
+                class="hasSell"><i>{{(seller.score || 0)  | toFixed(1)}}分</i>已售{{seller.sellerCount}}单</span>
             </div>
             <div class="tags">
               <label class="c2">{{seller.authLevelName}}</label>
@@ -27,12 +28,13 @@
             </div>
           </div>
           <div class="bottom">
-            <label class="note" v-if="seller.note">{{seller.note || '商家特惠'}}</label>
+            <label class="note" v-if="seller.companyName"><i class="ion ion-home"></i>{{seller.companyName}}</label>
+            <span>&lt;已上传营业执照&gt;</span>
           </div>
         </div>
       </div>
-      <div class="notice-con" v-if="seller.notice">
-        <p>{{seller.notice}}</p>
+      <div class="notice-con" v-if="seller.notice" ref="noticeCon">
+        <p class="txt-scroll" ref="noticeTxt">{{seller.notice}}</p>
       </div>
     </div>
 
@@ -66,7 +68,7 @@
       <scroller class="inner-scroller" lock-x scrollbarY use-pullup use-pulldown :pullup-config="pullupConfig"
                 :pulldown-config="pulldownConfig"
                 @on-scroll="onScroll"
-                @on-pulldown-loading="onPullDown" @on-pullup-loading="onPullUp" @on-scroll-bottom="" ref="myScroll"
+                @on-pulldown-loading="onPullDown" @on-pullup-loading="onPullUp" @on-scroll-bottom="" ref="goodsScroll"
                 :scroll-bottom-offst="300">
         <div class="box">
           <section class="v-items" v-for="(item, index) in goods" :data-id="item.id">
@@ -76,7 +78,7 @@
                 <section class="infos">
                   <h3>{{item.name}}</h3>
                   <section class="middle">
-                    <span class="price">￥{{item.price}}</span>
+                    <span class="price">￥{{item.price}}元</span>
                     <span class="hasSell">已售{{item.saleCount}}单</span>
                   </section>
                   <label>{{item.label}}</label>
@@ -122,7 +124,7 @@
   let me
   let vm
   import Swiper from '../../components/Swiper'
-  import {Group, GroupTitle, Grid, GridItem, Marquee, MarqueeItem, XNumber, Scroller, Sticky, LoadMore} from 'vux'
+  import {Group, GroupTitle, XNumber, Scroller, Sticky} from 'vux'
   import {goodsApi, nearbyApi, cartApi} from '../../service/main.js'
   import {mapState, mapMutations} from 'vuex'
 
@@ -134,6 +136,7 @@
         cartData: '',
         seller: {},
         goods: [],
+        noticeScroll: false,
         params: {
           sellerId: null,
           pageSize: 5,
@@ -256,12 +259,9 @@
     components: {
       Group,
       GroupTitle,
-      Marquee,
-      MarqueeItem,
       XNumber,
       Scroller,
-      Sticky,
-      LoadMore
+      Sticky
     },
     beforeMount() {
       me = window.me
@@ -289,17 +289,6 @@
         vm.resetScroll()
       })
     },
-    /*computed: {
-     //如果要动态改变，必须有setter方法
-     curCount: {
-     get: function () {
-     return this.$store.state.cart.count
-     },
-     set: function (newValue) {
-     this.$store.commit('updateCart', newValue)
-     }
-     }
-     },*/
     watch: {
       '$route'(to, from) {
         if (to.name === 'seller_detail') {
@@ -324,14 +313,14 @@
       },
       resetScroll() {
         setTimeout(function () {
-          vm.$refs.myScroll.reset()
-          vm.$refs.myScroll.donePullup()
-          vm.$refs.myScroll.donePulldown()
+          vm.$refs.goodsScroll.reset()
+          vm.$refs.goodsScroll.donePullup()
+          vm.$refs.goodsScroll.donePulldown()
           let target = vm.$refs.filters03
           let list = vm.$refs.goodsList
           target.classList.remove('fixed')
           list.classList.remove('fixed')
-          vm.$refs.myScroll.reset()
+          vm.$refs.goodsScroll.reset()
         }, 100)
       },
       scrollHandler() {
@@ -383,17 +372,46 @@
             switch (resD.serviceType) {
               case 'seller_service_type.1':
                 resD.serviceTypeName = '水'
+                resD.serviceTypeCls = 'water'
                 break
               case 'seller_service_type.2':
                 resD.serviceTypeName = '奶'
+                resD.serviceTypeCls = 'milk'
                 break
               case 'seller_service_type.3':
                 resD.serviceTypeName = '水&奶'
+                resD.serviceTypeCls = 'water-milk'
                 break
             }
+            resD.score = window.me.Rdn.rdnBetween(1, 6)
             vm.seller = resD
+            vm.scrollNotice(vm.seller.notice)
           }
         })
+      },
+      scrollNotice(text){
+        if (text) {
+          setTimeout(function () {
+            var noticeCon = vm.$refs.noticeCon
+            var noticeTxt = vm.$refs.noticeTxt
+            if (noticeCon.clientWidth < noticeTxt.clientWidth) {
+              if (text.length <= 10) {
+                noticeTxt.classList.add('txt-fast')
+                return
+              }
+              if (text.length > 10 && text.length <= 20) {
+                noticeTxt.classList.add('txt-medium')
+                return
+              }
+              if (text.length > 20) {
+                noticeTxt.classList.add('txt-slow')
+                return
+              }
+            } else {
+              noticeTxt.classList.remove('txt-slow,txt-slow,txt-fast')
+            }
+          }, 0)
+        }
       },
       getGoods(isLoadMore) {
         if (vm.isPosting) return false
@@ -406,7 +424,7 @@
             if (resD.totalCount < vm.params.pageSize) {
               vm.noMore = true
               /*vm.$nextTick(function () {
-               vm.$refs.myScroll.disablePullup()
+               vm.$refs.goodsScroll.disablePullup()
                })*/
             } else {
               vm.noMore = false
@@ -448,7 +466,7 @@
         vm.curSelFilter[vm.curFilterType].index = idx
         vm.curSelFilter[vm.curFilterType].key = key
         vm.curSelFilter[vm.curFilterType].value = value
-        console.error(JSON.stringify(vm.curSelFilter, null, 2))
+        // console.error(JSON.stringify(vm.curSelFilter, null, 2))
         vm.curSelFilter.types.key ? vm.params.goodsType = vm.curSelFilter.types.key : delete vm.params.goodsType
         vm.curSelFilter.brands.key ? vm.params.brandId = vm.curSelFilter.brands.key : delete vm.params.brandId
         vm.hideFilter()
@@ -468,9 +486,9 @@
             // vm.bottomCount += 10
             vm.getGoods()
             vm.$nextTick(function () {
-              vm.$refs.myScroll.reset({top: 0})
-              vm.$refs.myScroll.donePullup()
-              vm.$refs.myScroll.donePulldown()
+              vm.$refs.goodsScroll.reset({top: 0})
+              vm.$refs.goodsScroll.donePullup()
+              vm.$refs.goodsScroll.donePulldown()
             })
           }, 1500)
         }
@@ -486,9 +504,9 @@
             // vm.bottomCount += 10
             vm.getGoods(true)
             vm.$nextTick(function () {
-              vm.$refs.myScroll.reset({bottom: 0})
-              vm.$refs.myScroll.donePullup()
-              vm.$refs.myScroll.donePulldown()
+              vm.$refs.goodsScroll.reset({bottom: 0})
+              vm.$refs.goodsScroll.donePullup()
+              vm.$refs.goodsScroll.donePulldown()
             })
           }, 200)
         }
@@ -652,7 +670,7 @@
 
     .seller-info {
       background: url(../../../static/img/bg_user.jpg) no-repeat top center;
-      .rbg-size(100%);
+      .rbg-size(100%, 100%);
       .v-items {
         .rel;
         padding: 20/@rem;
@@ -749,34 +767,63 @@
         }
         .bottom {
           overflow: hidden;
-        }
-        .note {
-          .fl;
-          .rel;
-          padding: 10/@rem 0 0 30/@rem;
-          .cd;
-          .block;
-          .fz(20);
-          &:before {
-            .abs;
+          .note {
+            .fl;
+            .rel;
+            padding: 10/@rem 0 0 30/@rem;
+            .cd;
             .block;
-            left: 0;
-            top: 12/@rem;
-            content: '惠';
-            .size(26, 26);
-            .center;
-            line-height: 26/@rem;
-            background: #f38918;
+            .fz(20);
+            &:before {
+              .abs;
+              .block;
+              left: 0;
+              top: 16/@rem;
+              /*content: '惠';*/
+              content: '企';
+              .size(26, 26);
+              .center;
+              line-height: 26/@rem;
+              /*background: #f38918;*/
+              background: #18abf3;
+            }
           }
+          span {
+            padding-top: 10/@rem;
+            .fr;
+            .cc;
+            .fz(20);
+          }
+        }
+      }
+      .service_type {
+        margin-left: 4px;
+        padding: 0 2px;
+        font-weight: normal;
+        .cf;
+        .fz(22);
+        background: #2acaad;
+        .borR(2px);
+        &.water {
+          background: #2acaad;
+        }
+        &.milk {
+          background: #74c361;
+        }
+        &.water-milk {
+          background: #ad64d2;
         }
       }
       .notice-con {
         padding: 5px 20/@rem;
         .fz(20);
         .cf;
+        overflow: hidden;
         background: rgba(0, 0, 0, .5);
         p {
-          .ellipsis-clamp-1;
+          .iblock;
+          white-space: nowrap;
+          word-break: break-all;
         }
         a {
           .cdiy(#38aee8);
@@ -784,10 +831,36 @@
       }
     }
 
+    .txt-slow {
+      -webkit-animation: txtScroll 30s linear infinite;
+      animation: txtScroll 30s linear infinite;
+    }
+
+    .txt-medium {
+      -webkit-animation: txtScroll 18s linear infinite;
+      animation: txtScroll 18s linear infinite;
+    }
+
+    .txt-fast {
+      -webkit-animation: txtScroll 8s linear infinite;
+      animation: txtScroll 8s linear infinite;
+    }
+
+    @keyframes txtScroll {
+      from {
+        -webkit-transform: translate3D(100%, 0, 0);
+        transform: translate3D(100%, 0, 0);
+      }
+      to {
+        -webkit-transform: translate3D(-100%, 0, 0);
+        transform: translate3D(-100%, 0, 0);
+      }
+    }
+
     .goods-filter {
       .rel;
       z-index: 10;
-      margin-bottom: 10/@rem;
+      /*margin-bottom: 10/@rem;*/
       .transi(.2s);
       &.fixed {
         width: 100%;
@@ -904,6 +977,7 @@
       }
       .inner-scroller {
         .borBox;
+
         height: 100% !important;
         .v-items {
           padding: 20/@rem;

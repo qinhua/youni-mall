@@ -846,6 +846,7 @@
     }
     .inner-scroller {
       .borBox;
+      min-height: 300px;
       .v-items {
         padding: 20/@rem;
         .bf;

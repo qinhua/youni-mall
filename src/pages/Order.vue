@@ -63,7 +63,7 @@
                   <!--<a class="btn btn-cancel" @click="pushPay(item.orderId)">提醒支付</a>-->
                   <!--<a class="btn btn-del" @click="cancelOrder(item.orderId)">取消订单</a>-->
                   <!--</div>-->
-                  <div class="btns" v-if="item.status===2">
+                  <div class="btns" v-if="item.status===2&&!item.remind">
                     <button type="button" class="btn btn-push" @click="pushOrder(item.orderId)">催单</button>
                   </div>
                   <div class="btns" v-if="item.status===3">
@@ -73,7 +73,12 @@
                     <button type="button" class="btn btn-recovery" @click="setOrderStatus(item.orderId,3)">恢复派送</button>
                   </div>
                   <div class="btns" v-if="item.status===5">
-                    <button type="button" class="btn btn-appraise" @click="toAppraise(item.orderId)">评价</button>
+                    <!--<button type="button" class="btn btn-appraise" :data-id="item.orderId"
+                            v-jump="['appraise',['id'],3]">评价
+                    </button>-->
+                    <button type="button" class="btn btn-appraise" :data-id="item.orderId"
+                            @click="AppraiseOrder(item.orderId)">评价
+                    </button>
                   </div>
                   <span class="timestamp">{{item.createTime}}</span>
                 </section>
@@ -81,6 +86,17 @@
             </li>
           </ul>
         </scroller>
+      </div>
+      <div v-transfer-dom>
+        <confirm v-model="showPop"
+                 title="订单评价"
+                 :close-on-confirm="false"
+                 @on-cancel="onCancel"
+                 @on-confirm="onConfirm">
+          <cell title="您的评分" class="rater">
+            <rater v-model="appraise.curOrderScore" slot="value"></rater>
+          </cell>
+        </confirm>
       </div>
     </div>
     <div class="iconNoData abs-center-vh" v-if="!orders.length"><i></i>
@@ -93,31 +109,35 @@
   /* eslint-disable */
   let me
   let vm
-  import Swiper from '../components/Swiper'
   import {
-    Group,
-    GroupTitle,
-    Grid,
-    GridItem,
-    Marquee,
-    MarqueeItem,
-    Countup,
     Tab,
     TabItem,
-    XSwitch,
-    Sticky
+    Group,
+    Cell,
+    Confirm,
+    Rater,
+    ConfirmPlugin,
+    TransferDomDirective as TransferDom
   } from 'vux'
   import {homeApi, orderApi, goodsApi} from '../service/main.js'
   import {mapState, mapMutations} from 'vuex'
 
   export default {
     name: 'orders',
+    directives: {
+      TransferDom
+    },
     data() {
       return {
         orders: [],
         onFecthing: false,
         isPosting: false,
         noMore: false,
+        showPop: false,
+        appraise: {
+          curOrderId: null,
+          curOrderScore: 0
+        },
         params: {
           status: 1,
           userType: 1,
@@ -147,18 +167,19 @@
       }
     },
     components: {
-      Group,
       Tab,
       TabItem,
-      XSwitch,
-      Sticky
+      Group,
+      Cell,
+      Confirm,
+      Rater
     },
     beforeMount() {
       me = window.me
     },
     mounted() {
       vm = this
-      vm.params.status = vm.$route.params.status
+      vm.params.status = vm.$route.params.status || 1
       vm.getOrders()
       vm.$nextTick(function () {
         try {
@@ -172,7 +193,7 @@
     watch: {
       '$route'(to, from) {
         if (to.name === 'order') {
-          vm.params.status = vm.$route.params.status
+          vm.params.status = vm.$route.params.status || 1
           vm.getOrders()
         }
       }
@@ -180,8 +201,8 @@
     methods: {
       /* 上下拉刷新 */
       /*onScroll(pos) {
-        this.scrollTop = pos.top
-      },*/
+       this.scrollTop = pos.top
+       },*/
       refresh(done) {
         // console.log('下拉加载')
         setTimeout(function () {
@@ -275,11 +296,16 @@
         if (vm.isPosting) return false
         vm.isPosting = true
         vm.loadData(orderApi.push, {orderId: id}, 'POST', function (res) {
-          vm.toast('催单成功')
           vm.isPosting = false
+          vm.toast('催单成功')
+          vm.getOrders()
         }, function () {
           vm.isPosting = false
         })
+      },
+      AppraiseOrder(id) {
+        vm.appraise.curOrderId = id
+        vm.showPop = true
       },
       setOrderStatus(id, status) {
         if (vm.isPosting) return false
@@ -303,6 +329,31 @@
         vm.orders = []
         status ? vm.params.status = status : delete vm.params.status
         vm.getOrders()
+      },
+      onCancel () {
+        vm.isPosting = false
+      },
+      onConfirm (msg) {
+        var curVal = window.document.querySelector('.vux-rater input').value
+        console.log(curVal)
+        if (curVal==0) {
+          vm.toast('请先评分！', 'warn')
+          return false
+        } else {
+          if (vm.isPosting) return false
+          vm.isPosting = true
+          vm.loadData(orderApi.score, {
+            orderId: vm.appraise.curOrderId,
+            score: curVal
+          }, 'POST', function (res) {
+            vm.isPosting = false
+            vm.toast('评价成功')
+            vm.showPop = false
+            vm.getOrders()
+          }, function () {
+            vm.isPosting = false
+          })
+        }
       }
     }
   }
