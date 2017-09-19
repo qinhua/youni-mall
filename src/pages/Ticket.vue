@@ -24,8 +24,9 @@
                 noDataText="就这么多了"
                 snapping>
         <!-- content goes here -->
-        <div v-if="tickets.length&&!isMe">
-          <section class="v-items" v-for="(item, index) in tickets" :data-id="item.id" :data-waterid="item.waterId">
+        <div v-if="tickets.length&&!isMe" v-cloak>
+          <section class="v-items" v-for="(item, index) in tickets" :data-id="item.id" :data-waterid="item.waterId"
+                   v-cloak>
             <section class="wrap">
               <img :src="item.imgurl">
               <section class="infos">
@@ -40,8 +41,9 @@
             </section>
           </section>
         </div>
-        <div v-if="tickets.length&&isMe">
-          <section class="v-items" v-for="(item, index) in tickets" :data-id="item.id" :data-waterid="item.waterId">
+        <div v-show="tickets.length&&isMe">
+          <section class="v-items" v-for="(item, index) in tickets" :data-id="item.id" :data-waterid="item.waterId"
+                   v-cloak>
             <section class="wrap">
               <img :src="item.ticketImage">
               <section class="infos">
@@ -49,7 +51,9 @@
                 <section class="middle">
                   <span class="price txt-del c9">￥{{item.totalAmount | toFixed}}元</span>
                   <span class="sale-count">已兑换：<i>{{item.exchangeWaterNum}}桶</i></span>
-                  <button type="button" class="btn btn-buy" @click="onButtonClick($event,item.id,item)">兑换</button>
+                  <button type="button" :class="['btn btn-buy',item.payStatus?'exchange':'']"
+                          @click="onButtonClick($event,item.id,item)">{{item.payStatus ? '兑换' : '支付'}}
+                  </button>
                 </section>
                 <label>￥{{item.payAmount | toFixed}}</label>
               </section>
@@ -78,6 +82,7 @@
         isMe: false,
         current: 0,
         slideTab: null,
+        curBtnText: null,
         curApi: ticketApi.list,
         tickets: [],
         navs: [{
@@ -140,7 +145,7 @@
         vm.params.waterTicketType = vm.navs[0].key
         vm.tickets = []
         vm.keepFresh(vm.$route.params.type)
-        vm.getTickets()
+        // vm.getTickets()
       }
     },
     methods: {
@@ -462,11 +467,14 @@
                 /*.bdiy(#f16b41);*/
                 .bdiy(#5cc5d0);
                 .borR(4px);
+                &.exchange {
+                  background: #ca9851;
+                }
               }
             }
             label {
               .flex-r(1);
-              .cdiy(#f34c18);
+              .cdiy(#ecab57);
               .fz(22);
               .ellipsis;
             }

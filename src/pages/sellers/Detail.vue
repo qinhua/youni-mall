@@ -16,11 +16,11 @@
             </h3>
             <div class="middle">
               <ol class="star">
-                <li v-for="star in seller.score" v-if="seller.score">★</li>
+                <li v-cloak v-for="star in seller.score" v-if="seller.score">★</li>
                 <li class="gray" v-for="star in 5" v-else>★</li>
               </ol>
               <span
-                class="hasSell"><i>{{(seller.score || 0)  | toFixed(1)}}分</i>已售{{seller.sellerCount}}单</span>
+                class="hasSell"><i>{{(seller.score || 0) | toFixed(1)}}分</i>已售{{seller.sellerCount}}单</span>
             </div>
             <div class="tags">
               <label class="c2">{{seller.authLevelName}}</label>
@@ -51,11 +51,11 @@
               class="ico-arr-down"></i>
             </li>
           </ul>
-          <div class="filter-data" v-if="showFilterCon" :class="showFilterCon?'show':''">
+          <div class="filter-data" v-if="showFilterCon" :class="showFilterCon?'show':''" v-cloak>
             <ul class="filter-tags" v-show="curFilterDict">
               <li v-for="(data,idx) in curFilterDict" :class="curSelFilter[curFilterType].index==idx?'sfilterActive':''"
                   :data-key="data.key"
-                  :data-value="data.value" @click="chooseFilter(idx,data.key,data.value,$event)">{{data.value}}
+                  :data-value="data.value" @click="chooseFilter(idx,data.key,data.value,$event)" v-cloak>{{data.value}}
               </li>
             </ul>
           </div>
@@ -71,7 +71,7 @@
                 @on-pulldown-loading="onPullDown" @on-pullup-loading="onPullUp" @on-scroll-bottom="" ref="goodsScroll"
                 :scroll-bottom-offst="300">
         <div class="box">
-          <section class="v-items" v-for="(item, index) in goods" :data-id="item.id">
+          <section class="v-items" v-for="(item, index) in goods" :data-id="item.id" v-cloak>
             <section class="wrap">
               <div class="click-wrap" :data-id="item.id" @click="toDetail(item.id)">
                 <img :src="item.imgurl">

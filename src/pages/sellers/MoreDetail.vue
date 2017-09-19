@@ -1,17 +1,18 @@
 <template>
-  <div class="seller-detail-more">
+  <div class="seller-detail-more" v-cloak>
     <div class="seller-info">
       <div class="v-items" :data-id="seller.id">
         <div class="wrap">
           <img :src="seller.headimgurl">
           <div class="infos">
             <h3>{{seller.name}}<span
-              :class="['service_type',seller.serviceTypeCls]">{{seller.serviceTypeName}}</span><span class="distance">{{seller.distance ? ((seller.distance / 1000) | toFixed(1)) : seller.distance}}km</span>
+              :class="['service_type',seller.serviceTypeCls]">{{seller.serviceTypeName}}</span><span
+              class="distance">{{seller.distance ? ((seller.distance / 1000) | toFixed(1)) : seller.distance}}km</span>
             </h3>
             <div class="middle">
               <ol class="star">
-                <li v-for="star in seller.score" v-if="seller.score">★</li>
-                <li class="gray" v-for="star in 5" v-else>★</li>
+                <li v-for="star in seller.score" v-if="seller.score" v-cloak>★</li>
+                <li class="gray" v-for="star in 5" v-else v-cloak>★</li>
               </ol>
               <span
                 class="hasSell"><i>{{(seller.score || 0) | toFixed(1)}}分</i>已售{{seller.sellerCount}}单</span>
@@ -36,7 +37,7 @@
         <button type="button" class="btn btn-deposite" @click="payDeposite(seller.id)">交押金</button>
       </h3>
     </div>
-    <div class="bottom" v-if="seller.businessLicense">
+    <div class="bottom">
       <div class="detail-txt">
         <div class="title"><h3>基本信息</h3></div>
         <div class="content basics">
@@ -48,7 +49,7 @@
       </div>
     </div>
 
-    <div class="bottom" v-if="seller.businessLicense">
+    <div class="bottom" v-if="seller.businessLicense" v-cloak>
       <div class="detail-txt">
         <div class="title"><h3>营业执照</h3></div>
         <div class="content license">
@@ -66,7 +67,7 @@
     <div class="bottom">
       <div class="detail-txt">
         <div class="title"><h3>店铺介绍</h3></div>
-        <div class="content">{{seller.note}}</div>
+        <div class="content note">{{seller.note}}</div>
       </div>
     </div>
   </div>
@@ -77,7 +78,7 @@
   /* eslint-disable */
   let me
   let vm
-  import {Previewer, TransferDom } from 'vux'
+  import {Previewer, TransferDom} from 'vux'
   import {depositApi} from '../../service/main.js'
 
   export default {
@@ -92,7 +93,7 @@
         noMore: false,
         list: [{src: null}],
         options: {
-          getThumbBoundsFn (index) {
+          getThumbBoundsFn(index) {
             // find thumbnail element
             let thumbnail = document.querySelectorAll('.previewer-demo-img')[index]
             // get window scroll Y
@@ -119,18 +120,19 @@
     watch: {
       '$route'(to, from) {
         if (to.name === 'seller_detail_more') {
+          this.$refs.previewer.show(index)
           vm.getSeller()
         }
       }
     },
     methods: {
-      preview (index) {
+      preview(index) {
         this.$refs.previewer.show(index)
       },
       getSeller() {
         try {
           vm.seller = vm.$route.query.thedata ? JSON.parse(window.decodeURIComponent(vm.$route.query.thedata)) : {}
-          vm.list[0].src=vm.seller.businessLicense
+          vm.list[0].src = vm.seller.businessLicense
           console.log(vm.seller, '带过来的数据')
         } catch (e) {
           // console.log(e)
@@ -457,6 +459,10 @@
           img {
             width: 30%;
           }
+        }
+        &.note {
+          padding: 30/@rem 30/@rem;
+          margin-bottom: 40px;
         }
       }
     }

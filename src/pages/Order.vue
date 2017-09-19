@@ -19,14 +19,14 @@
                   refreshText="下拉刷新" noDataText="就这么多了" snapping v-if="orders.length">
           <!-- content goes here -->
           <ul>
-            <li v-for="(item, index) in orders">
+            <li v-for="(item, index) in orders" v-cloak>
               <section class="v-items" v-for="(item, index) in orders" :data-id="item.id"
-                       :data-orderNumber="item.appOrderNumber" :data-itemId="item.orderItemId" v-if="orders.length">
+                       :data-orderNumber="item.appOrderNumber" :data-itemId="item.orderItemId" v-if="orders.length" v-cloak>
                 <h4 class="item-top"><i class="ico-seller"
                                         :style="item.sellerImage?'background-image:url('+item.sellerImage+')':''"></i>&nbsp;{{item.sellerName}}&nbsp;&nbsp;<i
                   class="fa fa-angle-right cc"></i><span>{{item.statusName}}</span></h4>
                 <ul>
-                  <li v-for="itm in item.goodsList">
+                  <li v-for="itm in item.goodsList" v-cloak>
                     <section class="item-middle">
                       <div class="img-con">
                         <img :src="itm.goodsImage">

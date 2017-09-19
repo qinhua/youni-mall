@@ -1,14 +1,14 @@
 <template>
   <div class="home" ref="home" v-cloak>
     <!--地图组件-->
-    <div class="location-chooser">
+    <div class="location-chooser" keep-alive>
       <p><span><i class="fa fa-map-marker"></i>&nbsp;您的位置：</span>{{address || geoAddress}}</p>
       <a @click.prevent="toMap"><i class="right-arrow"></i></a>
     </div>
 
     <!--banner-->
     <div class="swiper-home">
-      <swiper ref="slider01" skey="s01" :slides="banner" autoPlay="2500"></swiper>
+      <swiper ref="slider01" skey="s01" :slides="banner" autoPlay="2500" v-cloak></swiper>
     </div>
 
     <!--中间入口-->
@@ -27,7 +27,7 @@
           <img slot="icon" src="../../static/img/item_redpacket.png">
         </grid-item>
       </grid>
-      <div class="top-notice" v-if="notice.length">
+      <div class="top-notice" v-if="notice.length" v-cloak>
         <div class="inner">
           <div class="ico ico-toutiao"></div>
           <marquee>
@@ -54,12 +54,12 @@
               class="ico-arr-down"></i>
             </li>
           </ul>
-          <div class="filter-data" v-if="showFilterCon" :class="showFilterCon?'show':''">
+          <div class="filter-data" v-if="showFilterCon" :class="showFilterCon?'show':''" v-cloak>
             <ul class="filter-tags" v-show="curFilterDict">
               <li v-for="(data,idx) in curFilterDict"
                   :class="curSelFilter[curFilterType].index==idx?'sfilterActive':''"
                   :data-key="data.key"
-                  :data-value="data.value" @click="chooseFilter(idx,data.key,data.value,$event)">{{data.value}}
+                  :data-value="data.value" @click="chooseFilter(idx,data.key,data.value,$event)" v-cloak>{{data.value}}
               </li>
             </ul>
           </div>
@@ -71,9 +71,9 @@
     <!--商品列表-->
     <div class="goods-list" ref="goodsList">
       <scroller class="inner-scroller" ref="goodsScroller" :on-refresh="refresh" :on-infinite="infinite"
-                refreshText="下拉刷新" noDataText="就这么多了" snapping v-if="goods.length">
+                refreshText="下拉刷新" noDataText="就这么多了" snapping v-if="goods.length" v-cloak>
         <div class="box">
-          <section class="v-items" v-for="(item, index) in goods" :data-id="item.id">
+          <section class="v-items" v-for="(item, index) in goods" :data-id="item.id" v-cloak>
             <section class="wrap">
               <div class="click-wrap" :data-id="item.id" @click="toDetail(item.id)">
                 <div class="img-con">
@@ -85,7 +85,7 @@
                     <span class="price">￥{{item.price|toFixed}}元</span>
                     <span class="hasSell">已售{{item.saleCount}}单</span>
                   </section>
-                  <ul class="tags" v-if="item.label">
+                  <ul class="tags" v-if="item.label" v-cloak>
                     <li v-for="t in item.label.split(',')">{{t}}</li>
                   </ul>
                   <label></label>
@@ -106,7 +106,7 @@
           </section>
         </div>
       </scroller>
-      <div class="iconNoData" v-if="!goods.length"><i></i>
+      <div class="iconNoData" v-if="!goods.length" v-cloak><i></i>
         <p>暂无商品</p></div>
     </div>
 

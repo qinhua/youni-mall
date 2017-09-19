@@ -52,8 +52,8 @@
                   @click.native="chooseCol(index)" :key="index">{{item}}
         </tab-item>
       </tab>-->
-      <div class="swiper-container swiper-goods-detail" v-show="details.imgurl">
-        <div class="swiper-wrapper">
+      <div class="swiper-container swiper-goods-detail">
+        <div class="swiper-wrapper" v-if="details.note">
           <div class="swiper-slide">
             <div class="detail-con" v-html="details.note">
               <!--<img src="../../../static/img/detail/s01.jpg" class="wd-img" alt="">-->
@@ -111,6 +111,7 @@
             </div>
           </div>-->
         </div>
+        <span class="noData">暂无详情</span>
       </div>
     </div>
 

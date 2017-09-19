@@ -3,7 +3,7 @@
 
     <div class="top-con">
       <!--定位组件-->
-      <div class="location-chooser">
+      <div class="location-chooser" keep-alive>
         <p><span><i class="fa fa-map-marker"></i>&nbsp;您的位置：</span>{{address || geoAddress}}</p>
         <a @click.prevent="toMap"><i class="right-arrow"></i></a>
       </div>
@@ -20,11 +20,11 @@
             <li :class="curFilterType==='sorts'?'mfilterActive':''" @click="showFilter('sorts',$event)">排序<i
               class="ico-arr-down"></i></li>
           </ul>
-          <div class="filter-data" v-if="showFilterCon" :class="showFilterCon?'show':''">
+          <div class="filter-data" v-if="showFilterCon" :class="showFilterCon?'show':''" v-cloak>
             <ul class="filter-tags" v-show="curFilterDict">
               <li v-for="(data,idx) in curFilterDict" :class="curSelFilter[curFilterType].index==idx?'sfilterActive':''"
                   :data-key="data.key"
-                  :data-value="data.value" @click="chooseFilter(idx,data.key,data.value,$event)">{{data.value}}
+                  :data-value="data.value" @click="chooseFilter(idx,data.key,data.value,$event)" v-cloak>{{data.value}}
               </li>
             </ul>
           </div>
@@ -40,7 +40,7 @@
                 @on-pulldown-loading="onPullDown" @on-pullup-loading="onPullUp" @on-scroll-bottom="" ref="sellerScroll"
                 :scroll-bottom-offst="300">
         <div class="box">
-          <section class="v-items" v-for="(item, index) in sellers" :data-id="item.id" @click="toDetail(item.id)">
+          <section class="v-items" v-for="(item, index) in sellers" :data-id="item.id" @click="toDetail(item.id)" v-cloak>
             <section class="wrap">
               <img :src="item.headimgurl">
               <section class="infos">
@@ -50,7 +50,7 @@
                 <section class="middle">
                   <ol class="star">
                     <li v-for="star in item.score" v-if="item.score">★</li>
-                    <li class="gray" v-for="star in 5" v-else>★{{}}</li>
+                    <li class="gray" v-for="star in 5" v-else v-cloak>★</li>
                   </ol>
                   <span class="hasSell"><i>{{item.score | toFixed(1)}}分</i>已售{{item.sellerCount}}单</span>
                 </section>
@@ -60,12 +60,12 @@
                 </div>
               </section>
               <div class="bottom" v-if="item.ticket">
-                <label class="note" v-if="item.ticket"><i class="ico-hui"></i>{{item.ticket}}</label>
+                <label class="note" v-if="item.ticket" v-cloak><i class="ico-hui"></i>{{item.ticket}}</label>
                 <!--<span class="dispatchTime">平均{{item.dispatchTime}}分钟送达</span>-->
                 <span class="dispatchTime">{{item.label}}</span>
               </div>
             </section>
-            <section class="sleep-tips" v-if="item.isSleep">
+            <section class="sleep-tips" v-if="item.isSleep" v-cloak>
               <div class="wrap">
                 <h3>商家已打烊（{{item.runStartTime}}~{{item.runEndTime}}）<br><span>非营业时间仍可预定</span>
                   <button type="button" class="btn btn-reserve" @click="preBook(item.id)"><i class="fa fa-clock-o"
