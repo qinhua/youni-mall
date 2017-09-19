@@ -44,7 +44,7 @@
             <section class="wrap">
               <img :src="item.headimgurl">
               <section class="infos">
-                <h3>{{item.name}}
+                <h3>{{item.name}}<span :class="['service_type',item.serviceTypeCls]">{{item.serviceTypeName}}</span>
                   <span class="distance">{{(item.distance ? (item.distance / 1000) : 0) | toFixed(1, true)}}km</span>
                 </h3>
                 <section class="middle">
@@ -55,7 +55,7 @@
                   <span class="hasSell"><i>{{item.score | toFixed(1)}}分</i>已售{{item.sellerCount}}单</span>
                 </section>
                 <div class="tags">
-                  <!--<label class="c2">{{item.authLevelName}}</label>-->
+                  <label :class="item.authLevelCls">{{item.authLevelName}}</label>
                   <span class="dispatchTime">平均{{item.dispatchTime || 22}}分钟送达</span>
                 </div>
               </section>
@@ -328,12 +328,29 @@
               switch (cur.authLevel) {
                 case 'seller_level.1':
                   cur.authLevelName = '普通店铺'
+                  cur.authLevelCls = 'c1'
                   break
                 case 'seller_level.2':
                   cur.authLevelName = '官方认证'
+                  cur.authLevelCls = 'c2'
                   break
                 case 'seller_level.3':
                   cur.authLevelName = '金牌店铺'
+                  cur.authLevelCls = 'c3'
+                  break
+              }
+              switch (cur.serviceType) {
+                case 'seller_service_type.1':
+                  cur.serviceTypeName = '水'
+                  cur.serviceTypeCls = 'water'
+                  break
+                case 'seller_service_type.2':
+                  cur.serviceTypeName = '奶'
+                  cur.serviceTypeCls = 'milk'
+                  break
+                case 'seller_service_type.3':
+                  cur.serviceTypeName = '水&奶'
+                  cur.serviceTypeCls = 'water-milk'
                   break
               }
               if (!cur.score) {
@@ -674,13 +691,13 @@
                 .fz(16);
                 .borR(4px);
                 &.c1 {
-                  .bdiy(#fd5900);
+                  .bdiy(#7facf9);
                 }
                 &.c2 {
-                  .bdiy(#78c725);
+                  .bdiy(#84ce36);
                 }
                 &.c3 {
-                  .bdiy(#c77e25);
+                  .bdiy(#e8b52d);
                 }
               }
               .dispatchTime {
@@ -719,6 +736,24 @@
               background: url(../../static/img/ico_hui.png) center;
               .ele-base;
             }
+          }
+        }
+        .service_type {
+          margin-left: 4px;
+          padding: 0 2px;
+          font-weight: normal;
+          .cf;
+          .fz(22);
+          background: #2acaad;
+          .borR(2px);
+          &.water {
+            background: #2acaad;
+          }
+          &.milk {
+            background: #74c361;
+          }
+          &.water-milk {
+            background: #ad64d2;
           }
         }
       }

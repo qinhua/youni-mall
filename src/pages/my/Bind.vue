@@ -1,16 +1,19 @@
 <template>
   <div class="bind-con" v-cloak>
     <div class="f-wrap">
+      <div class="top-col">
+        <img :src="avatar">
+        <h2>{{nickName}}</h2>
+      </div>
       <group>
-        <x-input title="手机号：" placeholder="您的手机号" text-align="right" type="tel" required
-                 v-model="params.phone"></x-input>
+        <x-input title="手机号：" placeholder="您的手机号" text-align="right" type="tel" v-model="params.phone"></x-input>
         <x-input title="验证码：" class="weui-vcode" v-model="params.code">
           <x-button class="btn-vercode" slot="right" type="primary" mini :disabled="btnStatus" @click.native="getCode">
             {{btnText}}
           </x-button>
         </x-input>
       </group>
-      <div class="btn btn-save" @click="bindMe"><i class="fa fa-save"></i>&nbsp;绑定</div>
+      <div class="btn btn-save" @click="bindMe">立即绑定</div>
     </div>
     <p class="b-txt">友你生活 | 开启崭新生活</p>
   </div>
@@ -30,6 +33,8 @@
         isPosting: false,
         btnText: '发送验证码',
         btnStatus: false,
+        nickName: '',
+        avatar: '',
         params: {
           phone: '',
           code: ''
@@ -42,19 +47,29 @@
     },
     mounted() {
       vm = this
+      vm.nickName = vm.$store.state.global.wxInfo.nickname
+      vm.avatar = vm.$store.state.global.wxInfo.headimgurl
+    },
+    watch: {
+      '$route' (to, from) {
+        if (to.name === 'bind') {
+          vm.nickName = vm.$store.state.global.wxInfo.nickname
+          vm.avatar = vm.$store.state.global.wxInfo.headimgurl
+        }
+      }
     },
     methods: {
       validate() {
         if (!vm.params.phone) {
-          vm.toast('请填写手机号！', 'warn')
+          me.lightPop('请填写手机号！')
           return false
         }
         if (!vm.params.phone.match(/^(13|15|18|17)\d{9}$/)) {
-          vm.toast('请填写正确的手机号！', 'warn')
+          me.lightPop('请填写正确的手机号！')
           return false
         }
         if (!vm.params.code) {
-          vm.toast('请填写验证码！', 'warn')
+          me.lightPop('请填写验证码！')
           return false
         }
         return true
@@ -62,22 +77,15 @@
       getCode() {
         if (vm.isPosting) return false
         if (!vm.params.phone) {
-          vm.toast('请填写手机号 ！', 'warn')
+          me.lightPop('请填写手机号 ！')
           return false
         }
         if (!vm.params.phone.match(/^(13|15|18|17)\d{9}$/)) {
-          vm.toast('请填写正确的手机号 ！', 'warn')
+          me.lightPop('请填写正确的手机号 ！')
           return false
         }
         vm.isPosting = true
         vm.loadData(commonApi.sendSms, {phone: vm.params.phone}, 'POST', function (res) {
-          /*vm.toast('已发送，请注意查收！')
-          vm.btnText = '60s后再次获取'
-          vm.btnStatus = true
-          setTimeout(function () {
-            vm.btnText = '发送验证码'
-            vm.btnStatus = false
-          }, 60000)*/
           vm.btnStatus = true
           me.verCodeBtn(60, '.btn-vercode', function () {
             vm.btnStatus = false
@@ -118,14 +126,43 @@
   .bind-con {
     height: 100%;
     overflow-x: hidden;
+    background: url(../../../static/img/bg_bind.jpg) no-repeat top center;
+    .rbg-size(100%, 100%);
     .f-wrap {
       padding-bottom: 50px;
+    }
+    .top-col {
+      .center;
+      .rel;
+      z-index: 2;
+      padding: 50/@rem 20/@rem 90/@rem;
+      > img {
+        .block;
+        .size(150, 150);
+        .ma-w(100);
+        .ma-h(100);
+        .ma;
+        .bor(2px, solid, #fff);
+        .borR(50%);
+      }
+      h2 {
+        padding: 14/@rem 0;
+        font-weight: normal;
+        .center;
+        .cf;
+        .fz(26);
+      }
     }
     .bottom {
       margin-top: 10/@rem;
     }
     .vux-no-group-title {
       margin-top: 0;
+      .no-bg!important;
+      &:before, &:after {
+        left: 14px !important;
+        border-color: #fff;
+      }
       .vux-x-input {
         padding: 24/@rem 30/@rem;
         input {
@@ -134,6 +171,17 @@
       }
       .vux-x-input, .address-area, .vux-cell-box, .vux-x-textarea {
         .fz(26);
+        .cf;
+        input {
+          .ipt-placeholder(#fff, right) !important;
+        }
+      }
+    }
+    .btn-vercode {
+      .borR(3px);
+      .bdiy(#2084e6);
+      &:disabled{
+        .bdiy(#58a1d);
       }
     }
     .btn-save {
@@ -144,10 +192,11 @@
       letter-spacing: 2px;
       padding: 24/@rem 0;
       .center;
-      .cf;
+      .cdiy(#268ed2);
       .fz(28);
-      .bdiy(#16a542);
+      .bdiy(rgba(255, 255, 255, 0.5));
       .borR(4px);
+      .bor(1px, solide, #fff);
     }
     .b-txt {
       .abs;
@@ -155,7 +204,7 @@
       width: 100%;
       bottom: 0;
       padding: 30/@rem 0;
-      .cb;
+      .cc;
       .fz(20);
     }
   }

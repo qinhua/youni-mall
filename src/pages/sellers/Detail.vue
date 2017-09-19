@@ -78,7 +78,7 @@
                 <section class="infos">
                   <h3>{{item.name}}</h3>
                   <section class="middle">
-                    <span class="price">￥{{item.price}}元</span>
+                    <span class="price">￥{{item.price|toFixed}}元</span>
                     <span class="hasSell">已售{{item.saleCount}}单</span>
                   </section>
                   <label>{{item.label}}</label>
@@ -89,6 +89,7 @@
                           :max="50" :value="item.number" align="right" :dataId="item.id"
                           :dataSellerId="item.sellerId"
                           @on-change="changeCount"></x-number>
+                <span class="stock">库存：{{item.stock}}件</span>
               </group>
             </section>
           </section>
@@ -1070,6 +1071,10 @@
                 /*fill: #f34c18;*/
               }
             }
+          }
+          .stock{
+            .fz(22);
+            .c9;
           }
         }
       }

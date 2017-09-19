@@ -57,7 +57,7 @@
       </cell>
     </group>
     <group class="bottom">
-      <cell title="清理缓存" style="color:#666" @click.native="logout">
+      <cell title="清理缓存" style="color:#999" @click.native="logout">
         <!--<i slot="icon" width="20" style="margin-right:5px;" class="fa fa-shower"></i>-->
       </cell>
     </group>
@@ -90,10 +90,14 @@
       vm.avatar = vm.$store.state.global.wxInfo.headimgurl
       vm.genWave()
     },
-    /*watch: {
+    watch: {
       '$route' (to, from) {
+        if (to.name === 'user') {
+          vm.nickName = vm.$store.state.global.wxInfo.nickname
+          vm.avatar = vm.$store.state.global.wxInfo.headimgurl
+        }
       }
-    },*/
+    },
     computed: {},
     methods: {
       // 向父组件传值
@@ -237,15 +241,15 @@
       }
     }
 
+    .weui-cells {
+      margin-top: 10/@rem;
+      padding: 0;
+    }
+    .weui-cell {
+      padding: 26/@rem !important;
+      .fz(26) !important;
+    }
     .list-modal {
-      .weui-cells {
-        margin-top: 10/@rem;
-        padding: 0;
-      }
-      .weui-cell {
-        padding: 26/@rem !important;
-        .fz(26) !important;
-      }
     }
 
     .bottom {

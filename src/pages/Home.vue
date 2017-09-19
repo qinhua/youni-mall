@@ -82,7 +82,7 @@
                 <section class="infos">
                   <h3>{{item.name}}</h3>
                   <section class="middle">
-                    <span class="price">￥{{item.price}}</span>
+                    <span class="price">￥{{item.price|toFixed}}元</span>
                     <span class="hasSell">已售{{item.saleCount}}单</span>
                   </section>
                   <ul class="tags" v-if="item.label">
@@ -96,6 +96,7 @@
                           :max="50" :value="item.number" align="right" :dataId="item.id"
                           :dataSellerId="item.sellerId" :linedata="item"
                           @on-change="changeCount"></x-number>
+                <span class="stock">库存：{{item.stock}}件</span>
                 <!--<x-number button-style="round" :min="0"
                           :max="50" :value="item.number" align="right" :dataId="item.id"
                           :dataSellerId="item.sellerId" :linedata="item"
@@ -111,7 +112,7 @@
 
     <!--底部pop-checker-->
     <div v-transfer-dom>
-      <popup v-model="showPop" position="bottom" max-height="50%">
+      <popup class="buyCountCon" v-model="showPop" position="bottom" max-height="50%">
         <group class="number-con">
           <x-input id="curMilkAmount" title="数量：" placeholder="请输入商品数量" required text-align="right" type="number"
                    v-model="params.curMilkAmount"></x-input>
@@ -960,7 +961,23 @@
             }
           }
         }
+        .stock{
+          .fz(22);
+          .c9;
+        }
       }
+    }
+  }
+
+  .buyCountCon{
+    .fz(26);
+    .weui-cells {
+      margin-top: 10/@rem;
+      padding: 0;
+    }
+    .weui-cell {
+      padding: 26/@rem 0!important;
+      .fz(26) !important;
     }
   }
 

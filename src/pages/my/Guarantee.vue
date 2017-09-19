@@ -107,7 +107,7 @@
     .bf;
     h2 {
       padding: 14/@rem 20/@rem;
-      .fz(26);
+      .fz(24);
       .cdiy(#e46363);
       font-weight: normal;
       .bdiy(#fff1d1);
