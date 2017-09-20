@@ -72,7 +72,7 @@
                   <div class="btns" v-if="item.status===4">
                     <button type="button" class="btn btn-recovery" @click="setOrderStatus(item.orderId,3)">恢复派送</button>
                   </div>
-                  <div class="btns" v-if="item.status===5">
+                  <div class="btns" v-if="item.status===5&&!item.userScore">
                     <!--<button type="button" class="btn btn-appraise" :data-id="item.orderId"
                             v-jump="['appraise',['id'],3]">评价
                     </button>-->
