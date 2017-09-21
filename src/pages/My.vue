@@ -3,9 +3,9 @@
     <!--<router-view></router-view>-->
     <div class="user-modal">
       <div class="user-inner">
-        <img :src="avatar">
+        <img :src="userInfo.headimgurl">
         <!--<p class="user-name" :data-userId="255" v-jump="['edit_user', ['userId'], 3]">{{nickName}}<i class="fa fa-pencil-square-o"></i></p>-->
-        <p class="user-name">{{nickName}}</p>
+        <p class="user-name">{{userInfo.nickName}}</p>
       </div>
       <canvas id="canvas" style="position:absolute;bottom:0px;left:0px;z-index:1;"></canvas>
     </div>
@@ -13,7 +13,7 @@
       <div class="arc"></div>
       <grid :rows="5">
         <grid-item @on-item-click="jumpTo('order', {status:1},1)">
-          <p>{{count}}</p>
+          <p>2</p>
           <label>待支付</label>
         </grid-item>
         <grid-item @on-item-click="jumpTo('order', {status:2},1)">
@@ -47,6 +47,9 @@
       <cell title="收货地址" link="/myaddress">
         <!--<i slot="icon" width="20" style="margin-right:5px;" class="fa fa-map-signs"></i>-->
       </cell>
+      <cell title="绑定手机号" link="/bind" v-if="!userInfo.bindPhone"><i class="r-tips">未绑定</i>
+        <!--<i slot="icon" width="20" style="margin-right:5px;" class="fa fa-map-signs"></i>-->
+      </cell>
       <!--<cell title="我的收藏" link="/myfavor"><i slot="icon" width="20" style="margin-right:5px;"
                                             class="fa fa-star"></i></cell>-->
       <cell title="使用帮助" link="/help">
@@ -74,9 +77,8 @@
     name: 'my',
     data() {
       return {
-        nickName: '',
-        avatar: '',
-        count: 0
+        userInfo:{},
+        orderNum:{}
       }
     },
     components: {Grid, GridItem, Group, Cell},
@@ -86,15 +88,13 @@
     mounted() {
       // me.attachClick()
       vm = this
-      vm.nickName = vm.$store.state.global.wxInfo.nickname
-      vm.avatar = vm.$store.state.global.wxInfo.headimgurl
+      vm.getUser()
       vm.genWave()
     },
     watch: {
       '$route' (to, from) {
         if (to.name === 'user') {
-          vm.nickName = vm.$store.state.global.wxInfo.nickname
-          vm.avatar = vm.$store.state.global.wxInfo.headimgurl
+          vm.getUser()
         }
       }
     },
@@ -106,6 +106,9 @@
       },
       jumpTo(pathName, param, isParams) {
         vm.jump(pathName, param, isParams)
+      },
+      getUser() {
+        vm.userInfo = vm.$store.state.global.userInfo || (me.sessions.get('ynMallInfo') ? JSON.parse(me.sessions.get('ynMallInfo')) : {})
       },
       genWave() {
         var canvas = document.getElementById('canvas')
@@ -250,6 +253,10 @@
       .fz(26) !important;
     }
     .list-modal {
+      .r-tips{
+        color: #ef6816;
+        font-style: normal;
+      }
     }
 
     .bottom {

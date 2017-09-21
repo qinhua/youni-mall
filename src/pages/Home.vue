@@ -1,5 +1,5 @@
 <template>
-  <div class="home" ref="home" v-cloak>
+  <div class="home" ref="home" @scroll="scrollHandler" v-cloak>
     <!--地图组件-->
     <div class="location-chooser" keep-alive>
       <p><span><i class="fa fa-map-marker"></i>&nbsp;您的位置：</span>{{address || geoAddress}}</p>
@@ -41,9 +41,8 @@
     </div>
 
     <!--过滤条-->
-    <!--<div style="height:44px;">-->
-    <sticky>
-      <div class="goods-filter" ref="filters01">
+    <div class="bar-chamer">
+      <div class="goods-filter" ref="filtersMenu">
         <div class="v-filter-tabs">
           <ul class="v-f-tabs">
             <li class="f-img"></li>
@@ -65,47 +64,201 @@
           </div>
         </div>
       </div>
-    </sticky>
-    <!--</div>-->
+    </div>
 
     <!--商品列表-->
     <div class="goods-list" ref="goodsList">
-      <scroller class="inner-scroller" ref="goodsScroller" :on-refresh="refresh" :on-infinite="infinite"
-                refreshText="下拉刷新" noDataText="就这么多了" snapping v-if="goods.length" v-cloak>
-        <div class="box">
-          <section class="v-items" v-for="(item, index) in goods" :data-id="item.id" v-cloak>
-            <section class="wrap">
-              <div class="click-wrap" :data-id="item.id" @click="toDetail(item.id)">
-                <div class="img-con">
-                  <img :src="item.imgurl">
-                </div>
-                <section class="infos">
-                  <h3>{{item.name}}</h3>
-                  <section class="middle">
-                    <span class="price">￥{{item.price|toFixed}}元</span>
-                    <span class="hasSell">已售{{item.saleCount}}单</span>
-                  </section>
-                  <ul class="tags" v-if="item.label" v-cloak>
-                    <li v-for="t in item.label.split(',')">{{t}}</li>
-                  </ul>
-                  <label></label>
-                </section>
+      <!--<scroller class="inner-scroller" ref="goodsScroller" :on-refresh="refresh" :on-infinite="infinite"
+                refreshText="下拉刷新" noDataText="就这么多了" snapping v-if="goods.length" v-cloak>-->
+      <ul class="box">
+        <li class="v-items" v-for="(item, index) in goods" :data-id="item.id" v-cloak>
+          <section class="wrap">
+            <div class="click-wrap" :data-id="item.id" @click="toDetail(item.id)">
+              <div class="img-con">
+                <img :src="item.imgurl">
               </div>
-              <group class="buy-count">
-                <x-number button-style="round" :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0"
-                          :max="50" :value="item.number" align="right" :dataId="item.id"
-                          :dataSellerId="item.sellerId" :linedata="item"
-                          @on-change="changeCount"></x-number>
-                <span class="stock">库存：{{item.stock}}件</span>
-                <!--<x-number button-style="round" :min="0"
-                          :max="50" :value="item.number" align="right" :dataId="item.id"
-                          :dataSellerId="item.sellerId" :linedata="item"
-                          @on-change="changeCount"></x-number>-->
-              </group>
-            </section>
+              <section class="infos">
+                <h3>{{item.name}}</h3>
+                <section class="middle">
+                  <span class="price">￥{{item.price|toFixed}}元</span>
+                  <span class="hasSell">已售{{item.saleCount}}单</span>
+                </section>
+                <ul class="tags" v-if="item.label" v-cloak>
+                  <li v-for="t in item.label.split(',')">{{t}}</li>
+                </ul>
+                <label></label>
+              </section>
+            </div>
+            <group class="buy-count">
+              <x-number button-style="round" :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0"
+                        :max="50" :value="item.number" align="right" :dataId="item.id"
+                        :dataSellerId="item.sellerId" :linedata="item"
+                        @on-change="changeCount"></x-number>
+              <span class="stock">库存：{{item.stock}}件</span>
+              <!--<x-number button-style="round" :min="0"
+                        :max="50" :value="item.number" align="right" :dataId="item.id"
+                        :dataSellerId="item.sellerId" :linedata="item"
+                        @on-change="changeCount"></x-number>-->
+            </group>
           </section>
-        </div>
-      </scroller>
+        </li>
+        <li class="v-items" v-for="(item, index) in goods" :data-id="item.id" v-cloak>
+          <section class="wrap">
+            <div class="click-wrap" :data-id="item.id" @click="toDetail(item.id)">
+              <div class="img-con">
+                <img :src="item.imgurl">
+              </div>
+              <section class="infos">
+                <h3>{{item.name}}</h3>
+                <section class="middle">
+                  <span class="price">￥{{item.price|toFixed}}元</span>
+                  <span class="hasSell">已售{{item.saleCount}}单</span>
+                </section>
+                <ul class="tags" v-if="item.label" v-cloak>
+                  <li v-for="t in item.label.split(',')">{{t}}</li>
+                </ul>
+                <label></label>
+              </section>
+            </div>
+            <group class="buy-count">
+              <x-number button-style="round" :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0"
+                        :max="50" :value="item.number" align="right" :dataId="item.id"
+                        :dataSellerId="item.sellerId" :linedata="item"
+                        @on-change="changeCount"></x-number>
+              <span class="stock">库存：{{item.stock}}件</span>
+              <!--<x-number button-style="round" :min="0"
+                        :max="50" :value="item.number" align="right" :dataId="item.id"
+                        :dataSellerId="item.sellerId" :linedata="item"
+                        @on-change="changeCount"></x-number>-->
+            </group>
+          </section>
+        </li>
+        <li class="v-items" v-for="(item, index) in goods" :data-id="item.id" v-cloak>
+          <section class="wrap">
+            <div class="click-wrap" :data-id="item.id" @click="toDetail(item.id)">
+              <div class="img-con">
+                <img :src="item.imgurl">
+              </div>
+              <section class="infos">
+                <h3>{{item.name}}</h3>
+                <section class="middle">
+                  <span class="price">￥{{item.price|toFixed}}元</span>
+                  <span class="hasSell">已售{{item.saleCount}}单</span>
+                </section>
+                <ul class="tags" v-if="item.label" v-cloak>
+                  <li v-for="t in item.label.split(',')">{{t}}</li>
+                </ul>
+                <label></label>
+              </section>
+            </div>
+            <group class="buy-count">
+              <x-number button-style="round" :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0"
+                        :max="50" :value="item.number" align="right" :dataId="item.id"
+                        :dataSellerId="item.sellerId" :linedata="item"
+                        @on-change="changeCount"></x-number>
+              <span class="stock">库存：{{item.stock}}件</span>
+              <!--<x-number button-style="round" :min="0"
+                        :max="50" :value="item.number" align="right" :dataId="item.id"
+                        :dataSellerId="item.sellerId" :linedata="item"
+                        @on-change="changeCount"></x-number>-->
+            </group>
+          </section>
+        </li>
+        <li class="v-items" v-for="(item, index) in goods" :data-id="item.id" v-cloak>
+          <section class="wrap">
+            <div class="click-wrap" :data-id="item.id" @click="toDetail(item.id)">
+              <div class="img-con">
+                <img :src="item.imgurl">
+              </div>
+              <section class="infos">
+                <h3>{{item.name}}</h3>
+                <section class="middle">
+                  <span class="price">￥{{item.price|toFixed}}元</span>
+                  <span class="hasSell">已售{{item.saleCount}}单</span>
+                </section>
+                <ul class="tags" v-if="item.label" v-cloak>
+                  <li v-for="t in item.label.split(',')">{{t}}</li>
+                </ul>
+                <label></label>
+              </section>
+            </div>
+            <group class="buy-count">
+              <x-number button-style="round" :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0"
+                        :max="50" :value="item.number" align="right" :dataId="item.id"
+                        :dataSellerId="item.sellerId" :linedata="item"
+                        @on-change="changeCount"></x-number>
+              <span class="stock">库存：{{item.stock}}件</span>
+              <!--<x-number button-style="round" :min="0"
+                        :max="50" :value="item.number" align="right" :dataId="item.id"
+                        :dataSellerId="item.sellerId" :linedata="item"
+                        @on-change="changeCount"></x-number>-->
+            </group>
+          </section>
+        </li>
+        <li class="v-items" v-for="(item, index) in goods" :data-id="item.id" v-cloak>
+          <section class="wrap">
+            <div class="click-wrap" :data-id="item.id" @click="toDetail(item.id)">
+              <div class="img-con">
+                <img :src="item.imgurl">
+              </div>
+              <section class="infos">
+                <h3>{{item.name}}</h3>
+                <section class="middle">
+                  <span class="price">￥{{item.price|toFixed}}元</span>
+                  <span class="hasSell">已售{{item.saleCount}}单</span>
+                </section>
+                <ul class="tags" v-if="item.label" v-cloak>
+                  <li v-for="t in item.label.split(',')">{{t}}</li>
+                </ul>
+                <label></label>
+              </section>
+            </div>
+            <group class="buy-count">
+              <x-number button-style="round" :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0"
+                        :max="50" :value="item.number" align="right" :dataId="item.id"
+                        :dataSellerId="item.sellerId" :linedata="item"
+                        @on-change="changeCount"></x-number>
+              <span class="stock">库存：{{item.stock}}件</span>
+              <!--<x-number button-style="round" :min="0"
+                        :max="50" :value="item.number" align="right" :dataId="item.id"
+                        :dataSellerId="item.sellerId" :linedata="item"
+                        @on-change="changeCount"></x-number>-->
+            </group>
+          </section>
+        </li>
+        <li class="v-items" v-for="(item, index) in goods" :data-id="item.id" v-cloak>
+          <section class="wrap">
+            <div class="click-wrap" :data-id="item.id" @click="toDetail(item.id)">
+              <div class="img-con">
+                <img :src="item.imgurl">
+              </div>
+              <section class="infos">
+                <h3>{{item.name}}</h3>
+                <section class="middle">
+                  <span class="price">￥{{item.price|toFixed}}元</span>
+                  <span class="hasSell">已售{{item.saleCount}}单</span>
+                </section>
+                <ul class="tags" v-if="item.label" v-cloak>
+                  <li v-for="t in item.label.split(',')">{{t}}</li>
+                </ul>
+                <label></label>
+              </section>
+            </div>
+            <group class="buy-count">
+              <x-number button-style="round" :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0"
+                        :max="50" :value="item.number" align="right" :dataId="item.id"
+                        :dataSellerId="item.sellerId" :linedata="item"
+                        @on-change="changeCount"></x-number>
+              <span class="stock">库存：{{item.stock}}件</span>
+              <!--<x-number button-style="round" :min="0"
+                        :max="50" :value="item.number" align="right" :dataId="item.id"
+                        :dataSellerId="item.sellerId" :linedata="item"
+                        @on-change="changeCount"></x-number>-->
+            </group>
+          </section>
+        </li>
+      </ul>
+      <!--</scroller>-->
       <div class="iconNoData" v-if="!goods.length" v-cloak><i></i>
         <p>暂无商品</p></div>
     </div>
@@ -159,9 +312,9 @@
     XNumber,
     XSwitch,
     XInput,
-    Sticky,
-    Scroller,
+//    Scroller,
     Popup,
+    LoadMore ,
     TransferDom
   } from 'vux'
   import {homeApi, cartApi} from '../service/main.js'
@@ -181,7 +334,7 @@
         showPop: false,
         curLinedata: null,
         params: {
-          status:1,
+          status: 1,
           pageSize: 5,
           pageNo: 1,
           /*goodsType: '',
@@ -293,7 +446,7 @@
       MarqueeItem,
       XNumber,
       XInput,
-      Sticky,
+      LoadMore,
       Popup
     },
     beforeMount() {
@@ -316,16 +469,14 @@
           }
         }
       }, false)
+      setTimeout(function () {
+        vm.filterOffset = vm.$refs.filtersMenu.offsetTop
+      }, 300)
       vm.$nextTick(function () {
-        /*//获取筛选栏位置
-        setTimeout(function () {
-          vm.filterOffset = vm.$refs.filters01.offsetTop
+        //获取筛选栏位置
+        /*setTimeout(function () {
+          vm.filterOffset = vm.$refs.filtersMenu.offsetTop
         }, 300)*/
-        try {
-          vm.$refs.goodsScroller.finishInfinite(true)
-          vm.$refs.goodsScroller.resize()
-        } catch (e) {
-        }
       })
     },
     /*computed: {
@@ -352,6 +503,24 @@
       }
     },
     methods: {
+      scrollHandler() {
+        // 监听dom的scroll事件
+        setTimeout(function () {
+          let scrollTop = vm.$refs.home.scrollTop
+          let target = vm.$refs.filtersMenu
+          console.log(scrollTop, vm.filterOffset)
+//          if (vm.showFilterCon) {
+//            vm.hideFilter()
+//          }
+          if (scrollTop >= vm.filterOffset) {
+            target.classList.add('fixed')
+//            list.classList.add('fixed')
+          } else {
+            target.classList.remove('fixed')
+//            list.classList.remove('fixed')
+          }
+        }, 300)
+      },
       // 全局定位
       getMap(data) {
         var tmp = me.locals.get('cur5656Position')//存储的用户选择位置
@@ -649,7 +818,7 @@
 
   .home {
     height: 100%;
-    /*overflow: scroll; // 此两个属性至关重要，不写@scroll监听不到滚动*/
+    overflow: scroll; // 此两个属性至关重要，不写@scroll监听不到滚动
   }
 
   .swiper-home {
@@ -838,145 +1007,150 @@
     }
   }
 
-  .goods-list {
+  .bar-chamer {
     .rel;
-    height: 100%;
-    overflow: auto;
-    &.hasContent {
-      height: 800px;
-    }
-    .inner-scroller {
-      .borBox;
-      min-height: 300px;
-      .v-items {
-        padding: 20/@rem;
-        .bf;
-        &:not(:last-child) {
-          .bor-b;
-        }
-        .wrap {
-          .flex;
-          .rel;
-          .h(150);
-        }
-        .click-wrap {
-          .borBox;
-          .flex-r(1);
-          overflow: hidden;
-        }
-        .img-con {
-          .abs-center-vertical;
-          .size(130, 130);
-          overflow: hidden;
-          img {
-            width: 100%;
-            background: #f5f5f5 url(../../static/img/noImg.png) no-repeat center;
-            -webkit-background-size: 30% auto;
-            background-size: 30% auto;
-          }
-        }
-        /*img {
-          .abs;
-          left: 0;
-          top: 0;
-          .size(150, 150);
-        }*/
-        .infos {
-          .flex;
-          .flex-d-v;
-          .borBox;
-          width: 100%;
-          height: 100%;
-          padding-left: 170/@rem;
-          h3 {
-            .flex-r(1);
-            .fz(28);
-            .txt-normal;
-            .c3;
-            .ellipsis;
-          }
-          .middle {
-            .flex-r(1);
-            padding: 10/@rem 0;
-            .price {
-            }
-            span {
-              &.price {
-                .c3;
-                .fz(26);
-              }
-              &.hasSell {
-                padding-left: 30/@rem;
-                .c9;
-                .fz(22);
-              }
-            }
-          }
-          .tags {
-            .flex-r(1);
-            .cdiy(#f34c18);
-            .fz(22);
-            overflow: hidden;
-            li {
-              .fl;
-              margin-right: 10/@rem;
-              padding: 1px 8px;
-              line-height: 1.8;
-              .cf;
-              .fz(16);
-              .borR(4px);
-              background: orange;
-            }
-          }
-        }
-      }
-      .buy-count {
-        .rel;
-        width: 160/@rem;
-        .weui-cells {
-          .abs-center-vertical;
-          right: -10/@rem;
-          margin-top: 0;
-          .no-bg;
-          &:before, &:after {
-            .none;
-          }
-          .weui-cell {
-            padding: 0;
-          }
-          .vux-number-input {
-            width: 50/@rem !important;
-            height: 34/@rem !important;
-            .fz(24);
-          }
-          .vux-number-selector, .vux-number-selector-plus {
-            .size(30, 30);
-            padding: 2px;
-            font-size: 0;
-            line-height: 34/@rem;
-            /*border-color: #f34c18;*/
-            svg {
-              .size(30, 30);
-              /*fill: #f34c18;*/
-            }
-          }
-        }
-        .stock{
-          .fz(22);
-          .c9;
-        }
-      }
-    }
+    height: 88/@rem;
   }
 
-  .buyCountCon{
+  .goods-list {
+    .rel;
+    /*height: 100%;*/
+    /*overflow: auto;*/
+    /*&.hasContent {*/
+    /*height: 800px;*/
+    /*}*/
+    /*.inner-scroller {*/
+    .borBox;
+    /*min-height: 300px;*/
+    .v-items {
+      padding: 20/@rem;
+      .bf;
+      &:not(:last-child) {
+        .bor-b;
+      }
+      .wrap {
+        .flex;
+        .rel;
+        .h(150);
+      }
+      .click-wrap {
+        .borBox;
+        .flex-r(1);
+        overflow: hidden;
+      }
+      .img-con {
+        .abs-center-vertical;
+        .size(130, 130);
+        overflow: hidden;
+        img {
+          width: 100%;
+          background: #f5f5f5 url(../../static/img/noImg.png) no-repeat center;
+          -webkit-background-size: 30% auto;
+          background-size: 30% auto;
+        }
+      }
+      /*img {
+        .abs;
+        left: 0;
+        top: 0;
+        .size(150, 150);
+      }*/
+      .infos {
+        .flex;
+        .flex-d-v;
+        .borBox;
+        width: 100%;
+        height: 100%;
+        padding-left: 170/@rem;
+        h3 {
+          .flex-r(1);
+          .fz(28);
+          .txt-normal;
+          .c3;
+          .ellipsis;
+        }
+        .middle {
+          .flex-r(1);
+          padding: 10/@rem 0;
+          .price {
+          }
+          span {
+            &.price {
+              .c3;
+              .fz(26);
+            }
+            &.hasSell {
+              padding-left: 30/@rem;
+              .c9;
+              .fz(22);
+            }
+          }
+        }
+        .tags {
+          .flex-r(1);
+          .cdiy(#f34c18);
+          .fz(22);
+          overflow: hidden;
+          li {
+            .fl;
+            margin-right: 10/@rem;
+            padding: 1px 8px;
+            line-height: 1.8;
+            .cf;
+            .fz(16);
+            .borR(4px);
+            background: orange;
+          }
+        }
+      }
+    }
+    .buy-count {
+      .rel;
+      width: 160/@rem;
+      .weui-cells {
+        .abs-center-vertical;
+        right: -10/@rem;
+        margin-top: 0;
+        .no-bg;
+        &:before, &:after {
+          .none;
+        }
+        .weui-cell {
+          padding: 0;
+        }
+        .vux-number-input {
+          width: 50/@rem !important;
+          height: 34/@rem !important;
+          .fz(24);
+        }
+        .vux-number-selector, .vux-number-selector-plus {
+          .size(30, 30);
+          padding: 2px;
+          font-size: 0;
+          line-height: 34/@rem;
+          /*border-color: #f34c18;*/
+          svg {
+            .size(30, 30);
+            /*fill: #f34c18;*/
+          }
+        }
+      }
+      .stock {
+        .fz(22);
+        .c9;
+      }
+    }
+    /*}*/
+  }
+
+  .buyCountCon {
     .fz(26);
     .weui-cells {
       margin-top: 10/@rem;
       padding: 0;
     }
     .weui-cell {
-      padding: 26/@rem 0!important;
+      padding: 26/@rem 0 !important;
       .fz(26) !important;
     }
   }

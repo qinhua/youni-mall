@@ -20,7 +20,7 @@
           <!-- content goes here -->
           <ul>
             <li v-for="(item, index) in orders" v-cloak>
-              <section class="v-items" v-for="(item, index) in orders" :data-id="item.id"
+              <section class="v-items" :data-id="item.id"
                        :data-orderNumber="item.appOrderNumber" :data-itemId="item.orderItemId" v-if="orders.length" v-cloak>
                 <h4 class="item-top"><i class="ico-seller"
                                         :style="item.sellerImage?'background-image:url('+item.sellerImage+')':''"></i>&nbsp;{{item.sellerName}}&nbsp;&nbsp;<i

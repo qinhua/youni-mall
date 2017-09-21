@@ -26,7 +26,7 @@ Vue.use(AlertPlugin)
 Vue.use(ToastPlugin)
 Vue.use(LoadingPlugin)
 Vue.use(VueScroller)
-import {commonApi} from './service/main.js'
+import {commonApi,userApi} from './service/main.js'
 
 Vue.config.productionTip = false
 let me = window.me
@@ -381,6 +381,7 @@ new Vue({
   },*/
   mounted() {
     vm = this
+    this.getUser()
     // console.log(XXX)
     // GET
     /* this.$axios.get('/user', {
@@ -426,6 +427,21 @@ new Vue({
         vm.$store.commit('storeData', {key: 'dict', data: res.data.itemList})
       }, function () {
       })
+    },
+    getUser() {
+      var localSeller = me.sessions.get('ynMallInfo')
+      if (localSeller) {
+        vm.$store.commit('storeData', {key: 'userInfo', data: JSON.parse(localSeller)})
+        return false
+      } else {
+        vm.loadData(userApi.get, null, 'POST', function (res) {
+          vm.isPosting = false
+          if (res) {
+            vm.$store.commit('storeData', {key: 'userInfo', data: res})
+            me.sessions.set('ynMallInfo', JSON.stringify(res))
+          }
+        })
+      }
     }
   }
 })

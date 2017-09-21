@@ -44,7 +44,7 @@ const orderApi = {
   updateOrderStatus: host + '/order/userStopOrder'
 }
 const userApi = {
-  userInfo: host + '/user/userInfo',
+  get: host + '/user/get',
   bind: host + '/user/bindPhone',
   updateName: host + '/user/updateName',
   couponList: host + '/userCoupon/list',

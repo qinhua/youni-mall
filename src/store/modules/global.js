@@ -5,6 +5,7 @@ export default {
     geoData: null,
     expired: true,
     wxInfo: null,
+    userInfo: null,
     dict: null,
     tmpConfirm: null,
     direction: 'forward'

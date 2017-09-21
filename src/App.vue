@@ -3,6 +3,7 @@
     <!--<div class="btn flush-button s02" onclick="javascript:me.locals.clear();me.sessions.clear();me.lightPop('ok,已清理');">-->
     <!--清理缓存-->
     <!--</div>-->
+    <!--<a href="http://mp.weixin.qq.com/s?__biz=MzA4MDM2MjA4Mg==&amp;mid=210296128&amp;idx=1&amp;sn=d9f380331ca095a50d7dcf1766bcf11c#rd" class="link" title="关注">关注</a>-->
     <!--定位组件-->
     <geo :visible="false" :cache="true" @on-geo-end="getMap" v-if="$route.path!=='/auth'"></geo>
 

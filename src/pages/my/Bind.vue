@@ -135,7 +135,7 @@
       .center;
       .rel;
       z-index: 2;
-      padding: 50/@rem 20/@rem 90/@rem;
+      padding: 60/@rem 20/@rem 50/@rem;
       > img {
         .block;
         .size(150, 150);
@@ -157,35 +157,43 @@
       margin-top: 10/@rem;
     }
     .vux-no-group-title {
-      margin-top: 0;
+      width: 92%;
+      margin: 0 auto;
       .no-bg!important;
       &:before, &:after {
-        left: 14px !important;
-        border-color: #fff;
+        .none;
+      }
+      .weui-cell:before {
+        .none;
       }
       .vux-x-input {
-        padding: 24/@rem 30/@rem;
-        input {
-          .ellipsis;
-        }
-      }
-      .vux-x-input, .address-area, .vux-cell-box, .vux-x-textarea {
+        padding: 24/@rem 0;
         .fz(26);
         .cf;
+        .bor-b(1px, solid, #f3f3f3);
         input {
+          .ellipsis;
           .ipt-placeholder(#fff, right) !important;
         }
+        .weui-icon-clear {
+          .cf;
+        }
+      }
+      .weui-btn_primary:not(.weui-btn_disabled):active{
+        .bdiy(#0088ec);
       }
     }
     .btn-vercode {
       .borR(3px);
-      .bdiy(#2084e6);
-      &:disabled{
-        .bdiy(#58a1d);
+      .bdiy(#2196F3);
+      &:disabled {
+        .ce;
+        .bdiy(#72acd2);
       }
     }
+
     .btn-save {
-      width: 96%;
+      width: 92%;
       margin: 20/@rem auto;
       .ma-w(640);
       .borBox;
@@ -197,6 +205,7 @@
       .bdiy(rgba(255, 255, 255, 0.5));
       .borR(4px);
       .bor(1px, solide, #fff);
+      .bsd(0, 3px, 10px, 0, #2892de);
     }
     .b-txt {
       .abs;
