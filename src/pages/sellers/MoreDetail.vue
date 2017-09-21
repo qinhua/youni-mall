@@ -10,12 +10,14 @@
               class="distance">{{seller.distance ? ((seller.distance / 1000) | toFixed(1)) : seller.distance}}km</span>
             </h3>
             <div class="middle">
-              <ol class="star">
-                <li v-for="star in seller.score" v-if="seller.score" v-cloak>★</li>
-                <li class="gray" v-for="star in 5" v-else v-cloak>★</li>
+              <ol class="star" v-if="seller.sellerScore">
+                <li v-for="star in seller.sellerScore" v-cloak >★</li>
+              </ol>
+              <ol class="star" v-else>
+                <li class="gray" v-for="star in 5">★</li>
               </ol>
               <span
-                class="hasSell"><i>{{(seller.score || 0) | toFixed(1)}}分</i>已售{{seller.sellerCount}}单</span>
+                class="hasSell"><i>{{(seller.sellerScore || 0) | toFixed(1)}}分</i>已售{{seller.sellerCount}}单</span>
             </div>
             <div class="tags">
               <label class="c2">{{seller.authLevelName}}</label>
@@ -55,7 +57,7 @@
         <div class="content license">
           <div>
             <img class="previewer-demo-img" :src="seller.businessLicense" width="100"
-                 @click="preview(0)">
+                 @click="preview()">
             <div v-transfer-dom>
               <previewer :list="list" ref="previewer" :options="options"></previewer>
             </div>
@@ -120,14 +122,13 @@
     watch: {
       '$route'(to, from) {
         if (to.name === 'seller_detail_more') {
-          this.$refs.previewer.show(index)
           vm.getSeller()
         }
       }
     },
     methods: {
       preview(index) {
-        this.$refs.previewer.show(index)
+        this.$refs.previewer.show(0)
       },
       getSeller() {
         try {
@@ -277,7 +278,7 @@
                 .fl;
                 margin-right: 10/@rem;
                 .cdiy(#ff9900);
-                .fz(30);
+                .rfz(16);
                 &.gray {
                   .c9;
                 }

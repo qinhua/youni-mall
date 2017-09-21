@@ -40,7 +40,8 @@
                 @on-pulldown-loading="onPullDown" @on-pullup-loading="onPullUp" @on-scroll-bottom="" ref="sellerScroll"
                 :scroll-bottom-offst="300">
         <div class="box">
-          <section class="v-items" v-for="(item, index) in sellers" :data-id="item.id" @click="toDetail(item.id)" v-cloak>
+          <section class="v-items" v-for="(item, index) in sellers" :data-id="item.id" @click="toDetail(item.id)"
+                   v-cloak>
             <section class="wrap">
               <img :src="item.headimgurl">
               <section class="infos">
@@ -48,11 +49,16 @@
                   <span class="distance">{{(item.distance ? (item.distance / 1000) : 0) | toFixed(1, true)}}km</span>
                 </h3>
                 <section class="middle">
-                  <ol class="star">
-                    <li v-for="star in item.score" v-if="item.score">★</li>
-                    <li class="gray" v-for="star in 5" v-else v-cloak>★</li>
-                  </ol>
-                  <span class="hasSell"><i>{{item.score | toFixed(1)}}分</i>已售{{item.sellerCount}}单</span>
+                  <div class="score-con">
+                    <ol class="star" v-if="item.sellerScore">
+                      <li v-for="star in item.sellerScore" v-cloak>★</li>
+                    </ol>
+                    <ol class="star gray" v-else>
+                      <li v-for="star in 5">★</li>
+                    </ol>
+                    <span>{{item.sellerScore | toFixed(1)}}分</span>
+                  </div>
+                  <span class="hasSell">已售{{item.sellerCount}}单</span>
                 </section>
                 <div class="tags">
                   <label :class="item.authLevelCls">{{item.authLevelName}}</label>
@@ -353,9 +359,7 @@
                   cur.serviceTypeCls = 'water-milk'
                   break
               }
-              if (!cur.score) {
-                cur.score = window.me.Rdn.rdnBetween(1, 6)
-              }
+//              cur.isSleep = me.compareDate(cur.businessTime, '2017-10-12')
             }
           }
           if (!isLoadMore) {
@@ -659,23 +663,33 @@
                   .txt-del;
                 }
                 &.hasSell {
-                  .c9;
+                  padding-left: 30/@rem;
                   .fz(22);
-                  i {
-                    padding-right: 30/@rem;
-                    .txt-normal;
-                    .cdiy(#ff9900);
-                  }
+                  .c9;
                 }
               }
-              .star {
-                li {
+              .score-con {
+                .fl;
+                overflow: hidden;
+                span {
                   .fl;
-                  margin-right: 10/@rem;
+                  .fz(22);
+                  line-height: 2;
                   .cdiy(#ff9900);
-                  .rfz(16);
+                }
+                .star {
+                  .fl;
+                  overflow: hidden;
                   &.gray {
-                    .c9;
+                    li {
+                      .c9;
+                    }
+                  }
+                  li {
+                    .fl;
+                    margin-right: 10/@rem;
+                    .rfz(16);
+                    .cdiy(#ff9900);
                   }
                 }
               }

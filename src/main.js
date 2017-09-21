@@ -10,7 +10,7 @@ import 'ionicons/dist/css/ionicons.css'
 import 'weui/dist/style/weui.min.css'
 import weui from '../static/js/weui.js'
 import $ from 'jquery'
-import '../static/js/fastclick.js'
+// import lodash from 'lodash'
 import '../static/js/sign.js'
 import 'myMixin'
 import store from './store'
@@ -19,14 +19,13 @@ import {AlertPlugin, ConfirmPlugin, ToastPlugin, LoadingPlugin} from 'vux'
 
 const FastClick = require('fastclick')
 FastClick.attach(document.body)
-
 Vue.use(require('vue-wechat-title'))
 Vue.use(ConfirmPlugin)
 Vue.use(AlertPlugin)
 Vue.use(ToastPlugin)
 Vue.use(LoadingPlugin)
 Vue.use(VueScroller)
-import {commonApi,userApi} from './service/main.js'
+import {commonApi, userApi} from './service/main.js'
 
 Vue.config.productionTip = false
 let me = window.me
@@ -56,7 +55,7 @@ router.beforeEach((to, from, next) => {
 
   /* 判断授权是否存在或过期(页面刷新就会触发过期检查，不包含切换账号后的检查) */
   if (store.state.global.expired) {
-    var localAuth = me.locals.get('ynWxUser') ? JSON.parse(me.locals.get('ynWxUser')): null
+    var localAuth = me.locals.get('ynWxUser') ? JSON.parse(me.locals.get('ynWxUser')) : null
     if (to.path === '/author') {
       if (localAuth) {
         /* 检查本地token是否过期(7天保质期) */

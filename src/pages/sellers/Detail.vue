@@ -15,12 +15,13 @@
               class="distance">{{seller.distance / 1000 | toFixed(1)}}km</span>
             </h3>
             <div class="middle">
-              <ol class="star">
-                <li v-cloak v-for="star in seller.score" v-if="seller.score">★</li>
-                <li class="gray" v-for="star in 5" v-else>★</li>
+              <ol class="star" v-if="seller.sellerScore">
+                <li v-for="star in seller.sellerScore" v-cloak >★</li>
               </ol>
-              <span
-                class="hasSell"><i>{{(seller.score || 0) | toFixed(1)}}分</i>已售{{seller.sellerCount}}单</span>
+              <ol class="star" v-else>
+                <li class="gray" v-for="star in 5">★</li>
+              </ol>
+              <span class="hasSell"><i>{{(seller.sellerScore || 0) | toFixed(1)}}分</i>已售{{seller.sellerCount}}单</span>
             </div>
             <div class="tags">
               <label class="c2">{{seller.authLevelName}}</label>
@@ -384,7 +385,6 @@
                 resD.serviceTypeCls = 'water-milk'
                 break
             }
-            resD.score = window.me.Rdn.rdnBetween(1, 6)
             vm.seller = resD
             vm.scrollNotice(vm.seller.notice)
           }
