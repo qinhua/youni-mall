@@ -3801,11 +3801,9 @@ body {
 .xs-plugin-pullup-container {
   line-height: 40px;
 }
-.nearby .inner-scroller .box,
 .seller-detail .inner-scroller .box {
   padding-bottom: 120px !important;
 }
-.nearby .inner-scroller .xs-plugin-pullup-container,
 .seller-detail .inner-scroller .xs-plugin-pullup-container {
   display: none !important;
 }
@@ -3880,6 +3878,10 @@ body {
   width: auto !important;
   min-width: 6.25rem;
   padding: 0 0.625rem;
+}
+.weui-loadmore {
+  width: 40%!important;
+  margin-top: 1.5em!important;
 }
 /*左右滑动*/
 .slide-left-enter,

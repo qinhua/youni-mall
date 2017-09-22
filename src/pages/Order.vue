@@ -21,7 +21,8 @@
           <ul>
             <li v-for="(item, index) in orders" v-cloak>
               <section class="v-items" :data-id="item.id"
-                       :data-orderNumber="item.appOrderNumber" :data-itemId="item.orderItemId" v-if="orders.length" v-cloak>
+                       :data-orderNumber="item.appOrderNumber" :data-itemId="item.orderItemId" v-if="orders.length"
+                       v-cloak>
                 <h4 class="item-top"><i class="ico-seller"
                                         :style="item.sellerImage?'background-image:url('+item.sellerImage+')':''"></i>&nbsp;{{item.sellerName}}&nbsp;&nbsp;<i
                   class="fa fa-angle-right cc"></i><span>{{item.statusName}}</span></h4>
@@ -246,17 +247,17 @@
                     cur.statusName = '已完成'
                     break
                 }
+                if (!isLoadMore) {
+                  if (resD.totalCount < vm.params.pageSize) {
+                    vm.noMore = true
+                  } else {
+                    vm.noMore = false
+                  }
+                  vm.orders = resD.itemList
+                } else {
+                  resD.itemList.length ? vm.orders.push(cur) : vm.noMore = true
+                }
               }
-            }
-            if (!isLoadMore) {
-              if (resD.totalCount < vm.params.pageSize) {
-                vm.noMore = true
-              } else {
-                vm.noMore = false
-              }
-              vm.orders = resD.itemList
-            } else {
-              resD.itemList.length ? vm.orders.concat(resD.itemList) : vm.noMore = true
             }
             console.log(vm.orders, '订单数据')
           }, function () {
@@ -336,7 +337,7 @@
       onConfirm (msg) {
         var curVal = window.document.querySelector('.vux-rater input').value
         console.log(curVal)
-        if (curVal==0) {
+        if (curVal == 0) {
           vm.toast('请先评分！', 'warn')
           return false
         } else {

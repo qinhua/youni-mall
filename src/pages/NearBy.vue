@@ -1,47 +1,47 @@
 <template>
-  <div class="nearby" ref="nearby" v-cloak>
+  <div class="nearby" ref="nearby" @scroll="scrollHandler" v-cloak>
 
-    <div class="top-con">
+    <div class="scroll-view" ref="scrollView">
+
       <!--定位组件-->
       <div class="location-chooser" keep-alive>
         <p><span><i class="fa fa-map-marker"></i>&nbsp;您的位置：</span>{{address || geoAddress}}</p>
         <a @click.prevent="toMap"><i class="right-arrow"></i></a>
       </div>
+
       <!--过滤条-->
-      <div class="sellers-filter" ref="filters02">
-        <div class="v-filter-tabs">
-          <ul class="v-f-tabs">
-            <li :class="curFilterType==='types'?'mfilterActive':''" @click="showFilter('types',$event)">店铺分类<i
-              class="ico-arr-down"></i>
-            </li>
-            <li :class="curFilterType==='services'?'mfilterActive':''" @click="showFilter('services',$event)">业务分类<i
-              class="ico-arr-down"></i>
-            </li>
-            <li :class="curFilterType==='sorts'?'mfilterActive':''" @click="showFilter('sorts',$event)">排序<i
-              class="ico-arr-down"></i></li>
-          </ul>
-          <div class="filter-data" v-if="showFilterCon" :class="showFilterCon?'show':''" v-cloak>
-            <ul class="filter-tags" v-show="curFilterDict">
-              <li v-for="(data,idx) in curFilterDict" :class="curSelFilter[curFilterType].index==idx?'sfilterActive':''"
-                  :data-key="data.key"
-                  :data-value="data.value" @click="chooseFilter(idx,data.key,data.value,$event)" v-cloak>{{data.value}}
+      <div class="bar-chamer">
+        <div class="sellers-filter" ref="filtersMenu">
+          <div class="v-filter-tabs">
+            <ul class="v-f-tabs">
+              <li :class="curFilterType==='types'?'mfilterActive':''" @click="showFilter('types',$event)">店铺分类<i
+                class="ico-arr-down"></i>
               </li>
+              <li :class="curFilterType==='services'?'mfilterActive':''" @click="showFilter('services',$event)">业务分类<i
+                class="ico-arr-down"></i>
+              </li>
+              <li :class="curFilterType==='sorts'?'mfilterActive':''" @click="showFilter('sorts',$event)">排序<i
+                class="ico-arr-down"></i></li>
             </ul>
+            <div class="filter-data" v-if="showFilterCon" :class="showFilterCon?'show':''" v-cloak>
+              <ul class="filter-tags" v-show="curFilterDict">
+                <li v-for="(data,idx) in curFilterDict"
+                    :class="curSelFilter[curFilterType].index==idx?'sfilterActive':''"
+                    :data-key="data.key"
+                    :data-value="data.value" @click="chooseFilter(idx,data.key,data.value,$event)" v-cloak>
+                  {{data.value}}
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!--店铺列表-->
-    <div class="sellers-list" ref="sellerList">
-      <scroller class="inner-scroller" lock-x use-pullup use-pulldown :pullup-config="pullupConfig"
-                :pulldown-config="pulldownConfig"
-                @on-scroll="onScroll"
-                @on-pulldown-loading="onPullDown" @on-pullup-loading="onPullUp" @on-scroll-bottom="" ref="sellerScroll"
-                :scroll-bottom-offst="300">
-        <div class="box">
-          <section class="v-items" v-for="(item, index) in sellers" :data-id="item.id" @click="toDetail(item.id)"
-                   v-cloak>
+      <!--店铺列表-->
+      <div class="sellers-list" ref="sellerList">
+        <ul class="box">
+          <li class="v-items" v-for="(item, index) in sellers" :data-id="item.id" @click="toDetail(item.id)"
+              v-cloak>
             <section class="wrap">
               <img :src="item.headimgurl">
               <section class="infos">
@@ -50,8 +50,8 @@
                 </h3>
                 <section class="middle">
                   <div class="score-con">
-                    <ol class="star" v-if="item.sellerScore">
-                      <li v-for="star in item.sellerScore" v-cloak>★</li>
+                    <ol class="star" v-if="item.sellerScore" v-cloak>
+                      <li v-for="star in item.sellerScore">★</li>
                     </ol>
                     <ol class="star gray" v-else>
                       <li v-for="star in 5">★</li>
@@ -80,13 +80,14 @@
                 </h3>
               </div>
             </section>
-          </section>
-          <div class="noMoreData" v-if="sellers.length">{{noMore ? '就这么多了' : '上拉加载'}}</div>
-        </div>
-        <div class="iconNoData" v-if="!sellers.length"><i></i>
-          <p>暂无商品</p></div>
-        <!--<div class="iconNoData" @click="beContinue(curNumber)"><i></i><p>暂无内容</p></div>-->
-      </scroller>
+          </li>
+        </ul>
+        <load-more :show-loading="!noMore" :tip="!noMore?'上拉加载':'就这么多了'" background-color="#f5f5f5"
+                   v-if="sellers.length"></load-more>
+        <div class="iconNoData" v-if="!sellers.length" v-cloak><i></i>
+          <p>附近暂无商家</p></div>
+      </div>
+
     </div>
   </div>
 </template>
@@ -96,8 +97,7 @@
   /* eslint-disable */
   let me
   let vm
-  import Swiper from '../components/Swiper'
-  import {Group, GroupTitle, Grid, GridItem, Marquee, MarqueeItem, XNumber, Scroller, LoadMore} from 'vux'
+  import {LoadMore} from 'vux'
   import {homeApi, nearbyApi} from '../service/main.js'
 
   export default {
@@ -215,15 +215,6 @@
     },
     props: ['geoAddress'],
     components: {
-      Swiper,
-      Group,
-      GroupTitle,
-      Grid,
-      GridItem,
-      Marquee,
-      MarqueeItem,
-      XNumber,
-      Scroller,
       LoadMore
     },
     beforeMount() {
@@ -231,27 +222,21 @@
     },
     mounted() {
       vm = this
-      // me.attachClick()
       vm.getMap()
       vm.getSellers()
-      // 点击区域之外隐藏筛选栏
-      document.addEventListener('click', function (e) {
-        if (e.target.offsetParent) {
-          if (JSON.stringify(e.target.offsetParent.classList).indexOf('filter') === -1) {
-            vm.hideFilter()
-            return false
-          }
-        }
-      }, false)
       vm.$nextTick(function () {
-        //获取筛选栏位置
-        setTimeout(function () {
-          vm.filterOffset = vm.$refs.filters02.offsetTop
-        }, 300)
-        vm.resetScroll()
+        // 点击区域之外隐藏筛选栏
+        /*document.addEventListener('click', function (e) {
+         if (e.target.offsetParent) {
+         if (JSON.stringify(e.target.offsetParent.classList).indexOf('filter') === -1) {
+         vm.hideFilter()
+         return false
+         }
+         }
+         }, false)*/
       })
     },
-    computed: {},
+    /*computed: {},*/
     watch: {
       '$route'(to, from) {
         if (to.name === 'nearby') {
@@ -275,6 +260,39 @@
         }
         vm.getSellers() // 用户修改位置之后重载列表
       },
+      /*滚动检测*/
+      onScroll() {
+        // 监听dom的scroll事件
+        _.debounce(vm.scrollHandler, 1000)
+      },
+      scrollHandler() {
+        // 滚动中的真正的操作
+        let target = vm.$refs.filtersMenu
+        let docs = vm.$refs.scrollView
+        let winH = document.body.clientHeight;
+        let docH = docs.offsetHeight;
+        let scrollTop = vm.$refs.nearby.scrollTop
+        !vm.filterOffset ? vm.filterOffset = target.offsetTop : null
+        // console.info('文档高度：' + winH + '\n内容高度：' + docH + '\n滚动高度：' + scrollTop + '\n筛选条位置：' + vm.filterOffset)
+        if (vm.showFilterCon) {
+          vm.hideFilter()
+        }
+        if (scrollTop >= vm.filterOffset) {
+          target.classList.add('fixed')
+        } else {
+          target.classList.remove('fixed')
+        }
+        if (scrollTop >= (docH - winH) - 44) {
+          // console.log('到底部了，需要加载了…');
+          vm.onPullUp();
+        }
+      },
+      resetScroll() {
+        setTimeout(function () {
+          let target = vm.$refs.filtersMenu
+          target.classList.remove('fixed')
+        }, 100)
+      },
       toMap() {
         vm.$router.push({name: 'amap', query: {path: vm.$route.path.replace(/\//g, '')}})
       },
@@ -287,30 +305,8 @@
           vm.$refs.sellerScroll.reset()
           vm.$refs.sellerScroll.donePullup()
           vm.$refs.sellerScroll.donePulldown()
-          let target = vm.$refs.filters02
-          let list = vm.$refs.sellerList
-          target.classList.remove('fixed')
-          list.classList.remove('fixed')
           vm.$refs.sellerScroll.reset()
         }, 100)
-      },
-      scrollHandler() {
-        // 监听dom的scroll事件
-        setTimeout(function () {
-          let scrollTop = vm.$refs.nearby.scrollTop
-          let target = vm.$refs.filters02
-          let list = vm.$refs.sellerList
-          if (vm.showFilterCon) {
-            vm.hideFilter()
-          }
-          if (scrollTop >= vm.filterOffset) {
-            target.classList.add('fixed')
-            list.classList.add('fixed')
-          } else {
-            target.classList.remove('fixed')
-            list.classList.remove('fixed')
-          }
-        }, 300)
       },
       toDetail(id) {
         if (vm.showFilterCon) return
@@ -323,10 +319,11 @@
       getSellers(isLoadMore) {
         if (vm.isPosting) return false
         !isLoadMore ? vm.params.pageNo = 1 : vm.params.pageNo++
-        vm.processing()
+        vm.isPosting = true
+//        vm.processing()
         vm.loadData(nearbyApi.sellerList, vm.params, 'POST', function (res) {
           vm.isPosting = false
-          vm.processing(0, 1)
+//          vm.processing(0, 1)
           var resD = res.data.pager
           if (resD.itemList.length) {
             for (var i = 0; i < resD.itemList.length; i++) {
@@ -359,7 +356,8 @@
                   cur.serviceTypeCls = 'water-milk'
                   break
               }
-//              cur.isSleep = me.compareDate(cur.businessTime, '2017-10-12')
+              cur.sellerScore = Math.ceil(cur.sellerScore)
+              // cur.isSleep = me.compareDate(cur.businessTime, '2017-10-12')
             }
           }
           if (!isLoadMore) {
@@ -375,7 +373,26 @@
           console.log(vm.sellers, '附近卖家')
         }, function () {
           vm.isPosting = false
+//          vm.processing(0, 1)
         })
+      },
+      onPullDown() {
+        if (vm.isPosting) {
+          return false
+        } else {
+          setTimeout(function () {
+            vm.getSellers()
+          }, 1000)
+        }
+      },
+      onPullUp() {
+        if (vm.isPosting) {
+          return false
+        } else {
+          setTimeout(function () {
+            vm.getSellers(true)
+          }, 1000)
+        }
       },
       /* 店铺筛选 */
       showFilter(type, e) {
@@ -411,42 +428,6 @@
         vm.curSelFilter.sorts.key ? vm.params.sortType = vm.curSelFilter.sorts.key : delete vm.params.sortType
         vm.hideFilter()
         vm.getSellers()
-      },
-      onScroll(pos) {
-        // this.scrollTop = pos.top
-        vm.hideFilter()
-      },
-      onPullDown() {
-        if (vm.isPosting) {
-          // do nothing
-          return false
-        } else {
-          // this.isPosting = true
-          setTimeout(function () {
-            vm.getSellers()
-            vm.$nextTick(function () {
-              vm.$refs.sellerScroll.reset({top: 0})
-              vm.$refs.sellerScroll.donePullup()
-              vm.$refs.sellerScroll.donePulldown()
-            })
-          }, 1500)
-        }
-      },
-      onPullUp() {
-        if (vm.isPosting) {
-          // do nothing
-          return false
-        } else {
-          // vm.isPosting = true
-          setTimeout(function () {
-            vm.getSellers(true)
-            vm.$nextTick(function () {
-              vm.$refs.sellerScroll.reset({bottom: 0})
-              vm.$refs.sellerScroll.donePullup()
-              vm.$refs.sellerScroll.donePulldown()
-            })
-          }, 200)
-        }
       }
     }
   }
@@ -459,21 +440,15 @@
   .nearby {
     height: 100%;
     overflow: scroll; // 此两个属性至关重要，不写@scroll监听不到滚动
-
-    .top-con {
-      .fix;
-      top: 0;
-      z-index: 50;
-      width: 100%;
-      .bf5;
-    }
     .location-chooser {
-      margin-bottom: 10/@rem;
+      margin-bottom: 5/@rem;
+    }
+    .bar-chamer {
+      min-height: 80/@rem;
     }
     .sellers-filter {
       .rel;
       z-index: 10;
-      .transi(.2s);
       &.fixed {
         width: 100%;
         .fix;
@@ -481,10 +456,11 @@
       }
       .v-filter-tabs {
         width: 100%;
+        margin-bottom: 1px;
         padding: 10/@rem 0;
         border-top: 1px solid #eee;
         border-bottom: 1px solid #eee;
-        .bf;
+        .bdiy(#fdfdfd);
         .v-f-tabs {
           height: 60/@rem;
           li {
@@ -499,10 +475,9 @@
             .center;
             font-size: 14px;
             .ico-arr-down {
-              position: absolute;
+              .abs-center-vertical;
               width: 30px;
               height: 30px;
-              top: 6/@rem;
               &:before {
                 content: "";
                 position: absolute;
@@ -512,7 +487,7 @@
                 border-width: 1px 0 0 1px;
                 -webkit-transform: rotate(-135deg);
                 transform: rotate(-135deg);
-                top: 8px;
+                top: 10px;
                 left: 7px;
                 .transi(.2s);
               }
@@ -575,200 +550,191 @@
     }
 
     .sellers-list {
-      height: 100%;
-      &.fixed {
-        .xs-container {
-          margin-top: 90/@rem;
+      .rel;
+      padding-bottom: 30px;
+      .v-items {
+        .rel;
+        padding: 20/@rem;
+        .bf;
+        &:not(:last-child) {
+          .bor-b;
         }
-      }
-      .inner-scroller {
-        .borBox;
-        padding: 172/@rem 0 50px;
-        height: 100% !important;
-        .v-items {
-          .rel;
-          padding: 20/@rem;
-          .bf;
-          &:not(:last-child) {
-            .bor-b;
-          }
-          .sleep-tips {
-            .abs;
-            width: 100%;
-            height: 100%;
-            left: 0;
-            top: 0;
-            .cf;
-            .fz(30);
-            .bdiy(rgba(0, 0, 0, .6));
-            .wrap {
-              .borBox;
-              padding: 0 30/@rem;
-              .abs-center-vertical;
-              width: 100%;
-            }
-            h3 {
-              .rel;
-              width: 100%;
-              .txt-normal;
-              span {
-                .fz(20)
-              }
-            }
-            .btn-reserve {
-              .abs-center-vertical;
-              right: 0;
-              .size(120, 60);
-              line-height: 60/@rem;
-              .fz(24);
-              .cf;
-              .borR(4px);
-              .bdiy(rgba(45, 199, 108, 0.5))
-            }
-          }
+        .sleep-tips {
+          .abs;
+          width: 100%;
+          height: 100%;
+          left: 0;
+          top: 0;
+          .cf;
+          .fz(30);
+          .bdiy(rgba(0, 0, 0, .6));
           .wrap {
-            .rel;
-          }
-          img {
-            .abs;
-            left: 0;
-            top: 0;
-            .size(150, 150);
-            background: #f5f5f5 url(../../static/img/noImg.png) no-repeat center;
-            -webkit-background-size: 30% auto;
-            background-size: 30% auto;
-          }
-          .infos {
-            .flex;
-            .flex-d-v;
             .borBox;
+            padding: 0 30/@rem;
+            .abs-center-vertical;
             width: 100%;
-            .h(150);
-            padding-left: 170/@rem;
-            h3 {
-              .flex-r(1);
-              .fz(28);
-              .txt-normal;
-              .c3;
-              .ellipsis;
+          }
+          h3 {
+            .rel;
+            width: 100%;
+            .txt-normal;
+            span {
+              .fz(20)
             }
-            .middle {
-              .flex-r(1);
-              .price {
+          }
+          .btn-reserve {
+            .abs-center-vertical;
+            right: 0;
+            .size(120, 60);
+            line-height: 60/@rem;
+            .fz(24);
+            .cf;
+            .borR(4px);
+            .bdiy(rgba(45, 199, 108, 0.5))
+          }
+        }
+        .wrap {
+          .rel;
+        }
+        img {
+          .abs;
+          left: 0;
+          top: 0;
+          .size(150, 150);
+          background: #f5f5f5 url(../../static/img/noImg.png) no-repeat center;
+          -webkit-background-size: 30% auto;
+          background-size: 30% auto;
+        }
+        .infos {
+          .flex;
+          .flex-d-v;
+          .borBox;
+          width: 100%;
+          .h(150);
+          padding-left: 170/@rem;
+          h3 {
+            .flex-r(1);
+            .fz(28);
+            .txt-normal;
+            .c3;
+            .ellipsis;
+          }
+          .middle {
+            .flex-r(1);
+            .price {
+            }
+            span {
+              &.price {
+                .c3;
+                .fz(24);
+                .txt-del;
               }
+              &.hasSell {
+                padding-left: 30/@rem;
+                .fz(22);
+                .c9;
+              }
+            }
+            .score-con {
+              .fl;
+              overflow: hidden;
               span {
-                &.price {
-                  .c3;
-                  .fz(24);
-                  .txt-del;
-                }
-                &.hasSell {
-                  padding-left: 30/@rem;
-                  .fz(22);
-                  .c9;
-                }
+                .fl;
+                .fz(22);
+                line-height: 2;
+                .cdiy(#ff9900);
               }
-              .score-con {
+              .star {
                 .fl;
                 overflow: hidden;
-                span {
+                &.gray {
+                  li {
+                    .c9;
+                  }
+                }
+                li {
                   .fl;
-                  .fz(22);
-                  line-height: 2;
+                  margin-right: 10/@rem;
+                  .rfz(16);
                   .cdiy(#ff9900);
                 }
-                .star {
-                  .fl;
-                  overflow: hidden;
-                  &.gray {
-                    li {
-                      .c9;
-                    }
-                  }
-                  li {
-                    .fl;
-                    margin-right: 10/@rem;
-                    .rfz(16);
-                    .cdiy(#ff9900);
-                  }
-                }
               }
             }
-            .tags {
-              .flex-r(1);
-              label {
-                .fl;
-                margin-right: 10/@rem;
-                padding: 1px 8px;
-                line-height: 1.8;
-                .cf;
-                .fz(16);
-                .borR(4px);
-                &.c1 {
-                  .bdiy(#7facf9);
-                }
-                &.c2 {
-                  .bdiy(#84ce36);
-                }
-                &.c3 {
-                  .bdiy(#e8b52d);
-                }
+          }
+          .tags {
+            .flex-r(1);
+            label {
+              .fl;
+              margin-right: 10/@rem;
+              padding: 1px 8px;
+              line-height: 1.8;
+              .cf;
+              .fz(16);
+              .borR(4px);
+              &.c1 {
+                .bdiy(#7facf9);
               }
-              .dispatchTime {
-                .fr;
-                padding-top: 10/@rem;
-                .c9;
-                .block;
-                .fz(20);
+              &.c2 {
+                .bdiy(#84ce36);
+              }
+              &.c3 {
+                .bdiy(#e8b52d);
               }
             }
-            .distance {
-              .abs;
-              right: 0;
-              top: 0;
+            .dispatchTime {
+              .fr;
+              padding-top: 10/@rem;
               .c9;
+              .block;
               .fz(20);
             }
           }
-          .bottom {
-            overflow: hidden;
-          }
-          .note {
-            .fl;
-            .rel;
-            padding: 10/@rem 0 0 30/@rem;
-            .c6;
-            .block;
+          .distance {
+            .abs;
+            right: 0;
+            top: 0;
+            .c9;
             .fz(20);
-            &:before {
-              .abs;
-              .block;
-              left: 0;
-              top: 12/@rem;
-              content: '';
-              .size(26, 26);
-              background: url(../../static/img/ico_hui.png) center;
-              .ele-base;
-            }
           }
         }
-        .service_type {
-          margin-left: 4px;
-          padding: 0 2px;
-          font-weight: normal;
-          .cf;
-          .fz(22);
+        .bottom {
+          overflow: hidden;
+        }
+        .note {
+          .fl;
+          .rel;
+          padding: 10/@rem 0 0 30/@rem;
+          .c6;
+          .block;
+          .fz(20);
+          &:before {
+            .abs;
+            .block;
+            left: 0;
+            top: 12/@rem;
+            content: '';
+            .size(26, 26);
+            background: url(../../static/img/ico_hui.png) center;
+            .ele-base;
+          }
+        }
+      }
+      .service_type {
+        margin-left: 4px;
+        padding: 0 2px;
+        font-weight: normal;
+        .cf;
+        .fz(22);
+        background: #2acaad;
+        .borR(2px);
+        &.water {
           background: #2acaad;
-          .borR(2px);
-          &.water {
-            background: #2acaad;
-          }
-          &.milk {
-            background: #74c361;
-          }
-          &.water-milk {
-            background: #ad64d2;
-          }
+        }
+        &.milk {
+          background: #74c361;
+        }
+        &.water-milk {
+          background: #ad64d2;
         }
       }
     }

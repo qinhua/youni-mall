@@ -1,9 +1,9 @@
 <template>
   <div class="my" v-cloak>
-    <!--<router-view></router-view>-->
     <div class="user-modal">
       <div class="user-inner">
-        <img :src="userInfo.headimgurl">
+        <img src="static/img/ico_ava.png" v-if="!userInfo.headimgurl" v-cloak>
+        <img :src="userInfo.headimgurl" v-else>
         <!--<p class="user-name" :data-userId="255" v-jump="['edit_user', ['userId'], 3]">{{nickName}}<i class="fa fa-pencil-square-o"></i></p>-->
         <p class="user-name">{{userInfo.nickName}}</p>
       </div>
@@ -13,23 +13,23 @@
       <div class="arc"></div>
       <grid :rows="5">
         <grid-item @on-item-click="jumpTo('order', {status:1},1)">
-          <p>2</p>
+          <p v-text="orderCount['1']||0"></p>
           <label>待支付</label>
         </grid-item>
         <grid-item @on-item-click="jumpTo('order', {status:2},1)">
-          <p>0</p>
+          <p v-text="orderCount['2']||0"></p>
           <label>待派送</label>
         </grid-item>
         <grid-item @on-item-click="jumpTo('order', {status:3},1)">
-          <p>1</p>
+          <p v-text="orderCount['3']||0"></p>
           <label>派送中</label>
         </grid-item>
         <grid-item @on-item-click="jumpTo('order', {status:4},1)">
-          <p>2</p>
+          <p v-text="orderCount['4']||0"></p>
           <label>暂停中</label>
         </grid-item>
         <grid-item @on-item-click="jumpTo('order', {status:5},1)">
-          <p>2</p>
+          <p v-text="orderCount['5']||0"></p>
           <label>已完成</label>
         </grid-item>
       </grid>
@@ -72,13 +72,14 @@
   let me
   let vm
   import {Grid, GridItem, Group, Cell} from 'vux'
+  import {userApi} from '../service/main.js'
 
   export default {
     name: 'my',
     data() {
       return {
-        userInfo:{},
-        orderNum:{}
+        userInfo: {},
+        orderCount: {}
       }
     },
     components: {Grid, GridItem, Group, Cell},
@@ -108,7 +109,29 @@
         vm.jump(pathName, param, isParams)
       },
       getUser() {
-        vm.userInfo = vm.$store.state.global.userInfo || (me.sessions.get('ynMallInfo') ? JSON.parse(me.sessions.get('ynMallInfo')) : {})
+        var localSeller = me.sessions.get('ynMallInfo')
+        if (localSeller) {
+          vm.userInfo = JSON.parse(me.sessions.get('ynMallInfo'))
+          vm.getOrderCount()
+          return false
+        } else {
+          vm.loadData(userApi.get, null, 'POST', function (res) {
+            vm.isPosting = false
+            if (res) {
+              vm.userInfo = res
+              vm.$store.commit('storeData', {key: 'userInfo', data: res})
+              me.sessions.set('ynMallInfo', JSON.stringify(res))
+              vm.getOrderCount()
+            }
+          })
+        }
+      },
+      getOrderCount() {
+        vm.loadData(userApi.orderCount, {userId: vm.userInfo.id}, 'POST', function (res) {
+          if (res.success) {
+            vm.orderCount = res.data
+          }
+        })
       },
       genWave() {
         var canvas = document.getElementById('canvas')
@@ -253,7 +276,7 @@
       .fz(26) !important;
     }
     .list-modal {
-      .r-tips{
+      .r-tips {
         color: #ef6816;
         font-style: normal;
       }

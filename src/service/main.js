@@ -47,6 +47,7 @@ const userApi = {
   get: host + '/user/get',
   bind: host + '/user/bindPhone',
   updateName: host + '/user/updateName',
+  orderCount: host + '/order/userCount',
   couponList: host + '/userCoupon/list',
   userCoupon: host + '/userCoupon/add',
   addressList: host + '/user/addressList',

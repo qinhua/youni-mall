@@ -10,8 +10,8 @@
               class="distance">{{seller.distance ? ((seller.distance / 1000) | toFixed(1)) : seller.distance}}km</span>
             </h3>
             <div class="middle">
-              <ol class="star" v-if="seller.sellerScore">
-                <li v-for="star in seller.sellerScore" v-cloak >★</li>
+              <ol class="star" v-if="seller.sellerScore" v-cloak>
+                <li v-for="star in seller.sellerScore">★</li>
               </ol>
               <ol class="star" v-else>
                 <li class="gray" v-for="star in 5">★</li>
@@ -93,7 +93,7 @@
         seller: {},
         isPosting: false,
         noMore: false,
-        list: [{src: null}],
+        list: [{src: ''}],
         options: {
           getThumbBoundsFn(index) {
             // find thumbnail element
@@ -211,7 +211,6 @@
   @import '../../../static/css/tools.less';
 
   .seller-detail-more {
-    height: 100%;
     .swiper-shop {
       margin-bottom: 10/@rem;
       .swiper-pagination {
@@ -221,6 +220,7 @@
         background: #eee;
       }
     }
+
     .seller-info {
       background: url(../../../static/img/bg_user.jpg) no-repeat top center;
       .rbg-size(100%, 100%);

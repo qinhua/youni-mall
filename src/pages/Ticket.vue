@@ -11,7 +11,7 @@
       <div class="swiper-container slide-tab-con">
         <div class="swiper-wrapper">
           <div :class="['swiper-slide',current===index?'active':'']" v-for="(item,index) in navs" :key="index+1"
-               @click="filterTicket({index:index,key:item.key,value:item.value})">
+               @click="filterTicket({index:index,key:item.key,value:item.value})" v-cloak>
             <a :data-id="item.key">{{item.value}}</a>
           </div>
         </div>
@@ -24,11 +24,12 @@
                 noDataText="就这么多了"
                 snapping>
         <!-- content goes here -->
-        <div v-if="tickets.length&&!isMe" v-cloak>
+        <div v-show="tickets.length&&!isMe" v-cloak>
           <section class="v-items" v-for="(item, index) in tickets" :data-id="item.id" :data-waterid="item.waterId"
                    v-cloak>
             <section class="wrap">
-              <img :src="item.imgurl">
+              <img :src="item.imgurl" v-if="item.imgurl">
+              <img src="static/img/bg_ticket.jpg" v-else>
               <section class="infos">
                 <h3>{{item.name}}<span class="count">数量：<i>{{item.waterNum}}桶</i></span></h3>
                 <section class="middle">
@@ -41,7 +42,7 @@
             </section>
           </section>
         </div>
-        <div v-show="tickets.length&&isMe">
+        <div v-show="tickets.length&&isMe" v-cloak>
           <section class="v-items" v-for="(item, index) in tickets" :data-id="item.id" :data-waterid="item.waterId"
                    v-cloak>
             <section class="wrap">
@@ -51,9 +52,7 @@
                 <section class="middle">
                   <span class="price txt-del c9">￥{{item.totalAmount | toFixed}}元</span>
                   <span class="sale-count">已兑换：<i>{{item.exchangeWaterNum}}桶</i></span>
-                  <button type="button" :class="['btn btn-buy',item.payStatus?'exchange':'']"
-                          @click="onButtonClick($event,item.id,item)">{{item.payStatus ? '兑换' : '支付'}}
-                  </button>
+                  <button type="button" :class="['btn btn-buy',item.payStatus?'exchange':'']" @click="onButtonClick($event,item.id,item)" v-text="item.payStatus ? '兑换' : '支付'"></button>
                 </section>
                 <label>￥{{item.payAmount | toFixed}}</label>
               </section>
@@ -141,11 +140,13 @@
      }, */
     watch: {
       '$route'(to, from) {
-        vm.current = 0
-        vm.params.waterTicketType = vm.navs[0].key
-        vm.tickets = []
-        vm.keepFresh(vm.$route.params.type)
-        // vm.getTickets()
+        if(to.name==='ticket'){
+          vm.current = 0
+          vm.params.waterTicketType = vm.navs[0].key
+          vm.tickets = []
+          vm.keepFresh(vm.$route.params.type)
+          vm.getTickets()
+        }
       }
     },
     methods: {

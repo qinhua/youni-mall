@@ -1,78 +1,73 @@
 <template>
-  <!--<div class="seller-detail" ref="sellerDetail" @scroll="scrollHandler">-->
-  <div class="seller-detail" ref="sellerDetail">
-    <!--banner-->
-    <!--<div class="swiper-shop">-->
-    <!--<swiper ref="slider02" skey="s03" :slides="banner" autoPlay="2500"></swiper>-->
-    <!--</div>-->
-    <div class="seller-info">
-      <div class="v-items" :data-id="seller.id" @click="toMore">
-        <div class="wrap">
-          <img :src="seller.headimgurl">
-          <div class="infos">
-            <h3>{{seller.name}}<span
-              :class="['service_type',seller.serviceTypeCls]">{{seller.serviceTypeName}}</span><span
-              class="distance">{{seller.distance / 1000 | toFixed(1)}}km</span>
-            </h3>
-            <div class="middle">
-              <ol class="star" v-if="seller.sellerScore">
-                <li v-for="star in seller.sellerScore" v-cloak >★</li>
-              </ol>
-              <ol class="star" v-else>
-                <li class="gray" v-for="star in 5">★</li>
-              </ol>
-              <span class="hasSell"><i>{{(seller.sellerScore || 0) | toFixed(1)}}分</i>已售{{seller.sellerCount}}单</span>
+  <div class="seller-detail" ref="sellerDetail" @scroll="scrollHandler" v-cloak>
+
+    <div class="scroll-view" ref="scrollView">
+      <!--店铺信息-->
+      <div class="seller-info">
+        <div class="v-items" :data-id="seller.id" @click="toMore">
+          <div class="wrap">
+            <img :src="seller.headimgurl">
+            <div class="infos">
+              <h3>{{seller.name}}<span
+                :class="['service_type',seller.serviceTypeCls]">{{seller.serviceTypeName}}</span><span
+                class="distance">{{seller.distance / 1000 | toFixed(1)}}km</span>
+              </h3>
+              <div class="middle">
+                <ol class="star" v-if="seller.sellerScore" v-cloak>
+                  <li v-for="star in seller.sellerScore">★</li>
+                </ol>
+                <ol class="star" v-else>
+                  <li class="gray" v-for="star in 5">★</li>
+                </ol>
+                <span class="hasSell"><i>{{(seller.sellerScore || 0) | toFixed(1)}}分</i>已售{{seller.sellerCount}}单</span>
+              </div>
+              <div class="tags">
+                <label class="c2">{{seller.authLevelName}}</label>
+                <span class="dispatchTime">平均{{seller.dispatchTime || 22}}分钟送达</span>
+              </div>
             </div>
-            <div class="tags">
-              <label class="c2">{{seller.authLevelName}}</label>
-              <span class="dispatchTime">平均{{seller.dispatchTime || 22}}分钟送达</span>
+            <div class="bottom">
+              <label class="note" v-if="seller.companyName"><i class="ion ion-home"></i>{{seller.companyName}}</label>
+              <span>&lt;已上传营业执照&gt;</span>
             </div>
-          </div>
-          <div class="bottom">
-            <label class="note" v-if="seller.companyName"><i class="ion ion-home"></i>{{seller.companyName}}</label>
-            <span>&lt;已上传营业执照&gt;</span>
           </div>
         </div>
+        <div class="notice-con" v-if="seller.notice" ref="noticeCon">
+          <p class="txt-scroll" ref="noticeTxt">{{seller.notice}}</p>
+        </div>
       </div>
-      <div class="notice-con" v-if="seller.notice" ref="noticeCon">
-        <p class="txt-scroll" ref="noticeTxt">{{seller.notice}}</p>
-      </div>
-    </div>
 
-    <!--过滤条-->
-    <sticky>
-      <div class="goods-filter" ref="filters03">
-        <div class="v-filter-tabs">
-          <ul class="v-f-tabs">
-            <li class="f-img"></li>
-            <li :class="curFilterType==='types'?'mfilterActive':''" @click="showFilter('types',$event)">商品类目<i
-              class="ico-arr-down"></i>
-            </li>
-            <li :class="curFilterType==='brands'?'mfilterActive':''" @click="showFilter('brands',$event)">品牌<i
-              class="ico-arr-down"></i>
-            </li>
-          </ul>
-          <div class="filter-data" v-if="showFilterCon" :class="showFilterCon?'show':''" v-cloak>
-            <ul class="filter-tags" v-show="curFilterDict">
-              <li v-for="(data,idx) in curFilterDict" :class="curSelFilter[curFilterType].index==idx?'sfilterActive':''"
-                  :data-key="data.key"
-                  :data-value="data.value" @click="chooseFilter(idx,data.key,data.value,$event)" v-cloak>{{data.value}}
+      <!--过滤条-->
+      <div class="bar-chamer">
+        <div class="goods-filter" ref="filtersMenu">
+          <div class="v-filter-tabs">
+            <ul class="v-f-tabs">
+              <li class="f-img"></li>
+              <li :class="curFilterType==='types'?'mfilterActive':''" @click="showFilter('types',$event)">商品类目<i
+                class="ico-arr-down"></i>
+              </li>
+              <li :class="curFilterType==='brands'?'mfilterActive':''" @click="showFilter('brands',$event)">品牌<i
+                class="ico-arr-down"></i>
               </li>
             </ul>
+            <div class="filter-data" v-if="showFilterCon" :class="showFilterCon?'show':''" v-cloak>
+              <ul class="filter-tags" v-show="curFilterDict">
+                <li v-for="(data,idx) in curFilterDict"
+                    :class="curSelFilter[curFilterType].index==idx?'sfilterActive':''"
+                    :data-key="data.key"
+                    :data-value="data.value" @click="chooseFilter(idx,data.key,data.value,$event)" v-cloak>
+                  {{data.value}}
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
-    </sticky>
 
-    <!--店铺列表-->
-    <div class="goods-list" ref="goodsList">
-      <scroller class="inner-scroller" lock-x scrollbarY use-pullup use-pulldown :pullup-config="pullupConfig"
-                :pulldown-config="pulldownConfig"
-                @on-scroll="onScroll"
-                @on-pulldown-loading="onPullDown" @on-pullup-loading="onPullUp" @on-scroll-bottom="" ref="goodsScroll"
-                :scroll-bottom-offst="300">
-        <div class="box">
-          <section class="v-items" v-for="(item, index) in goods" :data-id="item.id" v-cloak>
+      <!--店铺列表-->
+      <div class="goods-list" ref="goodsList">
+        <ul class="box">
+          <li class="v-items" v-for="(item, index) in goods" :data-id="item.id" v-cloak>
             <section class="wrap">
               <div class="click-wrap" :data-id="item.id" @click="toDetail(item.id)">
                 <img :src="item.imgurl">
@@ -93,12 +88,14 @@
                 <span class="stock">库存：{{item.stock}}件</span>
               </group>
             </section>
-          </section>
-          <div class="noMoreData" v-if="goods.length">{{noMore ? '就这么多了' : '上拉加载'}}</div>
-          <div class="iconNoData" v-else><i></i>
-            <p>暂无商品</p></div>
-        </div>
-      </scroller>
+          </li>
+        </ul>
+        <load-more :show-loading="!noMore" :tip="!noMore?'上拉加载':'就这么多了'" background-color="#f5f5f5"
+                   v-if="goods.length"></load-more>
+        <div class="iconNoData" v-if="!goods.length" v-cloak><i></i>
+          <p>暂无商品</p></div>
+      </div>
+
     </div>
 
     <!--购物车效果-->
@@ -126,7 +123,7 @@
   let me
   let vm
   import Swiper from '../../components/Swiper'
-  import {Group, GroupTitle, XNumber, Scroller, Sticky} from 'vux'
+  import {Group, GroupTitle, XNumber,XInput, Popup,LoadMore,TransferDom} from 'vux'
   import {goodsApi, nearbyApi, cartApi} from '../../service/main.js'
   import {mapState, mapMutations} from 'vuex'
 
@@ -262,8 +259,10 @@
       Group,
       GroupTitle,
       XNumber,
-      Scroller,
-      Sticky
+      XInput,
+      Popup,
+      LoadMore,
+      TransferDom
     },
     beforeMount() {
       me = window.me
@@ -274,26 +273,11 @@
       vm.getSeller()
       vm.getGoods()
       vm.viewCart()
-      // 点击区域之外隐藏筛选栏
-      document.addEventListener('click', function (e) {
-        if (e.target.offsetParent) {
-          if (JSON.stringify(e.target.offsetParent.classList).indexOf('filter') === -1) {
-            vm.hideFilter()
-            return false
-          }
-        }
-      }, false)
-      vm.$nextTick(function () {
-        //获取筛选栏位置
-        setTimeout(function () {
-          vm.filterOffset = vm.$refs.filters03.offsetTop
-        }, 300)
-        vm.resetScroll()
-      })
     },
     watch: {
       '$route'(to, from) {
         if (to.name === 'seller_detail') {
+          vm.resetScroll()
           vm.getSeller()
           vm.getGoods()
         }
@@ -309,46 +293,57 @@
       }
     },
     methods: {
+      /*滚动检测*/
+      onScroll() {
+        // 监听dom的scroll事件
+        _.debounce(vm.scrollHandler(), 1000)
+      },
+      scrollHandler() {
+        // 滚动中的真正的操作
+        let target = vm.$refs.filtersMenu
+        let docs = vm.$refs.scrollView
+        let winH = document.body.clientHeight;
+        let docH = docs.offsetHeight;
+        let scrollTop = vm.$refs.sellerDetail.scrollTop
+        !vm.filterOffset ? vm.filterOffset = target.offsetTop : null
+        // console.info('文档高度：' + winH + '\n内容高度：' + docH + '\n滚动高度：' + scrollTop + '\n筛选条位置：' + vm.filterOffset)
+        if (vm.showFilterCon) {
+          vm.hideFilter()
+        }
+        if (scrollTop >= vm.filterOffset) {
+          target.classList.add('fixed')
+        } else {
+          target.classList.remove('fixed')
+        }
+        if (scrollTop >= (docH - winH) - 10) {
+          // console.log('到底部了，需要加载了…');
+          vm.getGoods(true);
+        }
+      },
+      resetScroll() {
+        setTimeout(function () {
+          let target = vm.$refs.filtersMenu
+          target.classList.remove('fixed')
+        }, 100)
+      },
       // 向父组件传值
       setPageStatus(data) {
         this.$emit('listenPage', data)
       },
-      resetScroll() {
-        setTimeout(function () {
-          vm.$refs.goodsScroll.reset()
-          vm.$refs.goodsScroll.donePullup()
-          vm.$refs.goodsScroll.donePulldown()
-          let target = vm.$refs.filters03
-          let list = vm.$refs.goodsList
-          target.classList.remove('fixed')
-          list.classList.remove('fixed')
-          vm.$refs.goodsScroll.reset()
-        }, 100)
-      },
-      scrollHandler() {
-        // 监听dom的scroll事件
-        setTimeout(function () {
-          let scrollTop = vm.$refs.sellerDetail.scrollTop
-          let target = vm.$refs.filters03
-          let list = vm.$refs.goodsList
-          if (vm.showFilterCon) {
-            vm.hideFilter()
-          }
-          if (scrollTop >= vm.filterOffset) {
-            target.classList.add('fixed')
-            list.classList.add('fixed')
-          } else {
-            target.classList.remove('fixed')
-            list.classList.remove('fixed')
-          }
-        }, 300)
-      },
       toDetail(id) {
-        if (vm.showFilterCon) return
+        if (vm.showFilterCon) {
+          vm.showFilterCon = false
+          vm.curFilterType = ''
+          return false
+        }
         vm.$router.push({name: 'goods_detail', query: {id: id}})
       },
       toMore() {
-        if (vm.showFilterCon) return
+        if (vm.showFilterCon) {
+          vm.showFilterCon = false
+          vm.curFilterType = ''
+          return false
+        }
         vm.$router.push({
           name: 'seller_detail_more',
           query: {thedata: window.encodeURIComponent(JSON.stringify(vm.seller))}
@@ -385,6 +380,7 @@
                 resD.serviceTypeCls = 'water-milk'
                 break
             }
+            resD.sellerScore = Math.ceil(resD.sellerScore)
             vm.seller = resD
             vm.scrollNotice(vm.seller.notice)
           }
@@ -424,20 +420,42 @@
           if (!isLoadMore) {
             if (resD.totalCount < vm.params.pageSize) {
               vm.noMore = true
-              /*vm.$nextTick(function () {
-               vm.$refs.goodsScroll.disablePullup()
-               })*/
             } else {
               vm.noMore = false
             }
             vm.goods = resD.itemList
           } else {
-            resD.itemList.length ? vm.goods.concat(resD.itemList) : vm.noMore = true
+            if (resD.itemList.length) {
+              for (var i = 0; i < resD.itemList.length; i++) {
+                var cur = resD.itemList[i];
+                vm.goods.push(cur)
+              }
+            } else {
+              vm.noMore = true
+            }
           }
           console.log(vm.goods, '商家的GoodsList')
         }, function () {
           vm.isPosting = false
         })
+      },
+      onPullDown() {
+        if (vm.isPosting) {
+          return false
+        } else {
+          setTimeout(function () {
+            vm.getGoods()
+          }, 1000)
+        }
+      },
+      onPullUp() {
+        if (vm.isPosting) {
+          return false
+        } else {
+          setTimeout(function () {
+            vm.getGoods(true)
+          }, 1000)
+        }
       },
       /* 商品筛选 */
       showFilter(type, e) {
@@ -472,45 +490,6 @@
         vm.curSelFilter.brands.key ? vm.params.brandId = vm.curSelFilter.brands.key : delete vm.params.brandId
         vm.hideFilter()
         vm.getGoods()
-      },
-      onScroll(pos) {
-        this.scrollTop = pos.top
-        vm.hideFilter()
-      },
-      onPullDown() {
-        if (vm.isPosting) {
-          // do nothing
-          return false
-        } else {
-          // this.isPosting = true
-          setTimeout(function () {
-            // vm.bottomCount += 10
-            vm.getGoods()
-            vm.$nextTick(function () {
-              vm.$refs.goodsScroll.reset({top: 0})
-              vm.$refs.goodsScroll.donePullup()
-              vm.$refs.goodsScroll.donePulldown()
-            })
-          }, 1500)
-        }
-      },
-      /* 上下拉刷新 */
-      onPullUp() {
-        if (vm.isPosting) {
-          // do nothing
-          return false
-        } else {
-          // vm.isPosting = true
-          setTimeout(function () {
-            // vm.bottomCount += 10
-            vm.getGoods(true)
-            vm.$nextTick(function () {
-              vm.$refs.goodsScroll.reset({bottom: 0})
-              vm.$refs.goodsScroll.donePullup()
-              vm.$refs.goodsScroll.donePulldown()
-            })
-          }, 200)
-        }
       },
       changeCount(obj) {
         console.log(obj)
@@ -858,11 +837,14 @@
       }
     }
 
+    .bar-chamer {
+      min-height: 80/@rem;
+    }
+
     .goods-filter {
       .rel;
       z-index: 10;
-      /*margin-bottom: 10/@rem;*/
-      .transi(.2s);
+      margin-bottom: 1px;
       &.fixed {
         width: 100%;
         .fix;
@@ -870,6 +852,7 @@
       }
       .v-filter-tabs {
         width: 100%;
+        margin-bottom: 1px;
         padding: 10/@rem 0;
         border-top: 1px solid #eee;
         border-bottom: 1px solid #eee;
@@ -888,10 +871,9 @@
             .center;
             font-size: 14px;
             .ico-arr-down {
-              position: absolute;
+              .abs-center-vertical;
               width: 30px;
               height: 30px;
-              top: 6/@rem;
               &:before {
                 content: "";
                 position: absolute;
@@ -901,7 +883,7 @@
                 border-width: 1px 0 0 1px;
                 -webkit-transform: rotate(-135deg);
                 transform: rotate(-135deg);
-                top: 8px;
+                top: 10px;
                 left: 7px;
                 .transi(.2s);
               }
@@ -968,114 +950,104 @@
     }
 
     .goods-list {
-      height: 100% !important;
-      /*max-height:500px;*/
-      overflow: auto;
-      &.fixed {
-        .xs-container {
-          margin-top: 90/@rem;
+      .rel;
+      /*padding-bottom: 30px;*/
+      /*.box {}*/
+      .v-items {
+        padding: 20/@rem;
+        .bf;
+        &:not(:last-child) {
+          .bor-b;
+        }
+        .wrap {
+          .flex;
+          .rel;
+          .h(150);
+        }
+        .click-wrap {
+          .borBox;
+          .flex-r(1);
+          overflow: hidden;
+        }
+        img {
+          .abs;
+          left: 0;
+          top: 0;
+          .size(150, 150);
+          background: #f5f5f5 url(../../../static/img/noImg.png) no-repeat center;
+          -webkit-background-size: 30% auto;
+          background-size: 30% auto;
+        }
+        .infos {
+          .flex;
+          .flex-d-v;
+          .borBox;
+          width: 100%;
+          height: 100%;
+          padding-left: 170/@rem;
+          h3 {
+            .flex-r(1);
+            .fz(28);
+            .txt-normal;
+            .c3;
+            .ellipsis;
+          }
+          .middle {
+            .flex-r(1);
+            padding: 10/@rem 0;
+            span {
+              &.price {
+                .c3;
+                .fz(24);
+              }
+              &.hasSell {
+                padding-left: 30/@rem;
+                .c9;
+                .fz(22);
+              }
+            }
+          }
+          label {
+            .flex-r(1);
+            .cdiy(#f34c18);
+            .fz(22);
+          }
         }
       }
-      .inner-scroller {
-        .borBox;
-
-        height: 100% !important;
-        .v-items {
-          padding: 20/@rem;
-          .bf;
-          &:not(:last-child) {
-            .bor-b;
+      .buy-count {
+        .rel;
+        width: 160/@rem;
+        .weui-cells {
+          .abs-center-vertical;
+          right: -10/@rem;
+          margin-top: 0;
+          .no-bg;
+          &:before, &:after {
+            .none;
           }
-          .wrap {
-            .flex;
-            .rel;
-            .h(150);
+          .weui-cell {
+            padding: 0;
           }
-          .click-wrap {
-            .borBox;
-            .flex-r(1);
-            overflow: hidden;
+          .vux-number-input {
+            width: 50/@rem !important;
+            height: 34/@rem !important;
+            .fz(24);
           }
-          img {
-            .abs;
-            left: 0;
-            top: 0;
-            .size(150, 150);
-            background: #f5f5f5 url(../../../static/img/noImg.png) no-repeat center;
-            -webkit-background-size: 30% auto;
-            background-size: 30% auto;
-          }
-          .infos {
-            .flex;
-            .flex-d-v;
-            .borBox;
-            width: 100%;
-            height: 100%;
-            padding-left: 170/@rem;
-            h3 {
-              .flex-r(1);
-              .fz(28);
-              .txt-normal;
-              .c3;
-              .ellipsis;
-            }
-            .middle {
-              .flex-r(1);
-              padding: 10/@rem 0;
-              span {
-                &.price {
-                  .c3;
-                  .fz(24);
-                }
-                &.hasSell {
-                  padding-left: 30/@rem;
-                  .c9;
-                  .fz(22);
-                }
-              }
-            }
-            label {
-              .flex-r(1);
-              .cdiy(#f34c18);
-              .fz(22);
+          .vux-number-selector, .vux-number-selector-plus {
+            .size(30, 30);
+            padding: 2px;
+            font-size: 0;
+            line-height: 34/@rem;
+            /*border-color: #f34c18;*/
+            svg {
+              .size(30, 30);
+              /*fill: #f34c18;*/
             }
           }
         }
-        .buy-count {
-          .rel;
-          width: 160/@rem;
-          .weui-cells {
-            .abs-center-vertical;
-            right: -10/@rem;
-            margin-top: 0;
-            .no-bg;
-            &:before, &:after {
-              .none;
-            }
-            .weui-cell {
-              padding: 0;
-            }
-            .vux-number-input {
-              width: 50/@rem !important;
-              height: 34/@rem !important;
-              .fz(24);
-            }
-            .vux-number-selector, .vux-number-selector-plus {
-              .size(30, 30);
-              padding: 2px;
-              font-size: 0;
-              line-height: 34/@rem;
-              /*border-color: #f34c18;*/
-              svg {
-                .size(30, 30);
-                /*fill: #f34c18;*/
-              }
-            }
-          }
-          .stock{
-            .fz(22);
-            .c9;
-          }
+        .stock {
+          .fz(22);
+          .c9;
         }
       }
     }
