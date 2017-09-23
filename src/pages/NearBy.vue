@@ -302,10 +302,8 @@
       },
       resetScroll() {
         setTimeout(function () {
-          vm.$refs.sellerScroll.reset()
-          vm.$refs.sellerScroll.donePullup()
-          vm.$refs.sellerScroll.donePulldown()
-          vm.$refs.sellerScroll.reset()
+          let target = vm.$refs.filtersMenu
+          target.classList.remove('fixed')
         }, 100)
       },
       toDetail(id) {

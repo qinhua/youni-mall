@@ -13,12 +13,12 @@ window.youniMall = {
 const homeApi = {
   banner: host + '/home/banner',
   topNotice: host + '/home/topNotice',
-  goodsList: host + '/home/goodsList'
 }
 const goodsApi = {
+  list: host + '/home/goodsList',
   detail: host + '/goods/view',
-  appraise: host + '/goods/appraise',
-  sellerGoods: host + '/user/goodsList'
+  sellerGoods: host + '/user/goodsList',
+  saleConfigList: host + '/goods/listSaleConfig'
 }
 const nearbyApi = {
   sellerList: host + '/seller/list',
@@ -34,7 +34,7 @@ const ticketApi = {
 const orderApi = {
   list: host + '/order/list',
   add: host + '/order/add',
-  repay: host + '/order/repay',
+  repay: host + 'order/payOrder',
   score: host + '/order/score',
   del: host + '/order/del',
   push: host + '/order/remind',

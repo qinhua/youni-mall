@@ -89,7 +89,8 @@
                 </section>
               </div>
               <group class="buy-count">
-                <x-number button-style="round" :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0"
+                <x-number :class="item.type==='goods_type.2'?'buy-count-milk':''" button-style="round"
+                          :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0"
                           :max="50" :value="item.number" align="right" :dataId="item.id"
                           :dataSellerId="item.sellerId" :linedata="item"
                           @on-change="changeCount"></x-number>
@@ -111,14 +112,28 @@
 
     <!--底部pop-checker-->
     <div v-transfer-dom>
-      <popup class="buyCountCon" v-model="showPop" position="bottom" max-height="50%">
-        <group class="number-con">
-          <x-input id="curMilkAmount" title="数量：" placeholder="请输入商品数量" required text-align="right" type="number"
-                   v-model="params.curMilkAmount"></x-input>
+      <popup class="buyCountCon" v-model="showPop" position="bottom" max-height="80%">
+        <group>
+          <div class="tags-con" v-if="favorTags" v-cloak>
+            <h4>口味：</h4>
+            <ul>
+              <li :class="idx===curFavorIdx?'active':''" v-for="(fa,idx) in favorTags" @click="changeFavorTag(idx,fa)">
+                {{fa}}
+              </li>
+            </ul>
+          </div>
+          <div class="tags-con" v-if="priceTags.length" v-cloak>
+            <h4>订购数量：</h4>
+            <ul>
+              <li :class="idx===curPriceIdx?'active':''" v-for="(tg,idx) in priceTags" :data-id="tg.id"
+                  @click="changePriceTag(idx,tg)">{{tg.note}}(￥{{tg.salePrice}})
+              </li>
+            </ul>
+          </div>
+          <x-input id="curMilkAmount" title="配送量(瓶/天)：" placeholder="请输入每日配送量" required text-align="right" type="number"
+                   v-model="curMilkAmount"></x-input>
         </group>
-        <button type="button" class="btn btn-addcart" style="padding: 10px;"
-                @click="goConfirm">立即购买
-        </button>
+        <button type="button" class="btn btn-add-cart" @click="addToCart">加入购物车</button>
       </popup>
     </div>
 
@@ -162,21 +177,36 @@
     LoadMore,
     TransferDom
   } from 'vux'
-  import {homeApi, cartApi} from '../service/main.js'
+  import {homeApi, goodsApi, cartApi} from '../service/main.js'
   import {mapState, mapMutations} from 'vuex'
 
   export default {
     name: 'home',
+    directives: {
+      TransferDom
+    },
     data() {
       return {
         geoData: null,
         address: '',
         cartData: '',
-        curMilkAmount: null,
         banner: [],
         notice: [],
         goods: [],
+        /*底部奶的浮窗-start*/
         showPop: false,
+        /*价格标签-start*/
+        curMilkAmount: 1,
+        priceTags: [],
+        curPriceIdx: 0,
+        curPriceTag: null,
+        /*价格标签-end*/
+        /*口味标签-start*/
+        favorTags: [],
+        curFavorIdx: 0,
+        curFavorTag: '',
+        /*口味标签-end*/
+        /*底部奶的浮窗-end*/
         curLinedata: null,
         params: {
           status: 1,
@@ -276,9 +306,6 @@
         ],
         dropBalls: []
       }
-    },
-    directives: {
-      TransferDom
     },
     props: ['geoAddress'],
     components: {
@@ -439,7 +466,7 @@
          return false
          }
          }*/
-        vm.loadData(homeApi.goodsList, vm.params, 'POST', function (res) {
+        vm.loadData(goodsApi.list, vm.params, 'POST', function (res) {
           vm.isPosting = false
 //          vm.processing(0, 1)
           var resD = res.data.pager
@@ -466,6 +493,30 @@
           vm.isPosting = false
 //          vm.processing(0, 1)
         })
+      },
+      getTags(id) {
+        vm.isPosting = true
+        vm.loadData(goodsApi.saleConfigList, {goodsId: id}, 'POST', function (res) {
+          vm.isPosting = false
+          if (res.data.itemList.length) {
+            vm.priceTags = res.data.itemList
+            vm.curPriceTag = vm.priceTags[0]
+          } else {
+            vm.toast('此商品暂无法购买', 'warn')
+          }
+        }, function () {
+          vm.isPosting = false
+        })
+      },
+      changeFavorTag(idx, data) {
+        vm.curFavorIdx = idx
+        vm.curFavorTag = data
+        console.log('口味标签：', vm.curFavorTag)
+      },
+      changePriceTag(idx, data) {
+        vm.curPriceIdx = idx
+        vm.curPriceTag = data
+        console.log('价格标签：', vm.curPriceTag.note)
       },
       onPullDown() {
         if (vm.isPosting) {
@@ -521,9 +572,6 @@
       },
       /* 上下拉刷新 */
       /* 购物车--start */
-      swDialog(type) {
-        vm.showPop = true
-      },
       // 同步购物车商品数量至列表
       syncList() {
         if (vm.goods && vm.goods.length) {
@@ -557,10 +605,10 @@
       },
       goConfirm() {
         // 判断当前是否填写了数量
-        if (vm.params.curMilkAmount) {
+        if (vm.curMilkAmount) {
           vm.loadData(cartApi.add, {
             goodsId: vm.curLinedata.id,
-            goodsNum: vm.params.curMilkAmount
+            goodsNum: vm.curMilkAmount
           }, 'POST', function (res) {
             if (res.success) {
               vm.viewCart()
@@ -577,12 +625,39 @@
           vm.toast('至少选1件哦！', 'warn')
         }
       },
+      addToCart() {
+        // 判断当前是否填写了数量
+        if (vm.curMilkAmount) {
+          vm.loadData(cartApi.add, {
+            goodsId: vm.curLinedata.id,
+            goodsNote: vm.curFavorTag,
+            goodsNum: vm.curPriceTag.saleNum,
+            dispatchNum: vm.curMilkAmount
+          }, 'POST', function (res) {
+            if (res.success) {
+              vm.viewCart()
+              vm.curMilkAmount = 1
+            } else {
+              vm.toast(res.message || '购物车中已有其他店铺商品，请先清空')
+            }
+            vm.isPosting = false
+          }, function () {
+            vm.isPosting = false
+          })
+          vm.showPop = false
+        } else {
+          vm.toast('配送量至少1瓶哦！', 'warn')
+        }
+      },
       changeCount(obj) {
         console.log(obj)
         vm.curLinedata = obj
         if (obj.linedata.type === 'goods_type.2' && obj.type === 'add') {
-          vm.swDialog()
-          return
+          vm.showPop = true
+          vm.getTags(obj.id)
+          vm.favorTags = obj.linedata.flavourLabel ? obj.linedata.flavourLabel.split(',') : []
+          vm.curFavorTag = vm.favorTags.length ? vm.favorTags[0] : ''
+          return false
         } else {
           if (vm.isPosting) return
           vm.isPosting = true
@@ -689,321 +764,376 @@
   .home {
     height: 100%;
     overflow: scroll; // 此两个属性至关重要，不写@scroll监听不到滚动
-  }
 
-  .swiper-home {
-    min-height: 320/@rem;
-    margin-bottom: 10/@rem;
-    .swiper-container {
-      /*p {
-        padding: 10/@rem 20/@rem;
-        .b3;
-        .cf;
-      }*/
-      .swiper-pagination {
-        bottom: 5px;
-      }
-      .swiper-pagination-bullet-active {
-        background: #eee;
-      }
-    }
-  }
-
-  .middle-entry {
-    margin-bottom: 10/@rem;
-    .bf;
-    border-top: 1px solid #eee;
-    border-bottom: 1px solid #eee;
-    .weui-grid__icon {
-      display: block;
-      .size(80, 80);
-    }
-    .weui-grid__label {
-      .fz(24);
-    }
-    .weui-grids {
-      &:before, &:after {
-        .none;
-      }
-    }
-    .weui-grid {
-      .pointer;
-      &:before, &:after {
-        .none;
-      }
-    }
-    .top-notice {
-      padding-bottom: 10/@rem;
-      .inner {
-        .rel;
-        width: 94%;
-        height: 20px;
-        .ma;
-        padding: 20/@rem 0;
-        .bor-t;
-      }
-      .ico-toutiao {
-        .abs-center-vertical;
-        left: 10/@rem;
-        .size(54, 54);
-        background: url(../../static/img/ico_toutiao.png) center;
-        .ele-base;
-      }
-      .vux-marquee {
-        .borBox;
-        padding-left: 120/@rem;
-        &:before {
-          .abs;
-          margin-left: -30/@rem;
-          content: "";
-          position: absolute;
-          width: 1px;
-          height: 20px;
+    .swiper-home {
+      min-height: 320/@rem;
+      margin-bottom: 10/@rem;
+      .swiper-container {
+        /*p {
+          padding: 10/@rem 20/@rem;
+          .b3;
+          .cf;
+        }*/
+        .swiper-pagination {
+          bottom: 5px;
+        }
+        .swiper-pagination-bullet-active {
           background: #eee;
         }
-        li {
-          .ellipsis;
-        }
       }
     }
-  }
 
-  .bar-chamer {
-    min-height: 80/@rem;
-  }
-
-  .goods-filter {
-    .rel;
-    z-index: 10;
-    &.fixed {
-      width: 100%;
-      .fix;
-      top: 0;
-    }
-    .v-filter-tabs {
-      width: 100%;
-      margin-bottom: 1px;
-      padding: 10/@rem 0;
+    .middle-entry {
+      margin-bottom: 10/@rem;
+      .bf;
       border-top: 1px solid #eee;
       border-bottom: 1px solid #eee;
-      .bdiy(#fdfdfd);
-      .v-f-tabs {
-        height: 60/@rem;
-        li {
-          .pointer;
-          .rel;
-          .borBox;
-          .fl;
-          width: 33.3333%;
-          height: 60/@rem;
-          line-height: 60/@rem;
-          .c3;
-          .center;
-          font-size: 14px;
-          .ico-arr-down {
-            .abs-center-vertical;
-            width: 30px;
-            height: 30px;
-            &:before {
-              content: "";
-              position: absolute;
-              width: 6px;
-              height: 6px;
-              border: 1px solid #666;
-              border-width: 1px 0 0 1px;
-              -webkit-transform: rotate(-135deg);
-              transform: rotate(-135deg);
-              top: 10px;
-              left: 7px;
-              .transi(.2s);
-            }
-          }
-          &.mfilterActive {
-            .cdiy(#f1582a);
-            .ico-arr-down {
-              &:before {
-                border-color: #f1582a;
-                -webkit-transform-origin: 0 center;
-                transform-origin: 0 center;
-                -webkit-transform: rotate(45deg);
-                transform: rotate(45deg);
-              }
-            }
-          }
-          &:nth-child(2) {
-            /*border-left: 1px solid #eee;*/
-            border-right: 1px solid #eee;
-          }
-          &.f-img {
-            background: url(../../static/img/f-tit.png) no-repeat center;
-            .rbg-size(70%);
-          }
-        }
+      .weui-grid__icon {
+        display: block;
+        .size(80, 80);
       }
-      .filter-data {
-        .abs;
-        z-index: 10;
-        .borBox;
-        margin-top: 8/@rem;
-        opacity: 0;
-        height: 0;
-        width: 100%;
-        .bf;
-        border-top: 1px solid #eee;
-        .bsd(0, 10px, 18px, 0, rgba(0, 0, 0, 0.25));
-        .transi(.2s);
-        &.show {
-          opacity: 1;
-          height: auto;
-          padding: 30/@rem 18/@rem;
-        }
-        .filter-tags {
-          overflow: hidden;
-          li {
-            .pointer;
-            .fl;
-            padding: 3px 10px;
-            margin: 10/@rem;
-            line-height: 1;
-            font-size: 12px;
-            .c6;
-            .bf1;
-            .borR(10px);
-            &.sfilterActive {
-              .cf;
-              .bdiy(#f1582a);
-            }
-          }
-        }
+      .weui-grid__label {
+        .fz(24);
       }
-    }
-  }
-
-  .goods-list {
-    .rel;
-    padding-bottom: 30px;
-    /*.box {}*/
-    .v-items {
-      padding: 20/@rem;
-      .bf;
-      &:not(:last-child) {
-        .bor-b;
-      }
-      .wrap {
-        .flex;
-        .rel;
-        .h(150);
-      }
-      .click-wrap {
-        .borBox;
-        .flex-r(1);
-        overflow: hidden;
-      }
-      .img-con {
-        .abs-center-vertical;
-        .size(140, 140);
-        overflow: hidden;
-        background: #f5f5f5 url(../../static/img/bg_nopic.jpg) no-repeat center;
-        -webkit-background-size: cover;
-        background-size: cover;
-      }
-      .infos {
-        .flex;
-        .flex-d-v;
-        .borBox;
-        width: 100%;
-        height: 100%;
-        padding-left: 160/@rem;
-        h3 {
-          .flex-r(1);
-          .fz(28);
-          .txt-normal;
-          .c3;
-          .ellipsis;
-        }
-        .middle {
-          .flex-r(1);
-          padding: 10/@rem 0;
-          .price {
-          }
-          span {
-            &.price {
-              .c3;
-              .fz(26);
-            }
-            &.hasSell {
-              padding-left: 30/@rem;
-              .c9;
-              .fz(22);
-            }
-          }
-        }
-        .tags {
-          .flex-r(1);
-          .cdiy(#f34c18);
-          .fz(22);
-          overflow: hidden;
-          li {
-            .fl;
-            margin-right: 10/@rem;
-            padding: 1px 8px;
-            line-height: 1.8;
-            .cf;
-            .fz(16);
-            .borR(4px);
-            background: orange;
-          }
-        }
-      }
-    }
-    .buy-count {
-      .rel;
-      width: 160/@rem;
-      .weui-cells {
-        .abs-center-vertical;
-        right: -10/@rem;
-        margin-top: 0;
-        .no-bg;
+      .weui-grids {
         &:before, &:after {
           .none;
         }
-        .weui-cell {
-          padding: 0;
+      }
+      .weui-grid {
+        .pointer;
+        &:before, &:after {
+          .none;
         }
-        .vux-number-input {
-          width: 50/@rem !important;
-          height: 34/@rem !important;
-          .fz(24);
+      }
+      .top-notice {
+        padding-bottom: 10/@rem;
+        .inner {
+          .rel;
+          width: 94%;
+          height: 20px;
+          .ma;
+          padding: 20/@rem 0;
+          .bor-t;
         }
-        .vux-number-selector, .vux-number-selector-plus {
-          .size(30, 30);
-          padding: 2px;
-          font-size: 0;
-          line-height: 34/@rem;
-          /*border-color: #f34c18;*/
-          svg {
-            .size(30, 30);
-            /*fill: #f34c18;*/
+        .ico-toutiao {
+          .abs-center-vertical;
+          left: 10/@rem;
+          .size(54, 54);
+          background: url(../../static/img/ico_toutiao.png) center;
+          .ele-base;
+        }
+        .vux-marquee {
+          .borBox;
+          padding-left: 120/@rem;
+          &:before {
+            .abs;
+            margin-left: -30/@rem;
+            content: "";
+            position: absolute;
+            width: 1px;
+            height: 20px;
+            background: #eee;
+          }
+          li {
+            .ellipsis;
           }
         }
       }
-      .stock {
-        .fz(22);
-        .c9;
+    }
+
+    .bar-chamer {
+      min-height: 80/@rem;
+    }
+
+    .goods-filter {
+      .rel;
+      z-index: 10;
+      &.fixed {
+        width: 100%;
+        .fix;
+        top: 0;
+      }
+      .v-filter-tabs {
+        width: 100%;
+        margin-bottom: 1px;
+        padding: 10/@rem 0;
+        border-top: 1px solid #eee;
+        border-bottom: 1px solid #eee;
+        .bdiy(#fdfdfd);
+        .v-f-tabs {
+          height: 60/@rem;
+          li {
+            .pointer;
+            .rel;
+            .borBox;
+            .fl;
+            width: 33.3333%;
+            height: 60/@rem;
+            line-height: 60/@rem;
+            .c3;
+            .center;
+            font-size: 14px;
+            .ico-arr-down {
+              .abs-center-vertical;
+              width: 30px;
+              height: 30px;
+              &:before {
+                content: "";
+                position: absolute;
+                width: 6px;
+                height: 6px;
+                border: 1px solid #666;
+                border-width: 1px 0 0 1px;
+                -webkit-transform: rotate(-135deg);
+                transform: rotate(-135deg);
+                top: 10px;
+                left: 7px;
+                .transi(.2s);
+              }
+            }
+            &.mfilterActive {
+              .cdiy(#f1582a);
+              .ico-arr-down {
+                &:before {
+                  border-color: #f1582a;
+                  -webkit-transform-origin: 0 center;
+                  transform-origin: 0 center;
+                  -webkit-transform: rotate(45deg);
+                  transform: rotate(45deg);
+                }
+              }
+            }
+            &:nth-child(2) {
+              /*border-left: 1px solid #eee;*/
+              border-right: 1px solid #eee;
+            }
+            &.f-img {
+              background: url(../../static/img/f-tit.png) no-repeat center;
+              .rbg-size(70%);
+            }
+          }
+        }
+        .filter-data {
+          .abs;
+          z-index: 10;
+          .borBox;
+          margin-top: 8/@rem;
+          opacity: 0;
+          height: 0;
+          width: 100%;
+          .bf;
+          border-top: 1px solid #eee;
+          .bsd(0, 10px, 18px, 0, rgba(0, 0, 0, 0.25));
+          .transi(.2s);
+          &.show {
+            opacity: 1;
+            height: auto;
+            padding: 30/@rem 18/@rem;
+          }
+          .filter-tags {
+            overflow: hidden;
+            li {
+              .pointer;
+              .fl;
+              padding: 3px 10px;
+              margin: 10/@rem;
+              line-height: 1;
+              font-size: 12px;
+              .c6;
+              .bf1;
+              .borR(10px);
+              &.sfilterActive {
+                .cf;
+                .bdiy(#f1582a);
+              }
+            }
+          }
+        }
       }
     }
+
+    .goods-list {
+      .rel;
+      padding-bottom: 30px;
+      /*.box {}*/
+      .v-items {
+        padding: 20/@rem;
+        .bf;
+        &:not(:last-child) {
+          .bor-b;
+        }
+        .wrap {
+          .flex;
+          .rel;
+          .h(150);
+        }
+        .click-wrap {
+          .borBox;
+          .flex-r(1);
+          overflow: hidden;
+        }
+        .img-con {
+          .abs-center-vertical;
+          .size(140, 140);
+          overflow: hidden;
+          background: #f5f5f5 url(../../static/img/bg_nopic.jpg) no-repeat center;
+          -webkit-background-size: cover;
+          background-size: cover;
+        }
+        .infos {
+          .flex;
+          .flex-d-v;
+          .borBox;
+          width: 100%;
+          height: 100%;
+          padding-left: 160/@rem;
+          h3 {
+            .flex-r(1);
+            .fz(28);
+            .txt-normal;
+            .c3;
+            .ellipsis;
+          }
+          .middle {
+            .flex-r(1);
+            padding: 10/@rem 0;
+            .price {
+            }
+            span {
+              &.price {
+                .c3;
+                .fz(26);
+              }
+              &.hasSell {
+                padding-left: 30/@rem;
+                .c9;
+                .fz(22);
+              }
+            }
+          }
+          .tags {
+            .flex-r(1);
+            .cdiy(#f34c18);
+            .fz(22);
+            overflow: hidden;
+            li {
+              .fl;
+              margin-right: 10/@rem;
+              padding: 1px 8px;
+              line-height: 1.8;
+              .cf;
+              .fz(16);
+              .borR(4px);
+              background: orange;
+            }
+          }
+        }
+      }
+      .buy-count {
+        .rel;
+        width: 160/@rem;
+        .weui-cells {
+          .abs-center-vertical;
+          right: -10/@rem;
+          margin-top: 0;
+          .no-bg;
+          &:before, &:after {
+            .none;
+          }
+          .weui-cell {
+            padding: 0;
+          }
+          .vux-number-input {
+            width: 50/@rem !important;
+            height: 34/@rem !important;
+            .fz(24);
+          }
+          .vux-number-selector, .vux-number-selector-plus {
+            .size(30, 30);
+            padding: 2px;
+            font-size: 0;
+            line-height: 34/@rem;
+            /*border-color: #f34c18;*/
+            svg {
+              .size(30, 30);
+              /*fill: #f34c18;*/
+            }
+          }
+        }
+        .stock {
+          .fz(22);
+          .c9;
+        }
+        .buy-count-milk {
+          /*.vux-cell-primary {
+
+          }
+          .vux-number-selector-plus {
+
+          }*/
+          .vux-number-selector-sub, input {
+            .none;
+          }
+          .vux-number-disabled {
+            border: 1px solid #3cc51f;
+            svg {
+              fill: #3cc51f;
+            }
+          }
+        }
+      }
+    }
+
   }
 
   .buyCountCon {
-    .fz(26);
-    .weui-cells {
-      margin-top: 10/@rem;
-      padding: 0;
+    .vux-no-group-title {
+      margin-top: 0;
+      padding: 20/@rem 0 40/@rem;
+      .vux-x-input {
+        padding: 24/@rem 30/@rem;
+      }
+      .vux-x-input, .vux-cell-box, .vux-x-textarea {
+        .fz(26);
+      }
     }
-    .weui-cell {
-      padding: 26/@rem 0 !important;
-      .fz(26) !important;
+
+    .tags-con {
+      padding: 20/@rem 24/@rem;
+      h4 {
+        .fz(24);
+        font-weight: normal;
+        .c3;
+      }
+      ul {
+        padding: 14/@rem 0;
+        overflow: hidden;
+      }
+      li {
+        .pointer;
+        .fl;
+        padding: 10/@rem 20/@rem;
+        margin: 10/@rem;
+        line-height: 1;
+        font-size: 24/@rem;
+        .c6;
+        .bf8;
+        .bor(1px, solid, #ddd);
+        .borR(3px);
+        &.active {
+          .cf;
+          .bdiy(@c3);
+          .bor(1px, solid, @c3);
+        }
+      }
+    }
+    .btn-add-cart {
+      width: 100%;
+      padding: 30/@rem 0;
+      .fz(26);
+      .cf;
+      .bdiy(@c2);
     }
   }
-
 </style>

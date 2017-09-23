@@ -285,7 +285,7 @@
                 vm.jump('bind')
               }, 800)
             } else {
-              vm.toast(res.data || '生成订单失败！')
+              vm.toast(res.data || '操作失败！')
             }
           }
         }, function () {

@@ -53,7 +53,7 @@
         </tab-item>
       </tab>-->
       <div class="swiper-container swiper-goods-detail">
-        <div class="swiper-wrapper" v-if="details.note">
+        <div class="swiper-wrapper" v-if="!details.note">
           <div class="swiper-slide">
             <div class="detail-con" v-html="details.note">
               <!--<img src="../../../static/img/detail/s01.jpg" class="wd-img" alt="">-->
@@ -111,19 +111,18 @@
             </div>
           </div>-->
         </div>
-        <span class="noData">暂无详情</span>
+        <span class="block noData center" v-else>暂无详情</span>
       </div>
     </div>
 
     <div v-transfer-dom>
-      <popup v-model="showPop" position="bottom" max-height="50%">
+      <popup v-model="showPop" position="bottom" max-height="80%">
         <group class="number-con">
           <x-number fillable title="数量：" :disabled="cartData && details.sellerId!==cartData.sellerId" :value="1"
                     :dataId="details.id" :dataSellerId="details.sellerId" :min="1"
                     :max="50" @on-change="changeBuyNum" @input="changeBuyNum"></x-number>
         </group>
-        <button type="button" :class="['btn btn-addcart',(addText==='立即购买')?'buy':'']" style="padding: 10px;"
-                @click="goConfirm">{{addText}}
+        <button type="button" :class="['btn btn-addcart',(addText==='立即购买')?'buy':'']" @click="goConfirm">{{addText}}
         </button>
       </popup>
     </div>
@@ -300,7 +299,6 @@
       getDetail(cb) {
         vm.id = vm.$route.query.id
         if (vm.isPosting) return false
-        vm.processing()
         vm.isPosting = true
         vm.processing()
         vm.loadData(goodsApi.detail, {id: vm.id}, 'POST', function (res) {
@@ -684,6 +682,7 @@
       .swiper-goods-detail {
         width: 100%;
         padding-bottom: 120/@rem;
+        .bf;
         .swiper-slide {
           padding-bottom: 20px;
           .bf;
@@ -930,6 +929,18 @@
           }*/
         }
       }
+    }
+
+  }
+
+  .btn-addcart {
+    width: 100%;
+    padding: 30/@rem 0;
+    .fz(26);
+    .cf;
+    .bdiy(#ff9627);
+    &.buy {
+      .bdiy(@c2);
     }
   }
 

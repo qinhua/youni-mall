@@ -3864,16 +3864,6 @@ body {
   height: 0.8125rem;
   /*fill: #f34c18;*/
 }
-.vux-popup-dialog .btn-addcart {
-  width: 100%;
-  padding: 0.9375rem 0 !important;
-  font-size: 0.75rem;
-  color: #fff;
-  background-color: #ff9627;
-}
-.vux-popup-dialog .btn-addcart.buy {
-  background-color: #f34c18;
-}
 .weui-toast {
   width: auto !important;
   min-width: 6.25rem;

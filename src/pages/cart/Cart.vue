@@ -1,5 +1,5 @@
 <template>
-  <div class="global-cart" v-cloak>
+  <div class="cart-con" v-cloak>
     <div class="order-list">
       <scroller class="inner-scroller" ref="goodsScroller" :on-refresh="refresh" :on-infinite="infinite"
                 refreshText="下拉刷新" noDataText="" snapping>
@@ -22,21 +22,29 @@
                 <div slot="content" class="demo-content vux-1px-t">
                   <li>
                     <section class="item-middle">
-                      <div class="img-con">
-                        <img :src="item.goodsImage">
-                      </div>
+                      <div class="img-con"
+                           :style="item.goodsImage?('background-image:url('+item.goodsImage+')'):''"></div>
                       <div class="info-con">
-                        <h3>{{item.goodsName}}</h3>
-                        <section class="middle">
-                          <span class="unit-price">￥{{item.price}}元</span>
+                        <h3><span
+                          :class="item.goodsType==='goods_type.2'?'milk':''">{{item.goodsType === 'goods_type.2' ? '奶' : '水'}}</span>{{item.goodsName}}
+                        </h3>
+                        <section class="middle" v-if="item.goodsType!=='goods_type.2'">
+                          <span class="unit-price">￥{{item.price | toFixed}}元</span>
                           <span class="order-info">{{item.info}}</span>
+                          <!--<label>{{item.label}}</label>-->
                         </section>
-                        <!--<label>{{item.label}}</label>-->
+                        <section class="middle milk" v-else>
+                          <span class="unit-price" @click="showModal('price',item)">订购数量：<i
+                            :class="isEdit?'active':''">{{item.note.priceLabel}}</i></span>
+                          <span class="order-info">派送量：{{item.dispatchNum}}瓶/天</span>
+                          <!--<label @click="showModal('favor',item.goodsId)">口味：<i :class="isEdit?'active':''">{{item.note.goodsNote}}</i></label>-->
+                          <label>口味：<i>{{item.note.goodsNote}}</i></label>
+                        </section>
                       </div>
                       <div class="price-con">
-                        <p class="price">总价：￥{{item.price * item.goodsNum}}</p>
-                        <p class="buy-count" v-show="!isEdit">x{{item.goodsNum}}</p>
-                        <div class="checker-con" v-show="isEdit">
+                        <p class="price">总价：￥{{item.payPrice}}元</p>
+                        <p class="buy-count" v-show="!isEdit&&item.goodsType!=='goods_type.2'">x{{item.goodsNum}}</p>
+                        <div class="checker-con" v-show="isEdit&&item.goodsType!=='goods_type.2'">
                           <label @click="updateGoods(item.goodsId, 'minus')"><i class="fa fa-minus"></i></label>
                           <input type="tel" readonly :value="item.goodsNum"
                                  @blur="updateGoods(item.goodsId, item.goodsNum)">
@@ -57,10 +65,38 @@
     <div class="count-bar">
       <div class="wrap">
         <div class="txt-total">
-          <h4>合计：<span>￥{{theTotal.price | toFixed}}</span><i>&nbsp;不含配送费用</i></h4>
+          <h4>合计：<span>￥{{goods.totalPrice | toFixed}}</span><i>&nbsp;不含配送费用</i></h4>
         </div>
-        <div class="btn btn-toPay" @click="goConfirm">结算{{theTotal.number ? '(' + theTotal.number + ')' : ''}}</div>
+        <div class="btn btn-toPay" @click="goConfirm">结算</div>
       </div>
+    </div>
+
+    <!--底部pop-checker-->
+    <div v-transfer-dom>
+      <popup class="buyCountCon" v-model="showPop" position="bottom" max-height="80%">
+        <group>
+          <div class="tags-con" v-if="favorTags.length" v-cloak>
+            <h4>口味：</h4>
+            <ul>
+              <li :class="idx===curFavorIdx?'active':''" v-for="(fa,idx) in favorTags" @click="changeFavorTag(idx,fa)">
+                {{fa}}
+              </li>
+            </ul>
+          </div>
+          <div class="tags-con" v-if="priceTags.length" v-cloak>
+            <h4>订购数量：</h4>
+            <ul>
+              <li :class="idx===curPriceIdx?'active':''" v-for="(tg,idx) in priceTags" :data-id="tg.id"
+                  @click="changePriceTag(idx,tg)">{{tg.note}}(￥{{tg.salePrice}})
+              </li>
+            </ul>
+          </div>
+          <x-input id="curMilkAmount" title="配送量(瓶/天)：" placeholder="请输入每日配送量" required text-align="right" type="number"
+                   v-model="curEditObj.dispatchNum"></x-input>
+        </group>
+        <button type="button" class="btn btn-edit-sure" @click="addToCart">加入购物车
+        </button>
+      </popup>
     </div>
   </div>
 </template>
@@ -69,31 +105,80 @@
   /* eslint-disable */
   let me
   let vm
-  import {Tab, TabItem, Checklist, XButton, Checker, CheckerItem, Swipeout, SwipeoutItem, SwipeoutButton} from 'vux'
+  import {
+    Tab,
+    TabItem,
+    Group,
+    XInput,
+    Checklist,
+    XButton,
+    Checker,
+    CheckerItem,
+    Swipeout,
+    SwipeoutItem,
+    SwipeoutButton,
+    Popup,
+    TransferDom
+  } from 'vux'
   import {orderApi, cartApi} from '../../service/main.js'
 
   export default {
     name: 'order',
+    directives: {
+      TransferDom
+    },
     data() {
       return {
         show: false,
+        isEdit: false,
+        isPosting: false,
+        onFetching: false,
+        goods: {},
+        curCartData: [],
+        goodsIds: [],
         theTotal: {
           price: 0,
           number: 0
         },
-        goods: {},
+        /*底部奶的浮窗-start*/
+        showPop: false,
+        curEditObj: {
+          goodsId: null,
+          goodsNote: '',
+          goodsNum: 0,
+          dispatchNum: 1
+        },
+        /*价格标签-start*/
+        curMilkAmount: 1,
+        priceTags: [],
+        curPriceIdx: 0,
+        curPriceTag: null,
+        /*价格标签-end*/
+        /*口味标签-start*/
+        favorTags: [],
+        curFavorIdx: 0,
+        curFavorTag: '',
+        /*口味标签-end*/
+        /*底部奶的浮窗-end*/
         params: {
           /*pagerSize: 10,
           pageNo: 1*/
         },
-        curCartData: [],
-        goodsIds: [],
-        isEdit: false,
-        isPosting: false,
-        onFetching: false
       }
     },
-    components: {Tab, TabItem, XButton, Checker, CheckerItem, Swipeout, SwipeoutItem, SwipeoutButton},
+    components: {
+      Tab,
+      TabItem,
+      Group,
+      XInput,
+      XButton,
+      Checker,
+      CheckerItem,
+      Swipeout,
+      SwipeoutItem,
+      SwipeoutButton,
+      Popup
+    },
     beforeMount() {
       me = window.me
     },
@@ -228,6 +313,10 @@
           vm.onFetching = false
           vm.processing(0, 1)
           var resD = res.data
+          for (var i = 0; i < resD.goodsList.length; i++) {
+            var cur = resD.goodsList[i]
+            cur.note = cur.note ? JSON.parse(cur.note) : null
+          }
           vm.goods = resD
           vm.countTotal()
           console.log(vm.goods, '购物车数据')
@@ -305,6 +394,66 @@
         }, function () {
         })
       },
+      showModal(type, data) {
+        if (!vm.isEdit) return
+        vm.curEditObj = {
+          goodsId: data.goodsId,
+          goodsNote: data.note.goodsNote,
+          goodsNum: data.goodsNum,
+          dispatchNum: data.dispatchNum
+        }
+        /*if (type === 'favor') {
+          vm.priceTags = []
+          for (var i = 0; i < vm.goods.goodsList.length; i++) {
+            var cur = vm.goods.goodsList[i]
+            if (id === cur.goodsId) {
+              vm.favorTags = cur.goodsFlavourLabel ? cur.goodsFlavourLabel.split(',') : []
+            }
+          }
+        } else {
+          vm.favorTags = []*/
+        for (var j = 0; j < vm.goods.goodsList.length; j++) {
+          var cur = vm.goods.goodsList[j]
+          if (data.goodsId === cur.goodsId) {
+            vm.priceTags = cur.saleConfigDtos
+            vm.curEditObj.goodsNum = cur.saleConfigDtos[0].saleNum
+          }
+        }
+//        }
+        vm.curPriceIdx = 0
+        vm.showPop = true
+      },
+      addToCart() {
+        // 判断当前是否填写了数量
+        if (vm.curEditObj.dispatchNum) {
+          vm.loadData(cartApi.add, vm.curEditObj, 'POST', function (res) {
+            vm.isPosting = false
+            if (res.success) {
+              vm.isEdit = false
+              vm.showPop = false
+              vm.getCart()
+              vm.curEditObj.dispatchNum = 1
+            } else {
+              vm.toast(res.message || '购物车中已有其他店铺商品，请先清空')
+            }
+          }, function () {
+            vm.isPosting = false
+          })
+        } else {
+          vm.toast('配送量至少1瓶哦！', 'warn')
+        }
+      },
+      changeFavorTag(idx, data) {
+        vm.curFavorIdx = idx
+        vm.curFavorTag = data
+        console.log('口味标签：', vm.curFavorTag)
+      },
+      changePriceTag(idx, data) {
+        vm.curPriceIdx = idx
+        vm.curPriceTag = data
+        vm.curEditObj.goodsNum = data.saleNum
+        console.log('价格标签：', vm.curPriceTag.note)
+      },
       goConfirm() {
         // 带入当前选择的商品信息
         if (vm.goods.goodsList.length) {
@@ -333,214 +482,350 @@
 <style lang='less'>
   @import '../../../static/css/tools.less';
 
-  .global-cart {
-  }
+  .cart-con {
 
-  .demo2-item, .demo3-item {
-    &:before {
-      font-family: 'weui';
-      content: '\EA01';
-      .c9;
-      .fz(36);
-      display: block;
+    .demo2-item, .demo3-item {
+      &:before {
+        font-family: 'weui';
+        content: '\EA01';
+        .c9;
+        .fz(36);
+        display: block;
+      }
     }
-  }
 
-  .demo2-item-selected {
-    border-color: @c3;
-    &:before {
-      content: '\EA06';
-      .cdiy(@c3);
+    .demo2-item-selected {
+      border-color: @c3;
+      &:before {
+        content: '\EA06';
+        .cdiy(@c3);
+      }
     }
-  }
 
-  .order-list {
-    .inner-scroller {
-      .v-items {
-        .borBox;
-        margin-bottom: 20/@rem;
-        .bsd(0, 2px, 10px, 0, #ccc);
-        .item-top {
-          .rel;
+    .order-list {
+      .inner-scroller {
+        .v-items {
           .borBox;
-          padding: 14/@rem 20/@rem 14/@rem 20/@rem;
-          .txt-normal;
-          .c3;
-          .fz(24);
-          .ellipsis;
-          .bor-b;
-          .ico-store {
-            .fl;
-            display: inline-block;
-            margin-top: 2/@rem;
-            font-size: inherit;
-            .size(30, 30);
-            background: url(../../../static/img/ico_store.png);
-            .ele-base;
-          }
-          span {
-            .fr;
-            padding-left: 40/@rem;
-            .fz(22);
-            .cdiy(@c2);
-          }
-        }
-        .has-list {
-          .bf1;
-          li {
+          margin-bottom: 20/@rem;
+          .bsd(0, 2px, 10px, 0, #ccc);
+          .item-top {
             .rel;
-            .bf;
-            .bor-b;
-          }
-        }
-        .vux-checker-box {
-          .abs-center-vertical;
-          left: 10/@rem;
-          .vux-checker-item {
-            .size(28, 28);
-            line-height: 28/@rem;
-          }
-        }
-        .checker-con {
-          .abs;
-          bottom: 14/@rem;
-          right: 20/@rem;
-          .center;
-          label, input {
-            .iblock;
-            height: 50/@rem;
-            line-height: 50/@rem;
-            .center;
+            .borBox;
+            padding: 14/@rem 20/@rem 14/@rem 20/@rem;
+            .txt-normal;
             .c3;
-          }
-          label {
-            width: 50/@rem;
-            .fz(22);
-          }
-          input {
-            .bor;
-            margin: 0 3px;
-            width: 70/@rem;
-          }
-        }
-        .item-middle {
-          width: 100%;
-          .borBox;
-          /*padding: 14/@rem 20/@rem 14/@rem 60/@rem*/;
-          padding: 14/@rem 20/@rem 14/@rem 14/@rem;
-          .flex;
-          .img-con {
-            .rel;
-            padding: 10/@rem 0;
-            .size(140, 120);
-            overflow: hidden;
-            img {
-              width: 100%;
-              .abs-center-vh;
+            .fz(24);
+            .ellipsis;
+            .bor-b;
+            .ico-store {
+              .fl;
+              display: inline-block;
+              margin-top: 2/@rem;
+              font-size: inherit;
+              .size(30, 30);
+              background: url(../../../static/img/ico_store.png);
+              .ele-base;
             }
-          }
-          .info-con {
-            .flex-r(2);
-            padding: 0 14/@rem;
-            h3 {
-              padding-bottom: 10/@rem;
-              .txt-normal;
-              .c3;
-              .fz(26);
-              .ellipsis-clamp-2;
-            }
-            .middle {
-              .c9;
+            span {
+              .fr;
+              padding-left: 40/@rem;
               .fz(22);
-              .ellipsis-clamp-2;
-              .unit-price {
-                padding-right: 40/@rem;
+              .cdiy(@c2);
+            }
+          }
+          .has-list {
+            .bf1;
+            li {
+              .rel;
+              .bf;
+              .bor-b;
+            }
+          }
+          .vux-checker-box {
+            .abs-center-vertical;
+            left: 10/@rem;
+            .vux-checker-item {
+              .size(28, 28);
+              line-height: 28/@rem;
+            }
+          }
+          .checker-con {
+            .abs;
+            bottom: 14/@rem;
+            right: 20/@rem;
+            .center;
+            label, input {
+              .iblock;
+              height: 50/@rem;
+              line-height: 50/@rem;
+              .center;
+              .c3;
+            }
+            label {
+              width: 50/@rem;
+              .fz(22);
+            }
+            input {
+              .bor;
+              margin: 0 3px;
+              width: 70/@rem;
+            }
+          }
+          .item-middle {
+            .rel;
+            width: 100%;
+            .borBox;
+            padding: 14/@rem 20/@rem 14/@rem 14/@rem;
+            min-height: 160/@rem;
+            .img-con {
+              .abs-center-vertical;
+              padding: 10/@rem 0;
+              .size(140, 120);
+              overflow: hidden;
+              background: #f5f5f5 url(../../../static/img/bg_nopic.jpg) no-repeat center;
+              -webkit-background-size: cover;
+              background-size: cover;
+            }
+            .info-con {
+              .borBox;
+              width: 100%;
+              padding: 0 0 0 160/@rem;
+              h3 {
+                padding-bottom: 10/@rem;
+                .txt-normal;
+                .c3;
+                .fz(26);
+                .ellipsis-clamp-2;
+                span {
+                  margin-right: 4px;
+                  padding: 0 2px;
+                  font-weight: normal;
+                  .cf;
+                  .fz(22);
+                  background: #2acaad;
+                  .borR(2px);
+                  &.milk {
+                    background: #74c361;
+                  }
+                }
+              }
+              .middle {
+                .c9;
+                .fz(22);
+                .ellipsis-clamp-2;
+                .unit-price {
+                  padding-right: 40/@rem;
+                  .c3;
+                  .fz(24);
+                }
+                &.milk {
+                  .unit-price {
+                    padding-right: 0;
+                    i {
+                      .rel;
+                      font-style: normal;
+                      color: #f17114;
+                      .borR(2px);
+                      &.active {
+                        padding: 0 40/@rem 0 2px;
+                        border: 1px solid #e47b25;
+                        &:before {
+                          content: "";
+                          position: absolute;
+                          top: 5/@rem;
+                          right: 10/@rem;
+                          width: 12/@rem;
+                          height: 12/@rem;
+                          border: 1px solid #f17114;
+                          border-width: 1px 0 0 1px;
+                          -webkit-transform: rotate(-135deg);
+                          transform: rotate(-135deg);
+                        }
+                      }
+                    }
+                  }
+                  .order-info {
+                    .fr;
+                  }
+                  label {
+                    padding-top: 10/@rem;
+                    display: block;
+                    .fz(24);
+                    .c3;
+                    i {
+                      .rel;
+                      font-style: normal;
+                      color: #f17114;
+                      .borR(2px);
+                      &.active {
+                        padding: 0 40/@rem 0 2px;
+                        border: 1px solid #e47b25;
+                        &:before {
+                          content: "";
+                          position: absolute;
+                          top: 5/@rem;
+                          right: 10/@rem;
+                          width: 12/@rem;
+                          height: 12/@rem;
+                          border: 1px solid #f17114;
+                          border-width: 1px 0 0 1px;
+                          -webkit-transform: rotate(-135deg);
+                          transform: rotate(-135deg);
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            .price-con {
+              .abs;
+              .borBox;
+              padding: 14/@rem 20/@rem;
+              height: 160/@rem;
+              top: 0;
+              right: 0;
+              .price {
+                padding-bottom: 10/@rem;
                 .c3;
                 .fz(24);
               }
+              .buy-count {
+                .fr;
+                .right;
+                .c9;
+                .fz(22);
+              }
+              .checker-con {
+                width: 100%;
+              }
+              .type {
+                .fz(22);
+                padding: 1px;
+                .cf;
+                background: red;
+              }
             }
           }
-          .price-con {
-            .flex-r(1);
-            .right;
-            .price {
-              padding-bottom: 10/@rem;
-              .c3;
-              .fz(24);
-            }
-            .buy-count {
-              .c9;
-              .fz(22);
+          &.grey {
+            .c9!important;
+          }
+        }
+      }
+    }
+
+    .count-bar {
+      .fix;
+      bottom: 0;
+      z-index: 20;
+      width: 100%;
+      .ma-w(640);
+      .c3;
+      .bf;
+      .bor-t;
+      .wrap {
+        .rel;
+        height: 88/@rem;
+      }
+      .checker-all {
+        .abs-center-vertical;
+        left: 16/@rem;
+        z-index: 2;
+        .fz(22);
+        .vux-checker-box {
+          .rel;
+          padding-right: 88/@rem;
+          .vux-checker-item {
+            line-height: 88/@rem;
+            > label {
+              .abs;
+              left: 40/@rem;
+              top: 0;
+              padding-left: 5px;
             }
           }
         }
-        &.grey {
-          .c9!important;
+      }
+      .txt-total {
+        .rel;
+        .borBox;
+        .fl;
+        padding: 0 10/@rem 0 100/@rem;
+        width: 70%;
+        height: 100%;
+        line-height: 88/@rem;
+        h4 {
+          .fz(24);
+          .right;
+          .txt-normal;
+          i {
+            .txt-normal;
+            .fz(16);
+            .c9;
+          }
         }
+      }
+      .btn {
+        .fl;
+        width: 30%;
+        height: 100%;
+        line-height: 88/@rem;
+        .center;
+        .cf;
+        background: -webkit-linear-gradient(90deg, #dc0404, #ff7600);
+        background: linear-gradient(90deg, #dc0404, #ff7600);
       }
     }
   }
 
-  .count-bar {
-    .fix;
-    bottom: 0;
-    z-index: 20;
-    width: 100%;
-    .ma-w(640);
-    .c3;
-    .bf;
-    .bor-t;
-    .wrap {
-      .rel;
-      height: 88/@rem;
-    }
-    .checker-all {
-      .abs-center-vertical;
-      left: 16/@rem;
-      z-index: 2;
-      .fz(22);
-      .vux-checker-box {
-        .rel;
-        padding-right: 88/@rem;
-        .vux-checker-item {
-          line-height: 88/@rem;
-          > label {
-            .abs;
-            left: 40/@rem;
-            top: 0;
-            padding-left: 5px;
-          }
-        }
+  .buyCountCon {
+    .vux-no-group-title {
+      margin-top: 0;
+      padding: 20/@rem 0 40/@rem;
+      .vux-x-input {
+        padding: 24/@rem 30/@rem;
+      }
+      .vux-x-input, .vux-cell-box, .vux-x-textarea {
+        .fz(26);
       }
     }
-    .txt-total {
-      .rel;
-      .borBox;
-      .fl;
-      padding: 0 10/@rem 0 100/@rem;
-      width: 70%;
-      height: 100%;
-      line-height: 88/@rem;
+
+    .tags-con {
+      padding: 20/@rem 24/@rem;
       h4 {
         .fz(24);
-        .right;
-        .txt-normal;
-        i {
-          .txt-normal;
-          .fz(16);
-          .c9;
+        font-weight: normal;
+        .c3;
+      }
+      ul {
+        padding: 14/@rem 0;
+        overflow: hidden;
+      }
+      li {
+        .pointer;
+        .fl;
+        padding: 10/@rem 20/@rem;
+        margin: 10/@rem;
+        line-height: 1;
+        font-size: 24/@rem;
+        .c6;
+        .bf8;
+        .bor(1px, solid, #ddd);
+        .borR(3px);
+        &.active {
+          .cf;
+          .bdiy(@c3);
+          .bor(1px, solid, @c3);
         }
       }
     }
-    .btn {
-      .fl;
-      width: 30%;
-      height: 100%;
-      line-height: 88/@rem;
-      .center;
+
+    .btn-edit-sure {
+      width: 100%;
+      padding: 30/@rem 0;
+      .fz(26);
       .cf;
-      background: -webkit-linear-gradient(90deg, #dc0404, #ff7600);
-      background: linear-gradient(90deg, #dc0404, #ff7600);
+      .bdiy(@c2);
     }
   }
 </style>

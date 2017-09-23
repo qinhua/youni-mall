@@ -140,6 +140,10 @@
         }
       },
       payDeposite(id) {
+        if (!me.isWeixin) {
+          vm.toast('请在微信中操作！')
+          return
+        }
         if (vm.isPosting) return false
         vm.isPosting = true
         vm.confirm('请填写桶数？', '<div class="depositeModal"><input id="bucketAmount" type="number" placeholder="输入数量（桶）" required></div>', function () {
@@ -156,7 +160,14 @@
             if (res.success) {
               vm.pay(res.data, true)
             } else {
-              vm.toast(res.message || '支付失败！')
+              if (res.errorCode == 304) {
+                vm.toast('请先绑定手机号！')
+                setTimeout(function () {
+                  vm.jump('bind')
+                }, 800)
+              } else {
+                vm.toast(res.message || '支付失败！')
+              }
             }
           }, function () {
             vm.isPosting = false

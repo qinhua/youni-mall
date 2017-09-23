@@ -146,7 +146,7 @@
         }
         if (val > this.curBucketNum) {
           vm.toast('最多能兑换' + this.curBucketNum + '桶')
-          vm.params.exchangeWaterNum = 1
+          vm.params.exchangeWaterNum = val - 1
         }
       },
       toAddress(type) {
@@ -160,6 +160,10 @@
         }
         if (!vm.params.exchangeWaterNum) {
           vm.toast('请填写兑换数量！', 'warn')
+          return false
+        }
+        if (vm.params.exchangeWaterNum < 0 || vm.params.exchangeWaterNum > this.curBucketNum) {
+          vm.toast('兑换数量请填写0~' + this.curBucketNum + '桶！', 'warn')
           return false
         }
         if (!vm.params.dispatchTime) {

@@ -22,22 +22,26 @@
         <ul class="has-list">
           <li v-for="(item,index) in curCartData.goods">
             <section class="item-middle">
-              <div class="img-con">
-                <img :src="item.goodsImage">
-              </div>
+              <div class="img-con"
+                   :style="item.goodsImage?('background-image:url('+item.goodsImage+')'):''"></div>
               <div class="info-con">
-                <h3>{{item.goodsName}}</h3>
-                <section class="middle">
-                  <span class="unit-price">￥{{item.price}}元</span>
+                <h3><span
+                  :class="item.goodsType==='goods_type.2'?'milk':''">{{item.goodsType === 'goods_type.2' ? '奶' : '水'}}</span>{{item.goodsName}}
+                </h3>
+                <section class="middle" v-if="item.goodsType!=='goods_type.2'">
+                  <span class="unit-price">￥{{item.price | toFixed}}元</span>
                   <span class="order-info">{{item.info}}</span>
+                  <!--<label>{{item.label}}</label>-->
                 </section>
-                <input :id="'dispatch-'+item.goodsId" class="dispatch-number" type="number" placeholder="请输入每日配送数"
-                       @change="changeDispatchNum(item.goodsId)" v-if="item.goodsType==='goods_type.2'">
-                <!--<label>{{item.label}}</label>-->
+                <section class="middle milk" v-else>
+                  <span class="unit-price" @click="showModal('price',item)">订购数量：<i>{{item.note.priceLabel}}</i></span>
+                  <span class="order-info">派送量：{{item.dispatchNum}}瓶/天</span>
+                  <label>口味：<i>{{item.note.goodsNote}}</i></label>
+                </section>
               </div>
               <div class="price-con">
-                <p class="price">总价：￥{{item.price * item.goodsNum}}</p>
-                <p class="buy-count">x{{item.goodsNum}}</p>
+                <p class="price">总价：￥{{item.payPrice}}元</p>
+                <p class="buy-count" v-show="item.goodsType!=='goods_type.2'">x{{item.goodsNum}}</p>
               </div>
             </section>
           </li>
@@ -63,7 +67,7 @@
     <div class="count-bar">
       <div class="wrap">
         <div class="txt-total">
-          <h4>合计：<span>￥{{(firstData.payAmount || curCartData.totalPrice || 0) | toFixed}}</span><!--<i></i>--></h4>
+          <h4>合计：<span>￥{{(firstData.payAmount || (curCartData.totalPrice || 0)) | toFixed}}</span><!--<i></i>--></h4>
         </div>
         <div class="btn btn-toPay" @click="generateOrder">提交订单</div>
       </div>
@@ -162,6 +166,10 @@
          vm.toast('请选择优惠券！', 'warn')
          return false
          } */
+        if (!me.isWeixin) {
+          vm.toast('请在微信中操作！')
+          return
+        }
         return true
       },
       switchData(data, value, target, isUpdate) {
@@ -204,6 +212,7 @@
         console.log(vm.curCartData.goods)
       },
       getGoods() {
+        vm.params.goods = []
         try {
           vm.curCartData = vm.$route.query.thedata ? JSON.parse(window.decodeURIComponent(vm.$route.query.thedata)) : {}
           for (var i = 0; i < vm.curCartData.goods.length; i++) {
@@ -312,7 +321,8 @@
                   vm.jump('bind')
                 }, 800)
               } else {
-                vm.toast(res.data || '生成订单失败！')
+                vm.toast(res.message || '生成订单失败！')
+                vm.$router.push({path: '/order'})
               }
             }
           }, function () {
@@ -348,9 +358,9 @@
           })
         })
         wx.error(function (res) {
-          vm.$router.push({path: '/order'})
           // config信息验证失败会执行error函数，如签名过期导致验证失败，具体错误信息可以打开config的debug模式查看，也可以在返回的res参数中查看，对于SPA可以在这里更新签名。
           // alert(JSON.stringify(res))
+          vm.$router.push({path: '/order'})
         })
       }
     }
@@ -416,17 +426,16 @@
   .goods-info {
     .v-items {
       .borBox;
-      margin-bottom: 10/@rem;
+      margin-bottom: 20/@rem;
+      .bsd(0, 2px, 10px, 0, #ccc);
       .item-top {
         .rel;
         .borBox;
-        padding: 14/@rem 60/@rem 14/@rem 20/@rem;
+        padding: 14/@rem 20/@rem 14/@rem 20/@rem;
         .txt-normal;
         .c3;
         .fz(24);
         .ellipsis;
-        .bf;
-        .bor-t;
         .bor-b;
         .ico-store {
           .fl;
@@ -438,16 +447,10 @@
           .ele-base;
         }
         span {
-          .abs-center-vertical;
-          right: 20/@rem;
+          .fr;
           padding-left: 40/@rem;
           .fz(22);
           .cdiy(@c2);
-          &.tag-bonus {
-            padding: 0 2px;
-            .bor(1px, solid, @c2);
-            .borR(2px)
-          }
         }
       }
       .has-list {
@@ -458,30 +461,73 @@
           .bor-b;
         }
       }
+      .vux-checker-box {
+        .abs-center-vertical;
+        left: 10/@rem;
+        .vux-checker-item {
+          .size(28, 28);
+          line-height: 28/@rem;
+        }
+      }
+      .checker-con {
+        .abs;
+        bottom: 14/@rem;
+        right: 20/@rem;
+        .center;
+        label, input {
+          .iblock;
+          height: 50/@rem;
+          line-height: 50/@rem;
+          .center;
+          .c3;
+        }
+        label {
+          width: 50/@rem;
+          .fz(22);
+        }
+        input {
+          .bor;
+          margin: 0 3px;
+          width: 70/@rem;
+        }
+      }
       .item-middle {
+        .rel;
         width: 100%;
         .borBox;
-        padding: 14/@rem 20/@rem 14/@rem 20/@rem;
-        .flex;
+        padding: 14/@rem 20/@rem 14/@rem 14/@rem;
+        min-height: 160/@rem;
         .img-con {
-          .rel;
+          .abs-center-vertical;
           padding: 10/@rem 0;
           .size(140, 120);
           overflow: hidden;
-          img {
-            width: 100%;
-            .abs-center-vh;
-          }
+          background: #f5f5f5 url(../../../static/img/bg_nopic.jpg) no-repeat center;
+          -webkit-background-size: cover;
+          background-size: cover;
         }
         .info-con {
-          .flex-r(2);
-          padding: 0 14/@rem;
+          .borBox;
+          width: 100%;
+          padding: 0 0 0 160/@rem;
           h3 {
             padding-bottom: 10/@rem;
             .txt-normal;
             .c3;
             .fz(26);
             .ellipsis-clamp-2;
+            span {
+              margin-right: 4px;
+              padding: 0 2px;
+              font-weight: normal;
+              .cf;
+              .fz(22);
+              background: #2acaad;
+              .borR(2px);
+              &.milk {
+                background: #74c361;
+              }
+            }
           }
           .middle {
             .c9;
@@ -489,28 +535,93 @@
             .ellipsis-clamp-2;
             .unit-price {
               padding-right: 40/@rem;
-              .cdiy(@c2);
+              .c3;
               .fz(24);
             }
-          }
-          .dispatch-number {
-            margin-top: 6/@rem;
-            padding: 0 5px;
-            .bor;
-            .borR(3px);
+            &.milk {
+              .unit-price {
+                padding-right: 0;
+                i {
+                  .rel;
+                  font-style: normal;
+                  color: #f17114;
+                  &.active {
+                    padding: 0 40/@rem 0 2px;
+                    border: 1px solid #e47b25;
+                    &:before {
+                      content: "";
+                      position: absolute;
+                      width: 12/@rem;
+                      height: 12/@rem;
+                      border: 1px solid #f17114;
+                      border-width: 1px 0 0 1px;
+                      -webkit-transform: rotate(-135deg);
+                      transform: rotate(-135deg);
+                      top: 5/@rem;
+                      right: 10/@rem;
+                    }
+                  }
+                }
+              }
+              .order-info {
+                .fr;
+              }
+              label {
+                padding-top: 10/@rem;
+                display: block;
+                .fz(24);
+                .c3;
+                i {
+                  .rel;
+                  font-style: normal;
+                  color: #f17114;
+                  &.active {
+                    padding: 0 40/@rem 0 2px;
+                    border: 1px solid #e47b25;
+                    &:before {
+                      content: "";
+                      position: absolute;
+                      width: 12/@rem;
+                      height: 12/@rem;
+                      border: 1px solid #f17114;
+                      border-width: 1px 0 0 1px;
+                      -webkit-transform: rotate(-135deg);
+                      transform: rotate(-135deg);
+                      top: 5/@rem;
+                      right: 10/@rem;
+                    }
+                  }
+                }
+              }
+            }
           }
         }
         .price-con {
-          .flex-r(1);
-          .right;
+          .abs;
+          .borBox;
+          padding: 14/@rem 20/@rem;
+          height: 160/@rem;
+          top: 0;
+          right: 0;
           .price {
             padding-bottom: 10/@rem;
             .c3;
             .fz(24);
           }
           .buy-count {
+            .fr;
+            .right;
             .c9;
             .fz(22);
+          }
+          .checker-con {
+            width: 100%;
+          }
+          .type {
+            .fz(22);
+            padding: 1px;
+            .cf;
+            background: red;
           }
         }
       }
