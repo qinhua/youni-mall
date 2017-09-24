@@ -52,7 +52,8 @@
                 <section class="middle">
                   <span class="price txt-del c9">￥{{item.totalAmount | toFixed}}元</span>
                   <span class="sale-count">已兑换：<i>{{item.exchangeWaterNum}}桶</i></span>
-                  <button type="button" :class="['btn btn-buy',item.payStatus?'exchange':'']" @click="onButtonClick($event,item.id,item)" v-text="item.payStatus ? '兑换' : '支付'"></button>
+                  <button type="button" :class="['btn btn-buy',item.payStatus?'exchange':'']"
+                          @click="onButtonClick($event,item.id,item)" v-text="item.payStatus ? '兑换' : '支付'"></button>
                 </section>
                 <label>￥{{item.payAmount | toFixed}}</label>
               </section>
@@ -140,7 +141,7 @@
      }, */
     watch: {
       '$route'(to, from) {
-        if(to.name==='ticket'){
+        if (to.name === 'ticket') {
           vm.current = 0
           vm.params.waterTicketType = vm.navs[0].key
           vm.tickets = []
@@ -272,7 +273,7 @@
           vm.toast('请在微信中操作！')
           return
         }
-        // if (vm.isPosting) return false
+        if (vm.isPosting) return false
         vm.isPosting = true
         vm.loadData(ticketApi.buy, {waterId: id}, 'POST', function (res) {
           vm.isPosting = false
@@ -297,7 +298,7 @@
           vm.toast('请在微信中操作！')
           return
         }
-        // if (vm.isPosting) return false
+        if (vm.isPosting) return false
         vm.isPosting = true
         vm.loadData(orderApi.rePay, {orderId: id}, 'POST', function (res) {
           vm.isPosting = false
