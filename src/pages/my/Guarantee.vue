@@ -64,7 +64,7 @@
     mounted() {
       // me.attachClick()
       vm = this
-      // vm.getDeposits()
+      vm.getDeposits()
     },
     computed: {},
     methods: {

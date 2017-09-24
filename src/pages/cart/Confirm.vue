@@ -16,18 +16,13 @@
     <div class="goods-info">
       <section class="v-items">
         <h4 class="item-top" v-if="curCartData.goods"><i
-          class="ico-store"></i>&nbsp;{{curCartData.sellerName}}&nbsp;&nbsp;<i
-          class="fa fa-angle-right cc"></i><span class="tag-bonus" v-if="firstData.newUserCoupon">首单优惠</span>
-        </h4>
+          class="ico-store"></i>&nbsp;{{curCartData.sellerName}}&nbsp;&nbsp;<i class="fa fa-angle-right cc"></i><span class="tag-bonus" v-if="firstData.newUserCoupon">首单优惠</span></h4>
         <ul class="has-list">
           <li v-for="(item,index) in curCartData.goods">
             <section class="item-middle">
-              <div class="img-con"
-                   :style="item.goodsImage?('background-image:url('+item.goodsImage+')'):''"></div>
+              <div class="img-con" :style="item.goodsImage?('background-image:url('+item.goodsImage+')'):''"></div>
               <div class="info-con">
-                <h3><span
-                  :class="item.goodsType==='goods_type.2'?'milk':''">{{item.goodsType === 'goods_type.2' ? '奶' : '水'}}</span>{{item.goodsName}}
-                </h3>
+                <h3><span :class="item.goodsType==='goods_type.2'?'milk':''">{{item.goodsType === 'goods_type.2' ? '奶' : '水'}}</span>{{item.goodsName}}</h3>
                 <section class="middle" v-if="item.goodsType!=='goods_type.2'">
                   <span class="unit-price">￥{{item.price | toFixed}}元</span>
                   <span class="order-info">{{item.info}}</span>
@@ -496,9 +491,10 @@
         width: 100%;
         .borBox;
         padding: 14/@rem 20/@rem 14/@rem 14/@rem;
-        min-height: 160/@rem;
+        min-height: 170/@rem;
         .img-con {
-          .abs-center-vertical;
+          .abs;
+          top: 14/@rem;
           padding: 10/@rem 0;
           .size(140, 120);
           overflow: hidden;

@@ -1775,6 +1775,12 @@ import $ from 'jquery'
       }
       return false;
     },
+
+    // 小数乘法
+    floatMulti: function (num1, num2) {
+      return num1 * 10000 * num2 / 10000;
+    },
+
     // 禁止滑动
     cancleScroll: function (obj) {
       //document.addEventListener('touchmove', function (e) {

@@ -16,10 +16,10 @@
       <!--中间入口-->
       <div class="middle-entry">
         <grid :rows="4">
-          <grid-item label="订水" link="/ticket" @on-item-click="setPageStatus(1)">
+          <grid-item label="订水" data-type="1" v-jump="['nearby',['type'],2]" @on-item-click="setPageStatus(1)">
             <img slot="icon" src="../../static/img/item_water.png">
           </grid-item>
-          <grid-item label="订奶" link="/nearby" @on-item-click="setPageStatus(2)">
+          <grid-item label="订奶" data-type="2" v-jump="['nearby',['type'],2]" @on-item-click="setPageStatus(2)">
             <img slot="icon" src="../../static/img/item_milk.png">
           </grid-item>
           <grid-item label="购物车" link="/cart">
@@ -77,7 +77,9 @@
               <div class="click-wrap" :data-id="item.id" @click="toDetail(item.id)">
                 <div class="img-con" :style="item.imgurl?('background-image:url('+item.imgurl+')'):''"></div>
                 <section class="infos">
-                  <h3>{{item.name}}</h3>
+                  <h3><span
+                    :class="item.type==='goods_type.2'?'milk':''">{{item.type === 'goods_type.2' ? '奶' : '水'}}</span>{{item.name}}
+                  </h3>
                   <section class="middle">
                     <span class="price">￥{{item.price | toFixed}}元</span>
                     <span class="hasSell">已售{{item.saleCount}}单</span>
@@ -115,23 +117,28 @@
       <popup class="buyCountCon" v-model="showPop" position="bottom" max-height="80%">
         <group>
           <div class="tags-con" v-if="favorTags" v-cloak>
-            <h4>口味：</h4>
-            <ul>
-              <li :class="idx===curFavorIdx?'active':''" v-for="(fa,idx) in favorTags" @click="changeFavorTag(idx,fa)">
-                {{fa}}
-              </li>
-            </ul>
+            <div class="wrap">
+              <h4>口味：</h4>
+              <ul>
+                <li :class="idx===curFavorIdx?'active':''" v-for="(fa,idx) in favorTags"
+                    @click="changeFavorTag(idx,fa)">
+                  {{fa}}
+                </li>
+              </ul>
+            </div>
           </div>
           <div class="tags-con" v-if="priceTags.length" v-cloak>
             <h4>订购数量：</h4>
             <ul>
               <li :class="idx===curPriceIdx?'active':''" v-for="(tg,idx) in priceTags" :data-id="tg.id"
-                  @click="changePriceTag(idx,tg)">{{tg.note}}(￥{{tg.salePrice}})
+                  @click="changePriceTag(idx,tg)">{{tg.note}}({{tg.saleNum}}瓶)<br><i
+                class="txt-del">￥{{tg.originPrice}}</i>【￥{{tg.salePrice}}元】
               </li>
             </ul>
           </div>
           <x-input id="curMilkAmount" title="配送量(瓶/天)：" placeholder="请输入每日配送量" required text-align="right" type="number"
-                   v-model="curMilkAmount"></x-input>
+                   v-model="curMilkAmount" @on-change="changeMilkAmout"></x-input>
+          <x-input title="总价：" text-align="right" type="text" readonly disabled v-model="curTotalPrice"></x-input>
         </group>
         <button type="button" class="btn btn-add-cart" @click="addToCart">加入购物车</button>
       </popup>
@@ -197,6 +204,7 @@
         showPop: false,
         /*价格标签-start*/
         curMilkAmount: 1,
+        curTotalPrice: 0,
         priceTags: [],
         curPriceIdx: 0,
         curPriceTag: null,
@@ -499,8 +507,11 @@
         vm.loadData(goodsApi.saleConfigList, {goodsId: id}, 'POST', function (res) {
           vm.isPosting = false
           if (res.data.itemList.length) {
+            vm.curMilkAmount = 1
             vm.priceTags = res.data.itemList
             vm.curPriceTag = vm.priceTags[0]
+            vm.curTotalPrice = me.floatMulti(vm.curMilkAmount, vm.curPriceTag.salePrice) + '元'
+            vm.showPop = true
           } else {
             vm.toast('此商品暂无法购买', 'warn')
           }
@@ -511,12 +522,20 @@
       changeFavorTag(idx, data) {
         vm.curFavorIdx = idx
         vm.curFavorTag = data
-        console.log('口味标签：', vm.curFavorTag)
+        // console.log('口味标签：', vm.curFavorTag)
       },
       changePriceTag(idx, data) {
         vm.curPriceIdx = idx
         vm.curPriceTag = data
-        console.log('价格标签：', vm.curPriceTag.note)
+        vm.curTotalPrice = me.floatMulti(vm.curMilkAmount, data.salePrice) + '元'
+        // console.log('价格标签：', vm.curPriceTag.note)
+      },
+      changeMilkAmout(val) {
+        try {
+          vm.curTotalPrice = me.floatMulti(vm.curMilkAmount, vm.curPriceTag.salePrice) + '元'
+        } catch (e) {
+          // console.log(e)
+        }
       },
       onPullDown() {
         if (vm.isPosting) {
@@ -638,7 +657,9 @@
               vm.viewCart()
               vm.curMilkAmount = 1
             } else {
-              vm.toast(res.message || '购物车中已有其他店铺商品，请先清空')
+              // vm.toast(res.message || '购物车中已有其他店铺商品，请先清空')
+              vm.clearCart()
+              return
             }
             vm.isPosting = false
           }, function () {
@@ -649,11 +670,25 @@
           vm.toast('配送量至少1瓶哦！', 'warn')
         }
       },
+      clearCart() {
+        vm.confirm('温馨提示', '购物车中已有其他店铺商品，请先清空！', function () {
+          vm.isPosting = true
+          vm.loadData(cartApi.clear, null, 'POST', function (res) {
+            vm.viewCart()
+            vm.isPosting = false
+          }, function () {
+            vm.isPosting = false
+          })
+        })
+      },
       changeCount(obj) {
-        console.log(obj)
+        // console.log(obj)
+        if (vm.cartData.sellerId && obj.sellerId !== vm.cartData.sellerId) {
+          vm.clearCart()
+          return
+        }
         vm.curLinedata = obj
         if (obj.linedata.type === 'goods_type.2' && obj.type === 'add') {
-          vm.showPop = true
           vm.getTags(obj.id)
           vm.favorTags = obj.linedata.flavourLabel ? obj.linedata.flavourLabel.split(',') : []
           vm.curFavorTag = vm.favorTags.length ? vm.favorTags[0] : ''
@@ -662,25 +697,12 @@
           if (vm.isPosting) return
           vm.isPosting = true
           if (obj.type === 'add') {
-            if (vm.cartData.sellerId && vm.cartData.sellerId !== obj.sellerId) {
-              //vm.toast('购物车中已有其他店铺商品，请先清空')
-              vm.confirm('温馨提示', '当前购物车中已有其他店铺商品，请先清空！', function () {
-                vm.isPosting = true
-                vm.loadData(cartApi.clear, null, 'POST', function (res) {
-                  vm.viewCart()
-                  vm.isPosting = false
-                }, function () {
-                  vm.isPosting = false
-                })
-              })
-              return
-            }
             vm.loadData(cartApi.add, {goodsId: obj.id}, 'POST', function (res) {
               if (res.success) {
                 vm.viewCart()
                 vm.additem(obj.event)
               } else {
-                vm.toast(res.data || '购物车中已有其他店铺商品，请先清空')
+                vm.toast(res.data)
               }
               vm.isPosting = false
             }, function () {
@@ -989,15 +1011,27 @@
           height: 100%;
           padding-left: 160/@rem;
           h3 {
-            .flex-r(1);
-            .fz(28);
+            padding-bottom: 10/@rem;
             .txt-normal;
             .c3;
-            .ellipsis;
+            .fz(26);
+            .ellipsis-clamp-2;
+            span {
+              margin-right: 4px;
+              padding: 0 2px;
+              font-weight: normal;
+              .cf;
+              .fz(22);
+              background: #2acaad;
+              .borR(2px);
+              &.milk {
+                background: #74c361;
+              }
+            }
           }
           .middle {
             .flex-r(1);
-            padding: 10/@rem 0;
+            padding: 8/@rem 0;
             .price {
             }
             span {
@@ -1101,6 +1135,9 @@
 
     .tags-con {
       padding: 20/@rem 24/@rem;
+      .wrap{
+        .bor-b;
+      }
       h4 {
         .fz(24);
         font-weight: normal;
@@ -1113,9 +1150,9 @@
       li {
         .pointer;
         .fl;
-        padding: 10/@rem 20/@rem;
+        padding: 8/@rem 20/@rem;
         margin: 10/@rem;
-        line-height: 1;
+        line-height: 1.5;
         font-size: 24/@rem;
         .c6;
         .bf8;

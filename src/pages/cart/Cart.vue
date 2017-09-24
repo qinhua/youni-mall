@@ -87,15 +87,16 @@
             <h4>订购数量：</h4>
             <ul>
               <li :class="idx===curPriceIdx?'active':''" v-for="(tg,idx) in priceTags" :data-id="tg.id"
-                  @click="changePriceTag(idx,tg)">{{tg.note}}(￥{{tg.salePrice}})
+                  @click="changePriceTag(idx,tg)">{{tg.note}}({{tg.saleNum}}瓶)<br><i
+                class="txt-del">￥{{tg.originPrice}}</i>【￥{{tg.salePrice}}元】
               </li>
             </ul>
           </div>
           <x-input id="curMilkAmount" title="配送量(瓶/天)：" placeholder="请输入每日配送量" required text-align="right" type="number"
-                   v-model="curEditObj.dispatchNum"></x-input>
+                   v-model="curMilkAmount" @on-change="changeMilkAmout"></x-input>
+          <x-input title="总价：" text-align="right" type="text" readonly disabled v-model="curTotalPrice"></x-input>
         </group>
-        <button type="button" class="btn btn-edit-sure" @click="addToCart">加入购物车
-        </button>
+        <button type="button" class="btn btn-edit-sure" @click="addToCart">完成</button>
       </popup>
     </div>
   </div>
@@ -150,6 +151,7 @@
         },
         /*价格标签-start*/
         curMilkAmount: 1,
+        curTotalPrice: 0,
         priceTags: [],
         curPriceIdx: 0,
         curPriceTag: null,
@@ -412,15 +414,20 @@
           }
         } else {
           vm.favorTags = []*/
-        for (var j = 0; j < vm.goods.goodsList.length; j++) {
-          var cur = vm.goods.goodsList[j]
-          if (data.goodsId === cur.goodsId) {
-            vm.priceTags = cur.saleConfigDtos
-            vm.curEditObj.goodsNum = cur.saleConfigDtos[0].saleNum
+
+        vm.curMilkAmount = data.dispatchNum
+        vm.priceTags = data.saleConfigDtos
+        for (var m = 0; m < vm.priceTags.length; m++) {
+          var cur = vm.priceTags[m]
+          if (cur.note === data.note.priceLabel) {
+            vm.curPriceIdx = m
+            vm.curEditObj.goodsNum = cur.saleNum
+            vm.curTotalPrice = me.floatMulti(vm.curMilkAmount, cur.salePrice) + '元'
           }
         }
+
 //        }
-        vm.curPriceIdx = 0
+
         vm.showPop = true
       },
       addToCart() {
@@ -446,13 +453,22 @@
       changeFavorTag(idx, data) {
         vm.curFavorIdx = idx
         vm.curFavorTag = data
-        console.log('口味标签：', vm.curFavorTag)
+        // console.log('口味标签：', vm.curFavorTag)
       },
       changePriceTag(idx, data) {
         vm.curPriceIdx = idx
         vm.curPriceTag = data
         vm.curEditObj.goodsNum = data.saleNum
-        console.log('价格标签：', vm.curPriceTag.note)
+        vm.curTotalPrice = me.floatMulti(vm.curMilkAmount, data.salePrice) + '元'
+        // console.log('价格标签：', vm.curPriceTag.note)
+      },
+      changeMilkAmout(val) {
+        try {
+          vm.curEditObj.dispatchNum = val
+          vm.curTotalPrice = me.floatMulti(vm.curMilkAmount, vm.curPriceTag.salePrice) + '元'
+        } catch (e) {
+          // console.log(e)
+        }
       },
       goConfirm() {
         // 带入当前选择的商品信息
@@ -576,9 +592,10 @@
             width: 100%;
             .borBox;
             padding: 14/@rem 20/@rem 14/@rem 14/@rem;
-            min-height: 160/@rem;
+            min-height: 170/@rem;
             .img-con {
-              .abs-center-vertical;
+              .abs;
+              top: 14/@rem;
               padding: 10/@rem 0;
               .size(140, 120);
               overflow: hidden;
@@ -804,9 +821,9 @@
       li {
         .pointer;
         .fl;
-        padding: 10/@rem 20/@rem;
+        padding: 8/@rem 20/@rem;
         margin: 10/@rem;
-        line-height: 1;
+        line-height: 1.5;
         font-size: 24/@rem;
         .c6;
         .bf8;

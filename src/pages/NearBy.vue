@@ -43,7 +43,7 @@
           <li class="v-items" v-for="(item, index) in sellers" :data-id="item.id" @click="toDetail(item.id)"
               v-cloak>
             <section class="wrap">
-              <img :src="item.headimgurl">
+              <div class="img-con" :style="item.headimgurl?('background-image:url('+item.headimgurl+')'):''"></div>
               <section class="infos">
                 <h3>{{item.name}}<span :class="['service_type',item.serviceTypeCls]">{{item.serviceTypeName}}</span>
                   <span class="distance">{{(item.distance ? (item.distance / 1000) : 0) | toFixed(1, true)}}km</span>
@@ -223,17 +223,18 @@
     mounted() {
       vm = this
       vm.getMap()
+      vm.hasFilter()
       vm.getSellers()
       vm.$nextTick(function () {
         // 点击区域之外隐藏筛选栏
-        /*document.addEventListener('click', function (e) {
-         if (e.target.offsetParent) {
-         if (JSON.stringify(e.target.offsetParent.classList).indexOf('filter') === -1) {
-         vm.hideFilter()
-         return false
-         }
-         }
-         }, false)*/
+        document.addEventListener('click', function (e) {
+          if (e.target.offsetParent) {
+            if (JSON.stringify(e.target.offsetParent.classList).indexOf('filter') === -1) {
+              vm.hideFilter()
+              return false
+            }
+          }
+        }, false)
       })
     },
     /*computed: {},*/
@@ -242,6 +243,7 @@
         if (to.name === 'nearby') {
           vm.resetScroll()
           vm.getMap()
+          vm.hasFilter()
           vm.getSellers()
         }
       }
@@ -392,7 +394,40 @@
           }, 1000)
         }
       },
+
       /* 店铺筛选 */
+      /*外部param指定筛选*/
+      hasFilter() {
+        var paramFilter = vm.$route.params.type
+        if (paramFilter) {
+          switch (paramFilter) {
+            case '1':
+              vm.params.sellerType = 'seller_service_type.1'
+              vm.curSelFilter.services = {
+                index: '1',
+                key: 'seller_service_type.1',
+                value: '水'
+              }
+              break
+            case '2':
+              vm.params.sellerType = 'seller_service_type.2'
+              vm.curSelFilter.services = {
+                index: '2',
+                key: 'seller_service_type.2',
+                value: '奶'
+              }
+              break
+            case '3':
+              vm.params.sellerType = 'seller_service_type.3'
+              vm.curSelFilter.services = {
+                index: '3',
+                key: 'seller_service_type.3',
+                value: '水&奶'
+              }
+              break
+          }
+        }
+      },
       showFilter(type, e) {
         if (vm.showFilterCon) {
           if (vm.curFilterType === type) {
@@ -594,14 +629,13 @@
         .wrap {
           .rel;
         }
-        img {
-          .abs;
-          left: 0;
-          top: 0;
-          .size(150, 150);
-          background: #f5f5f5 url(../../static/img/noImg.png) no-repeat center;
-          -webkit-background-size: 30% auto;
-          background-size: 30% auto;
+        .img-con {
+          .abs-center-vertical;
+          .size(140, 140);
+          overflow: hidden;
+          background: #f5f5f5 url(../../static/img/bg_nopic.jpg) no-repeat center;
+          -webkit-background-size: cover;
+          background-size: cover;
         }
         .infos {
           .flex;
@@ -612,7 +646,7 @@
           padding-left: 170/@rem;
           h3 {
             .flex-r(1);
-            .fz(28);
+            .fz(26);
             .txt-normal;
             .c3;
             .ellipsis;

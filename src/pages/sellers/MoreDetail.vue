@@ -3,7 +3,7 @@
     <div class="seller-info">
       <div class="v-items" :data-id="seller.id">
         <div class="wrap">
-          <img :src="seller.headimgurl">
+          <div class="img-con" :style="seller.headimgurl?('background-image:url('+seller.headimgurl+')'):''"></div>
           <div class="infos">
             <h3>{{seller.name}}<span
               :class="['service_type',seller.serviceTypeCls]">{{seller.serviceTypeName}}</span><span
@@ -241,14 +241,14 @@
         .wrap {
           .rel;
         }
-        img {
+        .img-con {
           .abs;
-          left: 0;
-          top: 0;
+          top:0;
           .size(150, 150);
-          background: #f5f5f5 url(../../../static/img/noImg.png) no-repeat center;
-          -webkit-background-size: 30% auto;
-          background-size: 30% auto;
+          overflow: hidden;
+          background: #f5f5f5 url(../../../static/img/bg_nopic.jpg) no-repeat center;
+          -webkit-background-size: cover;
+          background-size: cover;
         }
         .infos {
           .flex;

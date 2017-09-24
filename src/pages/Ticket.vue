@@ -261,7 +261,7 @@
               query: {thedata: window.encodeURIComponent(JSON.stringify(lineData))}
             })
           } else {
-            vm.payOrder(id)
+            vm.rePay(id)
           }
         } else {
           vm.payOrder(id)
@@ -272,9 +272,34 @@
           vm.toast('请在微信中操作！')
           return
         }
-        if (vm.isPosting) return false
+        // if (vm.isPosting) return false
         vm.isPosting = true
         vm.loadData(ticketApi.buy, {waterId: id}, 'POST', function (res) {
+          vm.isPosting = false
+          if (res.success && res.data) {
+            vm.pay(res.data)
+          } else {
+            if (res.errorCode == 304) {
+              vm.toast('请先绑定手机号！')
+              setTimeout(function () {
+                vm.jump('bind')
+              }, 800)
+            } else {
+              vm.toast(res.data || '操作失败！')
+            }
+          }
+        }, function () {
+          vm.isPosting = false
+        })
+      },
+      rePay(id) {
+        if (!me.isWeixin) {
+          vm.toast('请在微信中操作！')
+          return
+        }
+        // if (vm.isPosting) return false
+        vm.isPosting = true
+        vm.loadData(orderApi.rePay, {orderId: id}, 'POST', function (res) {
           vm.isPosting = false
           if (res.success && res.data) {
             vm.pay(res.data)
@@ -314,12 +339,13 @@
             paySign: data.paySign, // 支付签名
             success: function (res) {
               // 支付成功后的回调函数
-              // vm.$router.push({path: '/order'})
+              vm.isPosting = false
               vm.keepFresh(true)
             }
           })
         })
         wx.error(function (res) {
+          vm.isPosting = false
           vm.$router.push({path: '/order'})
           // config信息验证失败会执行error函数，如签名过期导致验证失败，具体错误信息可以打开config的debug模式查看，也可以在返回的res参数中查看，对于SPA可以在这里更新签名。
           // alert(JSON.stringify(res))

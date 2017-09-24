@@ -6,7 +6,7 @@
       <div class="seller-info">
         <div class="v-items" :data-id="seller.id" @click="toMore">
           <div class="wrap">
-            <img :src="seller.headimgurl">
+            <div class="img-con" :style="seller.headimgurl?('background-image:url('+seller.headimgurl+')'):''"></div>
             <div class="infos">
               <h3>{{seller.name}}<span
                 :class="['service_type',seller.serviceTypeCls]">{{seller.serviceTypeName}}</span><span
@@ -70,9 +70,11 @@
           <li class="v-items" v-for="(item, index) in goods" :data-id="item.id" v-cloak>
             <section class="wrap">
               <div class="click-wrap" :data-id="item.id" @click="toDetail(item.id)">
-                <img :src="item.imgurl">
+                <div class="img-con" :style="item.imgurl?('background-image:url('+item.imgurl+')'):''"></div>
                 <section class="infos">
-                  <h3>{{item.name}}</h3>
+                  <h3><span
+                    :class="item.type==='goods_type.2'?'milk':''">{{item.type === 'goods_type.2' ? '奶' : '水'}}</span>{{item.name}}
+                  </h3>
                   <section class="middle">
                     <span class="price">￥{{item.price|toFixed}}元</span>
                     <span class="hasSell">已售{{item.saleCount}}单</span>
@@ -491,19 +493,6 @@
         vm.hideFilter()
         vm.getGoods()
       },
-      changeCount(obj) {
-        console.log(obj)
-        if (obj.type === 'add') {
-          this.additem(obj.event)
-          this.count++
-        } else if (obj.type === 'sub') {
-          this.count--
-        } else {
-          this.count = obj.value
-        }
-        vm.$store.commit('updateCart', this.count)
-        console.log(vm.$store.state.cart.count)
-      },
       /* 购物车 */
       syncList() {
         if (vm.goods && vm.goods.length) {
@@ -534,29 +523,32 @@
           vm.isPosting = false
         })
       },
+      clearCart() {
+        vm.confirm('温馨提示', '购物车中已有其他店铺商品，请先清空！', function () {
+          vm.isPosting = true
+          vm.loadData(cartApi.clear, null, 'POST', function (res) {
+            vm.viewCart()
+            vm.isPosting = false
+          }, function () {
+            vm.isPosting = false
+          })
+        })
+      },
       changeCount(obj) {
+        // console.log(obj)
+        if (vm.cartData.sellerId && obj.sellerId !== vm.cartData.sellerId) {
+          vm.clearCart()
+          return
+        }
         if (vm.isPosting) return
         vm.isPosting = true
         if (obj.type === 'add') {
-          if (vm.cartData.sellerId && vm.cartData.sellerId !== obj.sellerId) {
-            //vm.toast('购物车中已有其他店铺商品，请先清空')
-            vm.confirm('温馨提示', '当前购物车中已有其他店铺商品，请先清空！', function () {
-              vm.isPosting = true
-              vm.loadData(cartApi.clear, null, 'POST', function (res) {
-                vm.viewCart()
-                vm.isPosting = false
-              }, function () {
-                vm.isPosting = false
-              })
-            })
-            return
-          }
           vm.loadData(cartApi.add, {goodsId: obj.id}, 'POST', function (res) {
             if (res.success) {
               vm.viewCart()
               vm.additem(obj.event)
             } else {
-              vm.toast(res.message || '购物车中已有其他店铺商品，请先清空')
+              vm.toast(res.message)
             }
             vm.isPosting = false
           }, function () {
@@ -657,14 +649,14 @@
         .wrap {
           .rel;
         }
-        img {
+        .img-con {
           .abs;
-          left: 0;
-          top: 0;
+          top:0;
           .size(150, 150);
-          background: #f5f5f5 url(../../../static/img/noImg.png) no-repeat center;
-          -webkit-background-size: 30% auto;
-          background-size: 30% auto;
+          overflow: hidden;
+          background: #f5f5f5 url(../../../static/img/bg_nopic.jpg) no-repeat center;
+          -webkit-background-size: cover;
+          background-size: cover;
         }
         .infos {
           .flex;
@@ -954,6 +946,7 @@
       /*padding-bottom: 30px;*/
       /*.box {}*/
       .v-items {
+        .rel;
         padding: 20/@rem;
         .bf;
         &:not(:last-child) {
@@ -969,14 +962,13 @@
           .flex-r(1);
           overflow: hidden;
         }
-        img {
-          .abs;
-          left: 0;
-          top: 0;
-          .size(150, 150);
-          background: #f5f5f5 url(../../../static/img/noImg.png) no-repeat center;
-          -webkit-background-size: 30% auto;
-          background-size: 30% auto;
+        .img-con {
+          .abs-center-vertical;
+          .size(140, 140);
+          overflow: hidden;
+          background: #f5f5f5 url(../../../static/img/bg_nopic.jpg) no-repeat center;
+          -webkit-background-size: cover;
+          background-size: cover;
         }
         .infos {
           .flex;
@@ -984,17 +976,29 @@
           .borBox;
           width: 100%;
           height: 100%;
-          padding-left: 170/@rem;
+          padding-left: 160/@rem;
           h3 {
-            .flex-r(1);
-            .fz(28);
+            padding-bottom: 10/@rem;
             .txt-normal;
             .c3;
-            .ellipsis;
+            .fz(26);
+            .ellipsis-clamp-2;
+            span {
+              margin-right: 4px;
+              padding: 0 2px;
+              font-weight: normal;
+              .cf;
+              .fz(22);
+              background: #2acaad;
+              .borR(2px);
+              &.milk {
+                background: #74c361;
+              }
+            }
           }
           .middle {
             .flex-r(1);
-            padding: 10/@rem 0;
+            padding: 8/@rem 0;
             span {
               &.price {
                 .c3;

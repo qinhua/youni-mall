@@ -52,14 +52,18 @@
                   @click.native="chooseCol(index)" :key="index">{{item}}
         </tab-item>
       </tab>-->
-      <div class="swiper-container swiper-goods-detail">
-        <div class="swiper-wrapper" v-if="!details.note">
+      <div class="detail-con">
+        <div class="detail-content" v-html="details.note" v-if="details.note"></div>
+        <span class="block noData center" v-else>暂无详情</span>
+      </div>
+      <!--<div class="swiper-container swiper-goods-detail">
+        <div class="swiper-wrapper" v-if="details.note">
           <div class="swiper-slide">
             <div class="detail-con" v-html="details.note">
-              <!--<img src="../../../static/img/detail/s01.jpg" class="wd-img" alt="">-->
+              &lt;!&ndash;<img src="../../../static/img/detail/s01.jpg" class="wd-img" alt="">&ndash;&gt;
             </div>
           </div>
-          <!--<div class="swiper-slide">
+          &lt;!&ndash;<div class="swiper-slide">
             <ul class="goods-param">
               <li>规格：4L*6</li>
               <li>产地：由于农夫山泉采取的是“水源地建厂，水源地灌装”、“水源地就近区域销售”的策略，各地购买到的农夫山泉水源地不尽相同，具体以瓶身标注为准 </li>
@@ -109,10 +113,9 @@
                 </ol>
               </div>
             </div>
-          </div>-->
+          </div>&ndash;&gt;
         </div>
-        <span class="block noData center" v-else>暂无详情</span>
-      </div>
+      </div>-->
     </div>
 
     <div v-transfer-dom>
@@ -441,7 +444,7 @@
         if (obj.type === 'add') {
           if (vm.cartData.sellerId && vm.cartData.sellerId !== obj.sellerId) {
             //vm.toast('购物车中已有其他店铺商品，请先清空')
-            vm.confirm('温馨提示', '当前购物车中已有其他店铺商品，请先清空！', function () {
+            vm.confirm('温馨提示', '购物车中已有其他店铺商品，请先清空！', function () {
               vm.isPosting = true
               vm.loadData(cartApi.clear, null, 'POST', function (res) {
                 vm.viewCart()
@@ -546,8 +549,8 @@
   @import '../../../static/css/tools.less';
 
   .goods-detail {
-    height: 100%;
-    overflow: auto;
+    min-height:100%;
+    overflow-x: hidden;
     .top {
       margin-bottom: 14/@rem;
       .banner-goods-detail {
@@ -679,6 +682,19 @@
         .bor-l(3px, solid, red);
         .bor-b;
       }
+      .detail-con {
+        .borBox;
+        padding: 20/@rem 20/@rem 140/@rem;
+        .bf;
+        ul, ol {
+          list-style: decimal;
+          list-style-position: inside;
+        }
+        img {
+          padding:5/@rem 0;
+          .ma-w(100%);
+        }
+      }
       .swiper-goods-detail {
         width: 100%;
         padding-bottom: 120/@rem;
@@ -686,14 +702,6 @@
         .swiper-slide {
           padding-bottom: 20px;
           .bf;
-        }
-        .detail-con {
-          .borBox;
-          padding: 20/@rem;
-          ul, ol {
-            list-style: decimal;
-            list-style-position: inside;
-          }
         }
         .goods-param {
           .borBox;

@@ -554,7 +554,7 @@
         if (obj.type === 'add') {
           if (vm.cartData.sellerId && vm.cartData.sellerId !== obj.sellerId) {
             //vm.toast('购物车中已有其他店铺商品，请先清空')
-            vm.confirm('温馨提示', '当前购物车中已有其他店铺商品，请先清空！', function () {
+            vm.confirm('温馨提示', '购物车中已有其他店铺商品，请先清空！', function () {
               vm.isPosting = true
               vm.loadData(cartApi.clear, null, 'POST', function (res) {
                 vm.viewCart()
