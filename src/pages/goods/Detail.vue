@@ -602,6 +602,7 @@
             if (cur.goodsId === vm.details.id) {
               vm.details['number'] = cur.goodsNum
               vm.details['payPrice'] = cur.payPrice
+              console.error(cur.goodsNum, vm.details.number, 888)
             }
           }
         } else {
@@ -701,6 +702,8 @@
   @import '../../../static/css/tools.less';
 
   .goods-detail {
+    .rel;
+    z-index: 1;
     overflow-x: hidden;
     .top {
       margin-bottom: 14/@rem;

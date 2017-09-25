@@ -419,6 +419,7 @@
           var cur = vm.priceTags[m]
           if (cur.note === data.note.priceLabel) {
             vm.curPriceIdx = m
+            vm.curPriceTag = cur
             vm.curEditObj.goodsNum = cur.saleNum
             vm.curTotalPrice = me.floatMulti(vm.curMilkAmount, cur.salePrice) + '元'
           }

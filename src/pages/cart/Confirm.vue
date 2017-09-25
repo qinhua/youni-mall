@@ -318,7 +318,7 @@
               } else {
                 vm.toast(res.message || '生成订单失败！')
                 setTimeout(function () {
-                  vm.$router.push({path: '/order'})
+                  vm.$router.push({path: '/home'})
                 }, 500)
               }
             }
@@ -496,7 +496,7 @@
         min-height: 170/@rem;
         .img-con {
           .abs;
-          top: 14/@rem;
+          top: 10/@rem;
           padding: 10/@rem 0;
           .size(140, 120);
           overflow: hidden;
