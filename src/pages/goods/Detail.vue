@@ -28,18 +28,19 @@
           </div>
           <div class="right-con">
             <div class="inner">
-              <div class="number-con">
+              <button type="button" class="btn btn-addcart"
+                      @click="changeCount({type:'add',id:details.id,sellerId:details.sellerId,linedata:details})"
+                      v-if="isMilk" v-cloak><i class="fa fa-plus"></i>&nbsp;购物车
+              </button>
+              <div class="number-con" v-else>
                 <group>
-                  <x-number :disabled="cartData && details.sellerId!==cartData.sellerId" :value="details.number"
-                            :dataId="details.id" :dataSellerId="details.sellerId" :min="0"
-                            :max="50" @on-change="changeCount"></x-number>
+                  <x-number :class="details.type==='goods_type.2'?'buy-count-milk':''"
+                            :disabled="cartData && details.sellerId!==cartData.sellerId" :min="0"
+                            :max="200" :value="details.number" align="right" :dataId="details.id"
+                            :dataSellerId="details.sellerId" :linedata="details"
+                            @on-change="changeCount"></x-number>
                 </group>
               </div>
-              <!--<button type="button" class="btn btn-addcart"
-                      @click="changeCount({type:'add',id:details.id,sellerId:details.sellerId,number:1})"
-                      v-if="!details.number">
-                加入购物车
-              </button>-->
             </div>
           </div>
         </div>
@@ -118,15 +119,46 @@
       </div>-->
     </div>
 
-    <div v-transfer-dom>
-      <popup v-model="showPop" position="bottom" max-height="80%">
+    <!--底部立即购买pop-checker-->
+    <div v-transfer-dom class="buyCountCon">
+      <popup v-model="showPop" position="bottom" max-height="80%" v-if="!isMilk">
         <group class="number-con">
-          <x-number fillable title="数量：" :disabled="cartData && details.sellerId!==cartData.sellerId" :value="1"
+          <x-number fillable title="数量：" :disabled="cartData && details.sellerId!==cartData.sellerId"
+                    :value="curWaterAmount"
                     :dataId="details.id" :dataSellerId="details.sellerId" :min="1"
-                    :max="50" @on-change="changeBuyNum" @input="changeBuyNum"></x-number>
+                    :max="200" @on-change="changeBuyNum" @input="changeBuyNum"></x-number>
         </group>
-        <button type="button" :class="['btn btn-addcart',(addText==='立即购买')?'buy':'']" @click="goConfirm">{{addText}}
+        <button type="button" class="btn btn-addcart" @click="nextStep">立即购买
         </button>
+      </popup>
+      <popup class="buyCountCon" v-model="showPop" position="bottom" max-height="80%" v-else>
+        <group>
+          <div class="tags-con" v-if="favorTags" v-cloak>
+            <div class="wrap">
+              <h4>口味：</h4>
+              <ul>
+                <li :class="idx===curFavorIdx?'active':''" v-for="(fa,idx) in favorTags"
+                    @click="changeFavorTag(idx,fa)">
+                  {{fa}}
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="tags-con" v-if="priceTags.length" v-cloak>
+            <h4>订购数量：</h4>
+            <ul>
+              <li :class="idx===curPriceIdx?'active':''" v-for="(tg,idx) in priceTags" :data-id="tg.id"
+                  @click="changePriceTag(idx,tg)">{{tg.note}}({{tg.saleNum}}瓶)<br><i
+                class="txt-del">￥{{tg.originPrice}}</i>【￥{{tg.salePrice}}元】
+              </li>
+            </ul>
+          </div>
+          <x-input id="curMilkAmount" title="配送量(瓶/天)：" placeholder="请输入每日配送量" required text-align="right" type="number"
+                   v-model="curMilkAmount" @on-change="changeMilkAmout"></x-input>
+          <x-input class="total-p" title="总价：" text-align="right" type="text" readonly disabled
+                   v-model="curTotalPrice"></x-input>
+        </group>
+        <button type="button" class="btn btn-addcart" @click="nextStep">{{isBuy ? '立即购买' : '加入购物车'}}</button>
       </popup>
     </div>
 
@@ -146,13 +178,13 @@
         <div class="cur-cart" ref="curCart" :hasgood="curCount>0" v-jump="['cart']"><i v-if="curCount">{{curCount}}</i>
         </div>
         <div class="left">
-          <div class="txt" v-if="details.number">
+          <div class="txt" v-show="details.number">
             <h4>当前共{{details.number}}件</h4>
-            <p>合计：{{total | toFixed}}元</p>
+            <p>合计：￥{{details.payPrice | toFixed}}元</p>
           </div>
         </div>
         <div class="right">
-          <div class="btn btn-buy" @click="swDialog(2)">立即购买</div>
+          <div class="btn btn-buy" @click="swPopOver">立即购买</div>
         </div>
       </div>
     </div>
@@ -164,23 +196,41 @@
   let me
   let vm
   import Swiper from 'swiper'
-  import {Tab, TabItem, XNumber, Group, Cell, TransferDom, Popup, XButton} from 'vux'
+  import {Tab, TabItem, XInput, XNumber, Group, Cell, TransferDom, Popup, XButton} from 'vux'
   import {homeApi, nearbyApi, goodsApi, cartApi} from '../../service/main.js'
 
   export default {
     name: 'goods-detail',
+    directives: {
+      TransferDom
+    },
     data() {
       return {
         id: null,
-        addText: '添加购物车',
-        showPop: false,
-        details: {},
-        tablist: ['商品详情', '规格', '评论'],
+        isMilk: false,
+        isBuy: false,
         isPosting: false,
+        details: {},
         cartData: null,
         curCount: 0,
-        curBuyNum: 1,
-        total: 0,
+        tablist: ['商品详情', '规格', '评论'],
+        addText: '添加购物车',
+        /*底部奶的浮窗-start*/
+        showPop: false,
+        /*价格标签-start*/
+        curWaterAmount: 1,// 水的默认数量
+        curMilkAmount: 1,// 奶的默认数量
+        curTotalPrice: 0,
+        priceTags: [],
+        curPriceIdx: 0,
+        curPriceTag: null,
+        /*价格标签-end*/
+        /*口味标签-start*/
+        favorTags: [],
+        curFavorIdx: 0,
+        curFavorTag: '',
+        /*口味标签-end*/
+        /*底部奶的浮窗-end*/
         detailSwiper: null,
         curIndex: 0,
         appIdx: 0,
@@ -198,10 +248,7 @@
         dropBalls: [],
       }
     },
-    directives: {
-      TransferDom
-    },
-    components: {Tab, TabItem, XNumber, Group, Cell, Popup, XButton},
+    components: {Tab, TabItem, XInput, XNumber, Group, Cell, Popup, XButton},
     beforeMount() {
       me = window.me
     },
@@ -229,14 +276,10 @@
           vm.getDetail(function () {
             vm.viewCart()
             vm.mySwiper()
-            vm.total = vm.details.number * vm.details.price
             // vm.swiperDetail()
             // vm.getAppraise()
           })
         }
-      },
-      'details.number'() {
-        vm.total = vm.details.number * vm.details.price
       }
     },
     methods: {
@@ -310,21 +353,14 @@
           if (res.success) {
             var resD = res.data
             resD.categoryName = (resD.type === 'goods_type.1') ? '水' : '奶'
+            vm.isMilk = (resD.type === 'goods_type.2') ? true : false
             vm.details = resD
-            vm.getSeller(res.data.sellerId)
             console.log(vm.details, '商品详情')
           }
           cb ? cb() : null
         }, function () {
           vm.isPosting = false
           vm.processing(0, 1)
-        })
-      },
-      getSeller(id) {
-        vm.loadData(nearbyApi.sellerDetail, {id: id}, 'POST', function (res) {
-          if (res.data) {
-            vm.details.sellerName = res.data.name
-          }
         })
       },
       chooseCol(index) {
@@ -355,16 +391,44 @@
           vm.getAppraise()
         }
       },
-      swDialog(type) {
-        vm.showPop = true
-        if (type === 1) {
-          vm.addText = '加入购物车'
-        } else {
-          vm.addText = '立即购买'
-        }
-      },
       goConfirm() {
+        /*先添加到购物车再到确认页面*/
+        if (vm.isPosting) return
         vm.showPop = false
+        vm.isPosting = true
+        if (vm.isMilk) {
+          // 判断当前是否填写了数量
+          if (vm.curMilkAmount) {
+            vm.loadData(cartApi.add, {
+              goodsId: vm.details.id,
+              goodsNote: vm.curFavorTag,
+              goodsNum: vm.curPriceTag.saleNum,
+              dispatchNum: vm.curMilkAmount
+            }, 'POST', function (res) {
+              vm.isPosting = false
+              if (res.success) {
+                vm.jump('confirm_order', {goodsId: vm.details.id})
+              }
+            }, function () {
+              vm.isPosting = false
+            })
+            vm.showPop = false
+          } else {
+            vm.toast('配送量至少1瓶哦！', 'warn')
+          }
+        } else {
+          vm.loadData(cartApi.add, {
+            goodsId: vm.details.id,
+            goodsNum: vm.curWaterAmount
+          }, 'POST', function (res) {
+            if (res.success) {
+              vm.isPosting = false
+              vm.jump('confirm_order', {goodsId: vm.details.id})
+            }
+          }, function () {
+            vm.isPosting = false
+          })
+        }
         // 判断当前是否填写了数量
         /*var lastD, tmp = []
          if (vm.cartData && vm.cartData.goodsList.length) {
@@ -377,10 +441,10 @@
          lastD = {
          sellerId: vm.details.sellerId,
          sellerName: vm.details.sellerName,
-         totalPrice: vm.curBuyNum * vm.details.price,
+         totalPrice: vm.curWaterAmount * vm.details.price,
          goods: [{
          goodsId: vm.details.id,
-         goodsNum: vm.curBuyNum,
+         goodsNum: vm.curWaterAmount,
          }]
          }
          vm.$router.push({
@@ -390,40 +454,159 @@
          } else {
          vm.toast('至少选一件哦！', 'warn')
          }*/
-//        if (vm.curBuyNum) {
-        var lastD = {
-          sellerId: vm.details.sellerId,
-          sellerName: vm.details.sellerName,
-          totalPrice: vm.curBuyNum * vm.details.price,
-          goods: [{
-            goodsId: vm.details.id,
-            goodsNum: vm.curBuyNum,
-            goodsImage: vm.details.imgurl,
-            price: vm.details.price,
-          }]
-        }
-        vm.$router.push({
+//        if (vm.curWaterAmount) {
+
+        /*vm.$router.push({
           name: 'confirm_order',
           query: {thedata: encodeURIComponent(JSON.stringify(lastD))}
-        })
+        })*/
         /*} else {
          vm.toast('至少选1件哦！', 'warn')
          }*/
       },
+
+      /*添加奶*/
+      getTags(id) {
+        vm.isPosting = true
+        vm.loadData(goodsApi.saleConfigList, {goodsId: id}, 'POST', function (res) {
+          vm.isPosting = false
+          if (res.data.itemList.length) {
+            vm.curMilkAmount = 1
+            vm.priceTags = res.data.itemList
+            vm.favorTags = vm.details.flavourLabel ? vm.details.flavourLabel.split(',') : []
+            vm.curPriceTag = vm.priceTags[0]
+            vm.curFavorTag = vm.favorTags.length ? vm.favorTags[0] : ''
+            vm.curPriceIdx = 0
+            vm.curFavorIdx = 0
+            vm.curTotalPrice = me.floatMulti(vm.curMilkAmount, vm.curPriceTag.salePrice) + '元'
+            vm.showPop = true
+          } else {
+            vm.toast('此商品暂无法购买', 'warn')
+          }
+        }, function () {
+          vm.isPosting = false
+        })
+      },
+      changeFavorTag(idx, data) {
+        vm.curFavorIdx = idx
+        vm.curFavorTag = data
+        // console.log('口味标签：', vm.curFavorTag)
+      },
+      changePriceTag(idx, data) {
+        vm.curPriceIdx = idx
+        vm.curPriceTag = data
+        vm.curTotalPrice = me.floatMulti(vm.curMilkAmount, data.salePrice) + '元'
+        // console.log('价格标签：', vm.curPriceTag.note)
+      },
+      changeMilkAmout(val) {
+        try {
+          vm.curTotalPrice = me.floatMulti(vm.curMilkAmount, vm.curPriceTag.salePrice) + '元'
+        } catch (e) {
+          // console.log(e)
+        }
+      },
+      addMilk() {
+        // 判断当前是否填写了数量
+        if (vm.curMilkAmount) {
+          vm.loadData(cartApi.add, {
+            goodsId: vm.details.id,
+            goodsNote: vm.curFavorTag,
+            goodsNum: vm.curPriceTag.saleNum,
+            dispatchNum: vm.curMilkAmount
+          }, 'POST', function (res) {
+            if (res.success) {
+              vm.viewCart()
+              vm.curMilkAmount = 1
+            } else {
+              // vm.toast(res.message || '购物车中已有其他店铺商品，请先清空')
+              vm.clearCart()
+              return
+            }
+            vm.isPosting = false
+          }, function () {
+            vm.isPosting = false
+          })
+          vm.showPop = false
+        } else {
+          vm.toast('配送量至少1瓶哦！', 'warn')
+        }
+      },
+      changeCount(obj) {
+        console.log(obj)
+        vm.isBuy = false
+        if (vm.cartData.sellerId && obj.sellerId !== vm.cartData.sellerId) {
+          // vm.toast(res.message || '购物车中已有其他店铺商品，请先清空')
+          vm.clearCart()
+          return
+        }
+        if (obj.linedata.type === 'goods_type.2' && obj.type === 'add') {
+          vm.getTags(obj.id)
+          return false
+        } else {
+          if (vm.isPosting) return
+          vm.isPosting = true
+          if (obj.type === 'add') {
+            vm.loadData(cartApi.add, {goodsId: obj.id}, 'POST', function (res) {
+              if (res.success) {
+                vm.viewCart()
+                vm.additem(obj.event)
+              } else {
+                vm.toast(res.data)
+              }
+              vm.isPosting = false
+            }, function () {
+              vm.isPosting = false
+            })
+          } else {
+            vm.loadData(cartApi.minus, {goodsId: obj.id}, 'POST', function (res) {
+              vm.viewCart()
+              vm.isPosting = false
+            }, function () {
+              vm.isPosting = false
+            })
+          }
+        }
+      },
+      swPopOver() {
+        vm.isBuy = true
+        if (vm.cartData.sellerId && vm.details.sellerId !== vm.cartData.sellerId) {
+          // vm.toast(res.message || '购物车中已有其他店铺商品，请先清空')
+          vm.clearCart()
+          return
+        }
+        // 如果是奶需要先获取标签
+        if (vm.isMilk) {
+          vm.getTags(vm.details.id)
+          vm.favorTags = vm.details.flavourLabel ? vm.details.flavourLabel.split(',') : []
+          vm.curFavorTag = vm.favorTags.length ? vm.favorTags[0] : ''
+        } else {
+          vm.curWaterAmount = 1
+          vm.showPop = true
+        }
+      },
+      nextStep() {
+        //奶的浮窗复用了，需要判断
+        if (vm.isBuy) {
+          vm.goConfirm()
+        } else {
+          vm.addMilk()
+        }
+      },
+
       /* 购物车--start */
       // 同步购物车商品数量至详情
       syncList() {
-        if (vm.cartData && vm.cartData.goodsList.length) {
+        if (vm.cartData.goodsList && vm.cartData.goodsList.length) {
           for (let i = 0; i < vm.cartData.goodsList.length; i++) {
             let cur = vm.cartData.goodsList[i]
             if (cur.goodsId === vm.details.id) {
               vm.details['number'] = cur.goodsNum
+              vm.details['payPrice'] = cur.payPrice
             }
           }
         } else {
           vm.details['number'] = 0
         }
-        vm.total = vm.details.number * vm.details.price
       },
       viewCart(cb) {
         vm.loadData(cartApi.view, null, 'POST', function (res) {
@@ -438,50 +621,19 @@
           vm.isPosting = false
         })
       },
-      changeCount(obj) {
-        if (vm.isPosting) return
-        vm.isPosting = true
-        if (obj.type === 'add') {
-          if (vm.cartData.sellerId && vm.cartData.sellerId !== obj.sellerId) {
-            //vm.toast('购物车中已有其他店铺商品，请先清空')
-            vm.confirm('温馨提示', '购物车中已有其他店铺商品，请先清空！', function () {
-              vm.isPosting = true
-              vm.loadData(cartApi.clear, null, 'POST', function (res) {
-                vm.viewCart()
-                vm.isPosting = false
-              }, function () {
-                vm.isPosting = false
-              })
-            })
-            return
-          }
-          vm.loadData(cartApi.add, {goodsId: obj.id}, 'POST', function (res) {
-            if (res.success) {
-              vm.viewCart()
-              vm.additem(obj.event)
-            } else {
-              vm.toast(res.message || '购物车中已有其他店铺商品，请先清空')
-            }
-            vm.isPosting = false
-          }, function () {
-            vm.isPosting = false
-          })
-        } else {
-          vm.loadData(cartApi.minus, {goodsId: obj.id}, 'POST', function (res) {
+      clearCart() {
+        vm.confirm('温馨提示', '购物车中已有其他店铺商品，请先清空！', function () {
+          vm.isPosting = true
+          vm.loadData(cartApi.clear, null, 'POST', function (res) {
             vm.viewCart()
             vm.isPosting = false
           }, function () {
             vm.isPosting = false
           })
-          if (!obj.value) {
-            vm.isPosting = false
-            vm.details.number = 0
-            return
-          }
-        }
+        })
       },
       changeBuyNum(obj) {
-        vm.curBuyNum = obj.value
+        vm.curWaterAmount = obj.value
       },
       additem(event) {
         this.drop(event.target);
@@ -549,7 +701,6 @@
   @import '../../../static/css/tools.less';
 
   .goods-detail {
-    min-height:100%;
     overflow-x: hidden;
     .top {
       margin-bottom: 14/@rem;
@@ -604,6 +755,23 @@
             }
           }
         }
+        .buy-count-milk {
+          /*.vux-cell-primary {
+
+          }
+          .vux-number-selector-plus {
+
+          }*/
+          .vux-number-selector-sub, input {
+            .none;
+          }
+          .vux-number-disabled {
+            border: 1px solid #3cc51f;
+            svg {
+              fill: #3cc51f;
+            }
+          }
+        }
       }
       .txt-con {
         .borBox;
@@ -651,14 +819,16 @@
           width: 100%;
           height: 100%;
           button {
-            .abs-center-vh;
-            padding: 18/@rem 14/@rem 18/@rem 50/@rem;
+            .abs-center-vertical;
+            right: 0;
+            width: auto;
+            padding: 16/@rem 20/@rem 16/@rem;
             line-height: 1;
             .fz(22);
             .cf;
             .borR(4px);
             .bdiy(@c3);
-            &:before {
+            /*&:before {
               position: absolute;
               margin-left: -30/@rem;
               content: '';
@@ -668,7 +838,7 @@
               background: url(../../../static/img/ico_cart.png) no-repeat center;
               -webkit-background-size: 100% 100%;
               background-size: 100% 100%;
-            }
+            }*/
           }
         }
       }
@@ -691,7 +861,7 @@
           list-style-position: inside;
         }
         img {
-          padding:5/@rem 0;
+          padding: 5/@rem 0;
           .ma-w(100%);
         }
       }
@@ -941,13 +1111,68 @@
 
   }
 
-  .btn-addcart {
-    width: 100%;
-    padding: 30/@rem 0;
-    .fz(26);
-    .cf;
-    .bdiy(#ff9627);
-    &.buy {
+  .buyCountCon {
+    .vux-no-group-title {
+      margin-top: 0;
+      padding: 20/@rem 0 40/@rem;
+      .vux-x-input {
+        padding: 24/@rem 30/@rem;
+        input {
+          .c3;
+          &:disabled {
+            .c3;
+          }
+        }
+      }
+      .vux-x-input, .vux-cell-box, .vux-x-textarea {
+        .fz(26);
+      }
+    }
+
+    .tags-con {
+      padding: 20/@rem 24/@rem;
+      .wrap {
+        .bor-b;
+      }
+      h4 {
+        .fz(24);
+        font-weight: normal;
+        .c3;
+      }
+      ul {
+        padding: 14/@rem 0;
+        overflow: hidden;
+      }
+      li {
+        .pointer;
+        .fl;
+        padding: 6/@rem 20/@rem;
+        margin: 8/@rem;
+        line-height: 1.5;
+        font-size: 22/@rem;
+        .c6;
+        .bf8;
+        .bor(1px, solid, #ddd);
+        .borR(3px);
+        &.active {
+          .cf;
+          .bdiy(@c3);
+          .bor(1px, solid, @c3);
+        }
+      }
+    }
+
+    .number-con {
+      .weui-cells {
+        padding: 20/@rem 0;
+      }
+    }
+
+    .btn-addcart {
+      width: 100%;
+      padding: 30/@rem 0;
+      .fz(26);
+      .cf;
       .bdiy(@c2);
     }
   }

@@ -16,7 +16,7 @@
     <div class="orders-list-con">
       <div class="order-list">
         <scroller class="inner-scroller" ref="orderScroller" :on-refresh="refresh" :on-infinite="infinite"
-                  refreshText="下拉刷新" noDataText="就这么多了" snapping v-if="orders.length">
+                  refreshText="下拉刷新" :noDataText="orders.length?'就这么多了':' '" snapping>
           <!-- content goes here -->
           <ul>
             <li v-for="(item, index) in orders" v-cloak>
@@ -62,6 +62,7 @@
                   <!--<a class="btn btn-del" @click="delOrder(item.orderId)">删除订单</a>-->
                   <div class="btns" v-if="item.status===1">
                     <button class="btn btn-pay" @click="rePay(item.orderId)">支付</button>
+                    <button class="btn btn-del" @click="cancelOrder(item.orderId)">取消订单</button>
                   </div>
                   <div class="btns" v-if="item.status===2&&!item.remind">
                     <button type="button" class="btn btn-push" @click="pushOrder(item.orderId)">催单</button>
@@ -87,6 +88,7 @@
           </ul>
         </scroller>
       </div>
+
       <div v-transfer-dom>
         <confirm v-model="showPop"
                  title="订单评价"
@@ -98,6 +100,7 @@
           </cell>
         </confirm>
       </div>
+
     </div>
     <div class="iconNoData abs-center-vh" v-if="!orders.length"><i></i>
       <p>暂无订单</p></div>
@@ -246,17 +249,17 @@
                     cur.statusName = '已完成'
                     break
                 }
-                if (!isLoadMore) {
-                  if (resD.totalCount < vm.params.pageSize) {
-                    vm.noMore = true
-                  } else {
-                    vm.noMore = false
-                  }
-                  vm.orders = resD.itemList
-                } else {
-                  resD.itemList.length ? vm.orders.push(cur) : vm.noMore = true
-                }
               }
+            }
+            if (!isLoadMore) {
+              if (resD.totalCount < vm.params.pageSize) {
+                vm.noMore = true
+              } else {
+                vm.noMore = false
+              }
+              vm.orders = resD.itemList
+            } else {
+              resD.itemList.length ? vm.orders.concat(cur) : vm.noMore = true
             }
             console.log(vm.orders, '订单数据')
           }, function () {
@@ -281,11 +284,12 @@
         if (vm.isPosting) return false
         vm.confirm('确认取消？', '订单取消后不可恢复！', function () {
           vm.isPosting = true
-          vm.loadData(orderApi.cancel, {id: id}, 'POST', function (res) {
+          vm.loadData(orderApi.cancel, {orderId: id}, 'POST', function (res) {
             vm.isPosting = false
             vm.toast('已取消')
+            vm.getOrders()
           }, function () {
-            vm.toast('取消失败')
+            vm.toast(res.data || '取消失败')
             vm.isPosting = false
           })
         }, function () {

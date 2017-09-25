@@ -145,7 +145,7 @@
           }
           vm.lastPage.name = parms.from || ''
         }
-        if (vm.lastPage.name === 'confirm_order') {
+        if (vm.lastPage.name === 'confirm_order' || vm.lastPage.name === 'confirm_ticket') {
           vm.params.defaultAddress = 1
           vm.lastPage.data = me.sessions.get('ynTmpConfirm')
         }
@@ -198,8 +198,14 @@
           vm.loadData(userApi.setAddress, vm.params, 'POST', function (res) {
             vm.isPosting = false
             vm.processing(0, 1)
-            console.log(vm.lastPage,7989854)
-            if (vm.lastPage.name && vm.lastPage.name === 'confirm_order') {
+            console.log(vm.lastPage, 7989854)
+            if (vm.lastPage.name === 'confirm_order') {
+              if (vm.lastPage.data !== 'undefined') {
+                vm.jump(vm.lastPage.name, {goodsId: vm.lastPage.data})
+              } else {
+                vm.jump(vm.lastPage.name)
+              }
+            } else if (vm.lastPage.name === 'confirm_ticket') {
               vm.jump(vm.lastPage.name, {thedata: vm.lastPage.data})
             } else {
               vm.$router.back()

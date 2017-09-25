@@ -151,7 +151,7 @@
       },
       toAddress(type) {
         me.sessions.set('ynTmpConfirm', vm.$route.query.thedata)
-        type === 1 ? vm.jump('myaddress', {from: 'confirm-ticket'}) : vm.jump('edit_address', {from: 'confirm-ticket'})
+        type === 1 ? vm.jump('myaddress', {from: 'confirm_ticket'}) : vm.jump('edit_address', {from: 'confirm_ticket'})
       },
       validate() {
         if (!vm.params.addressId) {

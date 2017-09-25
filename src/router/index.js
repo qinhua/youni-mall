@@ -73,6 +73,15 @@ export default new Router({
       }
     },
     {
+      path: '/nearby/:type',
+      name: 'nearby',
+      component: NearBy,
+      meta: {
+        title: '附近',
+        keepAlive: false
+      }
+    },
+    {
       path: '/ticket',
       name: 'ticket',
       component: Ticket,

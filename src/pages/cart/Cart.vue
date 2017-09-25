@@ -65,13 +65,13 @@
     <div class="count-bar">
       <div class="wrap">
         <div class="txt-total">
-          <h4>合计：<span>￥{{goods.totalPrice | toFixed}}</span><i>&nbsp;不含配送费用</i></h4>
+          <h4>合计：<span>￥{{goods.totalPrice | toFixed}}元</span><i>&nbsp;不含配送费用</i></h4>
         </div>
         <div class="btn btn-toPay" @click="goConfirm">结算</div>
       </div>
     </div>
 
-    <!--底部pop-checker-->
+    <!--底部添加奶pop-checker-->
     <div v-transfer-dom>
       <popup class="buyCountCon" v-model="showPop" position="bottom" max-height="80%">
         <group>
@@ -130,8 +130,7 @@
     },
     data() {
       return {
-        show: false,
-        isEdit: false,
+        isEdit: true,
         isPosting: false,
         onFetching: false,
         goods: {},
@@ -208,14 +207,14 @@
         this.$emit('listenPage', data)
       },
       refresh(done) {
-        console.log('下拉加载')
+        // console.log('下拉加载')
         setTimeout(function () {
           vm.getCart(false, true)
           vm.$refs.goodsScroller.finishPullToRefresh()
         }, 1200)
       },
       infinite(done) {
-        console.log('无限滚动')
+        // console.log('无限滚动')
         setTimeout(function () {
           vm.getCart(true, true)
           vm.$refs.goodsScroller.finishInfinite(true)
@@ -247,7 +246,6 @@
               var cur = vm.curCartData[i]
               if (cur.goodsId === obj.goodsId) {
                 if (cur.goodsNum === obj.goodsNum) {
-                  console.log(cur.goodsNum, 855855)
                   vm.curCartData.splice(i, 1)
                 } else {
                   cur.goodsNum = obj.goodsNum
@@ -268,7 +266,7 @@
             // vm.curCartData = []
             checkerAll.classList.remove('demo2-item-selected')
           }
-          console.error(JSON.stringify(vm.curCartData, null, 2), 8888888888888888)
+          // console.error(JSON.stringify(vm.curCartData, null, 2), 8888888888888888)
         }, 0)
       },
       selectAll() {
@@ -320,7 +318,7 @@
             cur.note = cur.note ? JSON.parse(cur.note) : null
           }
           vm.goods = resD
-          vm.countTotal()
+          // vm.countTotal()
           console.log(vm.goods, '购物车数据')
           cb ? cb(resD) : null
         }, function () {
@@ -471,21 +469,11 @@
         }
       },
       goConfirm() {
-        // 带入当前选择的商品信息
-        if (vm.goods.goodsList.length) {
-          var lastD = {
-            sellerId: vm.goods.sellerId,
-            sellerName: vm.goods.sellerName,
-            totalPrice: vm.goods.totalPrice,
-            goods: vm.goods.goodsList
-          }
-          vm.$router.push({
-            name: 'confirm_order',
-            query: {thedata: window.encodeURIComponent(JSON.stringify(lastD))}
-          })
-        } else {
-          vm.toast('请选择商品！', 'warn')
+        if (vm.isEdit) {
+          vm.toast('请先完成编辑！', 'warn')
+          return false
         }
+        vm.jump('confirm_order')
       },
       change(val) {
         console.log('change', val)
@@ -608,7 +596,8 @@
               width: 100%;
               padding: 0 0 0 160/@rem;
               h3 {
-                padding-bottom: 10/@rem;
+                .borBox;
+                padding: 0 160/@rem 10/@rem 0;
                 .txt-normal;
                 .c3;
                 .fz(26);
@@ -821,10 +810,10 @@
       li {
         .pointer;
         .fl;
-        padding: 8/@rem 20/@rem;
-        margin: 10/@rem;
+        padding: 6/@rem 20/@rem;
+        margin: 8/@rem;
         line-height: 1.5;
-        font-size: 24/@rem;
+        font-size: 22/@rem;
         .c6;
         .bf8;
         .bor(1px, solid, #ddd);

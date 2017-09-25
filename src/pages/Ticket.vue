@@ -342,6 +342,7 @@
               // 支付成功后的回调函数
               vm.isPosting = false
               vm.keepFresh(true)
+              vm.$router.push({path: '/order'})
             }
           })
         })

@@ -3870,8 +3870,8 @@ body {
   padding: 0 0.625rem;
 }
 .weui-loadmore {
-  width: 40%!important;
-  margin-top: 1.5em!important;
+  width: 40% !important;
+  margin-top: 1.5em !important;
 }
 /*左右滑动*/
 .slide-left-enter,
@@ -4154,19 +4154,23 @@ body {
 }
 .float-cart .cart-wrap {
   position: relative;
-  width: 2.5rem;
-  height: 2.5rem;
-  background: #49d8d2 url(../../static/img/ico_cart.png) no-repeat center;
-  -webkit-background-size: 56% auto;
-  background-size: 56% auto;
-  border-radius: 50%;
   -webkit-box-shadow: 0 1px 10px 0 #49d8d2;
   box-shadow: 0 1px 10px 0 #49d8d2;
 }
-.float-cart .cart-wrap i {
+.float-cart .cart-wrap .num-con {
+  position: relative;
+  float: left;
+  width: 2.5rem;
+  height: 2.5rem;
+  background: rgba(73, 216, 210, 0.9) url(../../static/img/ico_cart.png) no-repeat center;
+  -webkit-background-size: 56% auto;
+  background-size: 56% auto;
+  border-radius: 4px 0 0 4px;
+}
+.float-cart .cart-wrap .num-con i {
   position: absolute;
   top: -0.1875rem;
-  right: -0.1875rem;
+  left: -0.1875rem;
   display: block;
   text-align: center;
   line-height: 0.625rem;
@@ -4178,4 +4182,14 @@ body {
   color: #fff;
   background-color: #f74c31;
   border-radius: 30px;
+}
+.float-cart .cart-wrap .price-con {
+  float: left;
+  padding: 0 0.5rem 0 0.3125rem;
+  height: 2.5rem;
+  line-height: 2.5rem;
+  font-size: 0.6875rem;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 0 4px 4px 0;
 }

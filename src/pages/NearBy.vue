@@ -46,7 +46,7 @@
               <div class="img-con" :style="item.headimgurl?('background-image:url('+item.headimgurl+')'):''"></div>
               <section class="infos">
                 <h3>{{item.name}}<span :class="['service_type',item.serviceTypeCls]">{{item.serviceTypeName}}</span>
-                  <span class="distance">{{(item.distance ? (item.distance / 1000) : 0) | toFixed(1, true)}}km</span>
+                  <span class="distance">{{(item.distance ? item.distance : 0) | toFixed(1, true)}}km</span>
                 </h3>
                 <section class="middle">
                   <div class="score-con">

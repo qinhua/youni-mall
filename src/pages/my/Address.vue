@@ -16,7 +16,8 @@
         </div>
       </li>
     </ul>
-    <div class="iconNoData abs-center-vh" v-if="!list.length"><i></i><p>空空如也</p></div>
+    <div class="iconNoData abs-center-vh" v-if="!list.length"><i></i>
+      <p>空空如也</p></div>
     <div class="add-address" @click="addAddress"><i class="fa fa-plus"></i>&nbsp;添加新地址</div>
   </div>
 </template>
@@ -54,7 +55,7 @@
     computed: {},
     watch: {
       '$route'(to, from) {
-        if(to.name==='myaddress'){
+        if (to.name === 'myaddress') {
           vm.getAddress()
         }
       }
@@ -63,7 +64,7 @@
       getAddress() {
         vm.processing()
         vm.lastPage.name = vm.$route.query.from || ''
-        if (vm.lastPage.name === 'confirm_order') {
+        if (vm.lastPage.name === 'confirm_order' || vm.lastPage.name === 'confirm_ticket') {
           vm.lastPage.data = me.sessions.get('ynTmpConfirm')
         }
         vm.loadData(userApi.addressList, null, 'POST', function (res) {
@@ -82,7 +83,13 @@
           vm.isPosting = false
           vm.processing(0, 1)
           vm.getAddress()
-          if (vm.lastPage.name) {
+          if (vm.lastPage.name === 'confirm_order') {
+            if (vm.lastPage.data !== 'undefined') {
+              vm.jump(vm.lastPage.name, {goodsId: vm.lastPage.data})
+            } else {
+              vm.jump(vm.lastPage.name)
+            }
+          } else if (vm.lastPage.name === 'confirm_ticket') {
             vm.jump(vm.lastPage.name, {thedata: vm.lastPage.data})
           }
         }, function () {

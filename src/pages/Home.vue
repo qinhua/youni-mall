@@ -16,10 +16,10 @@
       <!--中间入口-->
       <div class="middle-entry">
         <grid :rows="4">
-          <grid-item label="订水" data-type="1" v-jump="['nearby',['type'],2]" @on-item-click="setPageStatus(1)">
+          <grid-item label="订水" data-type="1" link="/nearby/1">
             <img slot="icon" src="../../static/img/item_water.png">
           </grid-item>
-          <grid-item label="订奶" data-type="2" v-jump="['nearby',['type'],2]" @on-item-click="setPageStatus(2)">
+          <grid-item label="订奶" data-type="2" link="/nearby/2">
             <img slot="icon" src="../../static/img/item_milk.png">
           </grid-item>
           <grid-item label="购物车" link="/cart">
@@ -93,7 +93,7 @@
               <group class="buy-count">
                 <x-number :class="item.type==='goods_type.2'?'buy-count-milk':''" button-style="round"
                           :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0"
-                          :max="50" :value="item.number" align="right" :dataId="item.id"
+                          :max="200" :value="item.number" align="right" :dataId="item.id"
                           :dataSellerId="item.sellerId" :linedata="item"
                           @on-change="changeCount"></x-number>
                 <!--<span class="stock">库存：{{item.stock}}件</span>-->
@@ -112,7 +112,7 @@
       </div>
     </div>
 
-    <!--底部pop-checker-->
+    <!--底部添加奶pop-checker-->
     <div v-transfer-dom>
       <popup class="buyCountCon" v-model="showPop" position="bottom" max-height="80%">
         <group>
@@ -138,7 +138,8 @@
           </div>
           <x-input id="curMilkAmount" title="配送量(瓶/天)：" placeholder="请输入每日配送量" required text-align="right" type="number"
                    v-model="curMilkAmount" @on-change="changeMilkAmout"></x-input>
-          <x-input title="总价：" text-align="right" type="text" readonly disabled v-model="curTotalPrice"></x-input>
+          <x-input class="total-p" title="总价：" text-align="right" type="text" readonly disabled
+                   v-model="curTotalPrice"></x-input>
         </group>
         <button type="button" class="btn btn-add-cart" @click="addToCart">加入购物车</button>
       </popup>
@@ -158,7 +159,10 @@
     <!--悬浮购物车-->
     <div class="float-cart" ref="floatCart" v-show="curCount"
          v-jump="['cart']">
-      <div class="cart-wrap"><i class="cur-count">{{curCount}}</i></div>
+      <div class="cart-wrap">
+        <div class="num-con"><i class="cur-count">{{curCount}}</i></div>
+        <div class="price-con">￥{{cartData.totalPrice | toFixed}}</div>
+      </div>
     </div>
   </div>
 </template>
@@ -200,6 +204,14 @@
         banner: [],
         notice: [],
         goods: [],
+        curLinedata: null,
+        params: {
+          status: 1,
+          pageSize: 5,
+          pageNo: 1,
+          /*goodsType: '',
+           brandId: ''*/
+        },
         /*底部奶的浮窗-start*/
         showPop: false,
         /*价格标签-start*/
@@ -215,14 +227,6 @@
         curFavorTag: '',
         /*口味标签-end*/
         /*底部奶的浮窗-end*/
-        curLinedata: null,
-        params: {
-          status: 1,
-          pageSize: 5,
-          pageNo: 1,
-          /*goodsType: '',
-           brandId: ''*/
-        },
         /* filter start */
         showFilterCon: false,
         filterOffset: 0,
@@ -502,6 +506,25 @@
 //          vm.processing(0, 1)
         })
       },
+      onPullDown() {
+        if (vm.isPosting) {
+          return false
+        } else {
+          setTimeout(function () {
+            vm.getGoods()
+          }, 1000)
+        }
+      },
+      onPullUp() {
+        if (vm.isPosting) {
+          return false
+        } else {
+          setTimeout(function () {
+            vm.getGoods(true)
+          }, 1000)
+        }
+      },
+      /*添加奶*/
       getTags(id) {
         vm.isPosting = true
         vm.loadData(goodsApi.saleConfigList, {goodsId: id}, 'POST', function (res) {
@@ -535,24 +558,6 @@
           vm.curTotalPrice = me.floatMulti(vm.curMilkAmount, vm.curPriceTag.salePrice) + '元'
         } catch (e) {
           // console.log(e)
-        }
-      },
-      onPullDown() {
-        if (vm.isPosting) {
-          return false
-        } else {
-          setTimeout(function () {
-            vm.getGoods()
-          }, 1000)
-        }
-      },
-      onPullUp() {
-        if (vm.isPosting) {
-          return false
-        } else {
-          setTimeout(function () {
-            vm.getGoods(true)
-          }, 1000)
         }
       },
       /* 商品筛选 */
@@ -1127,6 +1132,12 @@
       padding: 20/@rem 0 40/@rem;
       .vux-x-input {
         padding: 24/@rem 30/@rem;
+        input {
+          .c3;
+          &:disabled {
+            .c3;
+          }
+        }
       }
       .vux-x-input, .vux-cell-box, .vux-x-textarea {
         .fz(26);
@@ -1135,7 +1146,7 @@
 
     .tags-con {
       padding: 20/@rem 24/@rem;
-      .wrap{
+      .wrap {
         .bor-b;
       }
       h4 {
@@ -1150,10 +1161,10 @@
       li {
         .pointer;
         .fl;
-        padding: 8/@rem 20/@rem;
-        margin: 10/@rem;
+        padding: 6/@rem 20/@rem;
+        margin: 8/@rem;
         line-height: 1.5;
-        font-size: 24/@rem;
+        font-size: 22/@rem;
         .c6;
         .bf8;
         .bor(1px, solid, #ddd);

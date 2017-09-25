@@ -6,8 +6,8 @@
           <div class="img-con" :style="seller.headimgurl?('background-image:url('+seller.headimgurl+')'):''"></div>
           <div class="infos">
             <h3>{{seller.name}}<span
-              :class="['service_type',seller.serviceTypeCls]">{{seller.serviceTypeName}}</span><span
-              class="distance">{{seller.distance ? ((seller.distance / 1000) | toFixed(1)) : seller.distance}}km</span>
+              :class="['service_type',seller.serviceTypeCls]">{{seller.serviceTypeName}}</span>
+              <span class="distance">{{(seller.distance ? seller.distance : 0) | toFixed(1, true)}}km</span>
             </h3>
             <div class="middle">
               <ol class="star" v-if="seller.sellerScore" v-cloak>

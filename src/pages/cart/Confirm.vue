@@ -9,20 +9,22 @@
         </div>
         <i class="fa fa-angle-right i-right"></i>
       </div>
-      <div class="add-address" data-from="confirm_order" v-else @click="toAddress(2)"><i
-        class="fa fa-plus"></i>&nbsp;添加收货地址
+      <div class="add-address" data-from="confirm_order" v-else @click="toAddress(2)"><i class="fa fa-plus"></i>&nbsp;添加收货地址
       </div>
     </div>
-    <div class="goods-info">
+    <div class="goods-info" v-if="curCartData.goodsList&&curCartData.goodsList.length">
       <section class="v-items">
-        <h4 class="item-top" v-if="curCartData.goods"><i
-          class="ico-store"></i>&nbsp;{{curCartData.sellerName}}&nbsp;&nbsp;<i class="fa fa-angle-right cc"></i><span class="tag-bonus" v-if="firstData.newUserCoupon">首单优惠</span></h4>
+        <h4 class="item-top"><i
+          class="ico-store"></i>&nbsp;{{curCartData.sellerName}}&nbsp;&nbsp;<i class="fa fa-angle-right cc"></i><span
+          class="tag-bonus" v-if="firstData.newUserCoupon">首单优惠</span></h4>
         <ul class="has-list">
-          <li v-for="(item,index) in curCartData.goods">
+          <li v-for="(item,index) in curCartData.goodsList">
             <section class="item-middle">
               <div class="img-con" :style="item.goodsImage?('background-image:url('+item.goodsImage+')'):''"></div>
               <div class="info-con">
-                <h3><span :class="item.goodsType==='goods_type.2'?'milk':''">{{item.goodsType === 'goods_type.2' ? '奶' : '水'}}</span>{{item.goodsName}}</h3>
+                <h3><span
+                  :class="item.goodsType==='goods_type.2'?'milk':''">{{item.goodsType === 'goods_type.2' ? '奶' : '水'}}</span>{{item.goodsName}}
+                </h3>
                 <section class="middle" v-if="item.goodsType!=='goods_type.2'">
                   <span class="unit-price">￥{{item.price | toFixed}}元</span>
                   <span class="order-info">{{item.info}}</span>
@@ -62,7 +64,7 @@
     <div class="count-bar">
       <div class="wrap">
         <div class="txt-total">
-          <h4>合计：<span>￥{{(firstData.payAmount || (curCartData.totalPrice || 0)) | toFixed}}</span><!--<i></i>--></h4>
+          <h4>合计：<span>￥{{(firstData.payAmount || (curCartData.totalPrice || 0)) | toFixed}}元</span><!--<i></i>--></h4>
         </div>
         <div class="btn btn-toPay" @click="generateOrder">提交订单</div>
       </div>
@@ -76,7 +78,7 @@
   let me
   let vm
   import {Tab, TabItem, XButton, Group, XInput, Selector, PopupPicker, XTextarea, Datetime} from 'vux'
-  import {commonApi, orderApi, userApi} from '../../service/main.js'
+  import {commonApi, orderApi, cartApi, userApi} from '../../service/main.js'
 
   export default {
     name: 'confirm-order',
@@ -88,7 +90,7 @@
         params: {
           goods: [],
           addressId: null,
-          dispatchTime: '',
+          dispatchTime: null,
           userMessage: '',
           couponId: ''
         },
@@ -115,9 +117,10 @@
     },
     mounted() {
       vm = this
+      vm.params.dispatchTime = me.formatDate(new Date(), false, 2) //默认派送时间
       this.$nextTick(function () {
         vm.getAddress()
-        vm.getGoods()
+        vm.getCart()
       })
     },
 //    computed: {
@@ -135,7 +138,7 @@
       '$route'(to, from) {
         if (to.name === 'confirm_order') {
           vm.getAddress()
-          vm.getGoods()
+          vm.getCart()
         }
       }
     },
@@ -145,7 +148,7 @@
         this.$emit('listenPage', data)
       },
       toAddress(type) {
-        me.sessions.set('ynTmpConfirm', vm.$route.query.thedata)
+        me.sessions.set('ynTmpConfirm', vm.$route.query.goodsId)
         type === 1 ? vm.jump('myaddress', {from: 'confirm_order'}) : vm.jump('edit_address', {from: 'confirm_order'})
       },
       validate() {
@@ -204,22 +207,33 @@
             cur.dispatchDayNum = curVal
           }
         }
-        console.log(vm.curCartData.goods)
       },
-      getGoods() {
-        vm.params.goods = []
-        try {
-          vm.curCartData = vm.$route.query.thedata ? JSON.parse(window.decodeURIComponent(vm.$route.query.thedata)) : {}
-          for (var i = 0; i < vm.curCartData.goods.length; i++) {
-            vm.params.goods.push({goodsId: vm.curCartData.goods[i].goodsId})
+      getCart(isLoadMore, cb) {
+        vm.goodsId = vm.$route.query.goodsId || null
+        if (vm.onFetching) return false
+        vm.processing()
+        vm.onFetching = true
+        var params = vm.goodsId ? {goodsId: vm.$route.query.goodsId} : {}
+        vm.loadData(cartApi.view, params, 'POST', function (res) {
+          vm.onFetching = false
+          vm.processing(0, 1)
+          var resD = res.data
+          for (var i = 0; i < resD.goodsList.length; i++) {
+            var cur = resD.goodsList[i]
+            cur.note = cur.note ? JSON.parse(cur.note) : null
+            vm.params.goods.push({goodsId: cur.goodsId})
           }
-          console.log(vm.curCartData, '带过来的数据')
+          vm.curCartData = resD
+          // vm.countTotal()
+          console.log(vm.curCartData, '购物车数据')
           vm.switchData(vm.coupons, vm.tmpCoupon, 'couponId')
           vm.calcPrice()
           vm.getCoupon()
-        } catch (e) {
-          // console.log(e)
-        }
+          cb ? cb(resD) : null
+        }, function () {
+          vm.onFetching = false
+          vm.processing(0, 1)
+        })
       },
       getAddress() {
         vm.processing()
@@ -244,21 +258,6 @@
           console.log(vm.address, '地址数据')
         }, function () {
           vm.isPosting = false
-          vm.processing(0, 1)
-        })
-      },
-      getCart(isLoadMore) {
-        if (vm.onFetching) return false
-        vm.processing()
-        vm.onFetching = true
-        vm.loadData(cartApi.view, vm.params, 'POST', function (res) {
-          vm.onFetching = false
-          vm.processing(0, 1)
-          var resD = res.data
-          vm.goods = resD
-          console.log(vm.goods, '购物车数据')
-        }, function () {
-          vm.onFetching = false
           vm.processing(0, 1)
         })
       },
@@ -309,6 +308,7 @@
             if (res.success && res.data) {
               // alert(JSON.stringify(res.data))
               vm.payOrder(res.data)
+              vm.jump('order')
             } else {
               if (res.errorCode == 304) {
                 vm.toast('请先绑定手机号！')
@@ -317,7 +317,9 @@
                 }, 800)
               } else {
                 vm.toast(res.message || '生成订单失败！')
-                vm.$router.push({path: '/order'})
+                setTimeout(function () {
+                  vm.$router.push({path: '/order'})
+                }, 500)
               }
             }
           }, function () {
@@ -507,7 +509,8 @@
           width: 100%;
           padding: 0 0 0 160/@rem;
           h3 {
-            padding-bottom: 10/@rem;
+            .borBox;
+            padding: 0 160/@rem 10/@rem 0;
             .txt-normal;
             .c3;
             .fz(26);

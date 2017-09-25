@@ -9,8 +9,8 @@
             <div class="img-con" :style="seller.headimgurl?('background-image:url('+seller.headimgurl+')'):''"></div>
             <div class="infos">
               <h3>{{seller.name}}<span
-                :class="['service_type',seller.serviceTypeCls]">{{seller.serviceTypeName}}</span><span
-                class="distance">{{seller.distance / 1000 | toFixed(1)}}km</span>
+                :class="['service_type',seller.serviceTypeCls]">{{seller.serviceTypeName}}</span>
+                <span class="distance">{{(seller.distance ? seller.distance : 0) | toFixed(1, true)}}km</span>
               </h3>
               <div class="middle">
                 <ol class="star" v-if="seller.sellerScore" v-cloak>
@@ -83,11 +83,12 @@
                 </section>
               </div>
               <group class="buy-count">
-                <x-number button-style="round" :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0"
-                          :max="50" :value="item.number" align="right" :dataId="item.id"
-                          :dataSellerId="item.sellerId"
+                <x-number :class="item.type==='goods_type.2'?'buy-count-milk':''" button-style="round"
+                          :disabled="cartData && item.sellerId!==cartData.sellerId" :min="0"
+                          :max="200" :value="item.number" align="right" :dataId="item.id"
+                          :dataSellerId="item.sellerId" :linedata="item"
                           @on-change="changeCount"></x-number>
-                <span class="stock">库存：{{item.stock}}件</span>
+                <span class="stock">剩余：{{item.stock}}件</span>
               </group>
             </section>
           </li>
@@ -98,6 +99,39 @@
           <p>暂无商品</p></div>
       </div>
 
+    </div>
+
+    <!--底部添加奶pop-checker-->
+    <div v-transfer-dom>
+      <popup class="buyCountCon" v-model="showPop" position="bottom" max-height="80%">
+        <group>
+          <div class="tags-con" v-if="favorTags" v-cloak>
+            <div class="wrap">
+              <h4>口味：</h4>
+              <ul>
+                <li :class="idx===curFavorIdx?'active':''" v-for="(fa,idx) in favorTags"
+                    @click="changeFavorTag(idx,fa)">
+                  {{fa}}
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="tags-con" v-if="priceTags.length" v-cloak>
+            <h4>订购数量：</h4>
+            <ul>
+              <li :class="idx===curPriceIdx?'active':''" v-for="(tg,idx) in priceTags" :data-id="tg.id"
+                  @click="changePriceTag(idx,tg)">{{tg.note}}({{tg.saleNum}}瓶)<br><i
+                class="txt-del">￥{{tg.originPrice}}</i>【￥{{tg.salePrice}}元】
+              </li>
+            </ul>
+          </div>
+          <x-input id="curMilkAmount" title="配送量(瓶/天)：" placeholder="请输入每日配送量" required text-align="right" type="number"
+                   v-model="curMilkAmount" @on-change="changeMilkAmout"></x-input>
+          <x-input class="total-p" title="总价：" text-align="right" type="text" readonly disabled
+                   v-model="curTotalPrice"></x-input>
+        </group>
+        <button type="button" class="btn btn-add-cart" @click="addToCart">加入购物车</button>
+      </popup>
     </div>
 
     <!--购物车效果-->
@@ -112,9 +146,12 @@
       </div>
     </div>
     <!--悬浮购物车-->
-    <div class="float-cart" ref="floatCart" v-show="curCount"
+    <div class="float-cart" style="bottom:3em" ref="floatCart" v-show="curCount"
          v-jump="['cart']">
-      <div class="cart-wrap"><i class="cur-count">{{curCount}}</i></div>
+      <div class="cart-wrap">
+        <div class="num-con"><i class="cur-count">{{curCount}}</i></div>
+        <div class="price-con">￥{{cartData.totalPrice | toFixed}}</div>
+      </div>
     </div>
   </div>
 </template>
@@ -131,6 +168,9 @@
 
   export default {
     name: 'seller_detail',
+    directives: {
+      TransferDom
+    },
     data() {
       return {
         sellerId: null,
@@ -138,6 +178,7 @@
         seller: {},
         goods: [],
         noticeScroll: false,
+        curLinedata: null,
         params: {
           sellerId: null,
           pageSize: 5,
@@ -145,6 +186,21 @@
           /*goodsType: '',
            brandId: ''*/
         },
+        /*底部奶的浮窗-start*/
+        showPop: false,
+        /*价格标签-start*/
+        curMilkAmount: 1,
+        curTotalPrice: 0,
+        priceTags: [],
+        curPriceIdx: 0,
+        curPriceTag: null,
+        /*价格标签-end*/
+        /*口味标签-start*/
+        favorTags: [],
+        curFavorIdx: 0,
+        curFavorTag: '',
+        /*口味标签-end*/
+        /*底部奶的浮窗-end*/
         /* filter start */
         showFilterCon: false,
         filterOffset: 0,
@@ -459,6 +515,42 @@
           }, 1000)
         }
       },
+      /*添加奶*/
+      getTags(id) {
+        vm.isPosting = true
+        vm.loadData(goodsApi.saleConfigList, {goodsId: id}, 'POST', function (res) {
+          vm.isPosting = false
+          if (res.data.itemList.length) {
+            vm.curMilkAmount = 1
+            vm.priceTags = res.data.itemList
+            vm.curPriceTag = vm.priceTags[0]
+            vm.curTotalPrice = me.floatMulti(vm.curMilkAmount, vm.curPriceTag.salePrice) + '元'
+            vm.showPop = true
+          } else {
+            vm.toast('此商品暂无法购买', 'warn')
+          }
+        }, function () {
+          vm.isPosting = false
+        })
+      },
+      changeFavorTag(idx, data) {
+        vm.curFavorIdx = idx
+        vm.curFavorTag = data
+        // console.log('口味标签：', vm.curFavorTag)
+      },
+      changePriceTag(idx, data) {
+        vm.curPriceIdx = idx
+        vm.curPriceTag = data
+        vm.curTotalPrice = me.floatMulti(vm.curMilkAmount, data.salePrice) + '元'
+        // console.log('价格标签：', vm.curPriceTag.note)
+      },
+      changeMilkAmout(val) {
+        try {
+          vm.curTotalPrice = me.floatMulti(vm.curMilkAmount, vm.curPriceTag.salePrice) + '元'
+        } catch (e) {
+          // console.log(e)
+        }
+      },
       /* 商品筛选 */
       showFilter(type, e) {
         if (vm.showFilterCon) {
@@ -534,33 +626,67 @@
           })
         })
       },
+      addToCart() {
+        // 判断当前是否填写了数量
+        if (vm.curMilkAmount) {
+          vm.loadData(cartApi.add, {
+            goodsId: vm.curLinedata.id,
+            goodsNote: vm.curFavorTag,
+            goodsNum: vm.curPriceTag.saleNum,
+            dispatchNum: vm.curMilkAmount
+          }, 'POST', function (res) {
+            if (res.success) {
+              vm.viewCart()
+              vm.curMilkAmount = 1
+            } else {
+              // vm.toast(res.message || '购物车中已有其他店铺商品，请先清空')
+              vm.clearCart()
+              return
+            }
+            vm.isPosting = false
+          }, function () {
+            vm.isPosting = false
+          })
+          vm.showPop = false
+        } else {
+          vm.toast('配送量至少1瓶哦！', 'warn')
+        }
+      },
       changeCount(obj) {
         // console.log(obj)
         if (vm.cartData.sellerId && obj.sellerId !== vm.cartData.sellerId) {
           vm.clearCart()
           return
         }
-        if (vm.isPosting) return
-        vm.isPosting = true
-        if (obj.type === 'add') {
-          vm.loadData(cartApi.add, {goodsId: obj.id}, 'POST', function (res) {
-            if (res.success) {
-              vm.viewCart()
-              vm.additem(obj.event)
-            } else {
-              vm.toast(res.message)
-            }
-            vm.isPosting = false
-          }, function () {
-            vm.isPosting = false
-          })
+        vm.curLinedata = obj
+        if (obj.linedata.type === 'goods_type.2' && obj.type === 'add') {
+          vm.getTags(obj.id)
+          vm.favorTags = obj.linedata.flavourLabel ? obj.linedata.flavourLabel.split(',') : []
+          vm.curFavorTag = vm.favorTags.length ? vm.favorTags[0] : ''
+          return false
         } else {
-          vm.loadData(cartApi.minus, {goodsId: obj.id}, 'POST', function (res) {
-            vm.viewCart()
-            vm.isPosting = false
-          }, function () {
-            vm.isPosting = false
-          })
+          if (vm.isPosting) return
+          vm.isPosting = true
+          if (obj.type === 'add') {
+            vm.loadData(cartApi.add, {goodsId: obj.id}, 'POST', function (res) {
+              if (res.success) {
+                vm.viewCart()
+                vm.additem(obj.event)
+              } else {
+                vm.toast(res.data)
+              }
+              vm.isPosting = false
+            }, function () {
+              vm.isPosting = false
+            })
+          } else {
+            vm.loadData(cartApi.minus, {goodsId: obj.id}, 'POST', function (res) {
+              vm.viewCart()
+              vm.isPosting = false
+            }, function () {
+              vm.isPosting = false
+            })
+          }
         }
       },
       additem(event) {
@@ -1053,7 +1179,83 @@
           .fz(22);
           .c9;
         }
+        .buy-count-milk {
+          /*.vux-cell-primary {
+
+          }
+          .vux-number-selector-plus {
+
+          }*/
+          .vux-number-selector-sub, input {
+            .none;
+          }
+          .vux-number-disabled {
+            border: 1px solid #3cc51f;
+            svg {
+              fill: #3cc51f;
+            }
+          }
+        }
       }
+    }
+  }
+
+  .buyCountCon {
+    .vux-no-group-title {
+      margin-top: 0;
+      padding: 20/@rem 0 40/@rem;
+      .vux-x-input {
+        padding: 24/@rem 30/@rem;
+        input {
+          .c3;
+          &:disabled {
+            .c3;
+          }
+        }
+      }
+      .vux-x-input, .vux-cell-box, .vux-x-textarea {
+        .fz(26);
+      }
+    }
+
+    .tags-con {
+      padding: 20/@rem 24/@rem;
+      .wrap {
+        .bor-b;
+      }
+      h4 {
+        .fz(24);
+        font-weight: normal;
+        .c3;
+      }
+      ul {
+        padding: 14/@rem 0;
+        overflow: hidden;
+      }
+      li {
+        .pointer;
+        .fl;
+        padding: 6/@rem 20/@rem;
+        margin: 8/@rem;
+        line-height: 1.5;
+        font-size: 22/@rem;
+        .c6;
+        .bf8;
+        .bor(1px, solid, #ddd);
+        .borR(3px);
+        &.active {
+          .cf;
+          .bdiy(@c3);
+          .bor(1px, solid, @c3);
+        }
+      }
+    }
+    .btn-add-cart {
+      width: 100%;
+      padding: 30/@rem 0;
+      .fz(26);
+      .cf;
+      .bdiy(@c2);
     }
   }
 

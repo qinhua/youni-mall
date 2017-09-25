@@ -91,6 +91,7 @@
       vm = this
       vm.getUser()
       vm.genWave()
+      me.sessions.remove('ynTmpConfirm')
     },
     watch: {
       '$route' (to, from) {
