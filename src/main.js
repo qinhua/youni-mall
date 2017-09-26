@@ -10,7 +10,7 @@ import 'ionicons/dist/css/ionicons.css'
 import 'weui/dist/style/weui.min.css'
 import weui from '../static/js/weui.js'
 import $ from 'jquery'
-import lodash from 'lodash'
+import throttle from 'lodash.throttle'
 import '../static/js/sign.js'
 import 'myMixin'
 import store from './store'
@@ -103,6 +103,7 @@ router.beforeEach((to, from, next) => {
 
 /* ----- 封装一些方法 -------- */
 /* ajax请求 */
+Vue.prototype.throttle = throttle
 Vue.prototype.$axios = Axios
 window.loadData = Vue.prototype.loadData = function (url, params, type, sucCb, errCb, noAuthInfo) {
   params = params || {}

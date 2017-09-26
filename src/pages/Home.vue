@@ -396,7 +396,7 @@
       /*滚动检测*/
       onScroll() {
         // 监听dom的scroll事件
-        _.debounce(vm.scrollHandler, 1000)
+        vm.throttle(vm.scrollHandler, 1000)
       },
       scrollHandler() {
         // 滚动中的真正的操作

@@ -127,6 +127,8 @@
       '$route'(to, from) {
         if (to.name === 'seller_detail_more') {
           vm.getSeller()
+        } else {
+          this.$refs.previewer.close(0)
         }
       }
     },
