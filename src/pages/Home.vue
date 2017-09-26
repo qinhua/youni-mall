@@ -138,8 +138,7 @@
           </div>
           <x-input id="curMilkAmount" title="配送量(瓶/天)：" placeholder="请输入每日配送量" required text-align="right" type="number"
                    v-model="curMilkAmount" @on-change="changeMilkAmout"></x-input>
-          <x-input class="total-p" title="总价：" text-align="right" type="text" readonly disabled
-                   v-model="curTotalPrice"></x-input>
+          <x-input class="total-p" title="总价：" text-align="right" type="text" readonly v-model="curTotalPrice"></x-input>
         </group>
         <button type="button" class="btn btn-add-cart" @click="addToCart">加入购物车</button>
       </popup>

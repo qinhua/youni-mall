@@ -28,8 +28,7 @@
           <section class="v-items" v-for="(item, index) in tickets" :data-id="item.id" :data-waterid="item.waterId"
                    v-cloak>
             <section class="wrap">
-              <img :src="item.imgurl" v-if="item.imgurl">
-              <img src="static/img/bg_ticket.jpg" v-else>
+              <div class="img-con" :style="item.imgurl?('background-image:url('+item.imgurl+')'):''"></div>
               <section class="infos">
                 <h3>{{item.name}}<span class="count">数量：<i>{{item.waterNum}}桶</i></span></h3>
                 <section class="middle">
@@ -46,16 +45,16 @@
           <section class="v-items" v-for="(item, index) in tickets" :data-id="item.id" :data-waterid="item.waterId"
                    v-cloak>
             <section class="wrap">
-              <img :src="item.ticketImage">
+              <div class="img-con" :style="item.imgurl?('background-image:url('+item.imgurl+')'):''"></div>
               <section class="infos">
                 <h3>{{item.ticketName}}<span class="count">数量：<i>{{item.totalWaterNum}}桶</i></span></h3>
                 <section class="middle">
-                  <span class="price txt-del c9">￥{{item.totalAmount | toFixed}}元</span>
+                  <span class="txt-del c9">￥{{item.totalAmount | toFixed}}元</span>
                   <span class="sale-count">已兑换：<i>{{item.exchangeWaterNum}}桶</i></span>
                   <button type="button" :class="['btn btn-buy',item.payStatus?'exchange':'']"
                           @click="onButtonClick($event,item.id,item)" v-text="item.payStatus ? '兑换' : '支付'"></button>
                 </section>
-                <label>￥{{item.payAmount | toFixed}}</label>
+                <label class="price">实付：￥{{item.payAmount | toFixed}}元</label>
               </section>
             </section>
           </section>
@@ -190,22 +189,24 @@
       refresh(done) {
         // console.log('下拉加载')
         setTimeout(function () {
-          !vm.isMe ? vm.getTickets() : null
+          // !vm.isMe ? vm.getTickets() : null
+          vm.getTickets()
           try {
             vm.$refs.ticketScroller.finishPullToRefresh()
           } catch (e) {
-            console.log(e)
+            // console.log(e)
           }
         }, 1200)
       },
       infinite(done) {
         // console.log('无限滚动')
         setTimeout(function () {
-          !vm.isMe ? vm.getTickets(true) : null
+          // !vm.isMe ? vm.getTickets(true) : null
+          vm.getTickets(true)
           try {
             vm.$refs.ticketScroller.finishInfinite(true)
           } catch (e) {
-            console.log(e)
+            // console.log(e)
           }
         }, 1000)
       },
@@ -275,7 +276,7 @@
         }
         if (vm.isPosting) return false
         vm.isPosting = true
-        vm.loadData(ticketApi.buy, {waterId: id}, 'POST', function (res) {
+        vm.loadData(ticketApi.add, {waterId: id}, 'POST', function (res) {
           vm.isPosting = false
           if (res.success && res.data) {
             vm.pay(res.data)
@@ -300,7 +301,7 @@
         }
         if (vm.isPosting) return false
         vm.isPosting = true
-        vm.loadData(orderApi.rePay, {orderId: id}, 'POST', function (res) {
+        vm.loadData(ticketApi.repay, {id: id}, 'POST', function (res) {
           vm.isPosting = false
           if (res.success && res.data) {
             vm.pay(res.data)
@@ -341,14 +342,21 @@
             success: function (res) {
               // 支付成功后的回调函数
               vm.isPosting = false
-              vm.keepFresh(true)
-              vm.$router.push({path: '/order'})
+              if (vm.isMe) {
+                vm.$router.push({path: '/order'})
+              } else {
+                vm.$router.push({path: '/ticket/2'})
+              }
             }
           })
         })
         wx.error(function (res) {
           vm.isPosting = false
-          vm.$router.push({path: '/order'})
+          if (vm.isMe) {
+            vm.$router.push({path: '/order'})
+          } else {
+            vm.$router.push({path: '/ticket/2'})
+          }
           // config信息验证失败会执行error函数，如签名过期导致验证失败，具体错误信息可以打开config的debug模式查看，也可以在返回的res参数中查看，对于SPA可以在这里更新签名。
           // alert(JSON.stringify(res))
         })
@@ -432,16 +440,16 @@
           }
           .wrap {
             .rel;
-            .h(150);
+            .h(140);
           }
-          img {
+          .img-con {
             .abs;
-            left: 0;
             top: 0;
-            .size(150, 150);
-            background: #f5f5f5 url(../../static/img/noImg.png) no-repeat center;
-            -webkit-background-size: 30% auto;
-            background-size: 30% auto;
+            .size(140, 140);
+            overflow: hidden;
+            background: #f5f5f5 url(../../static/img/bg_ticket.jpg) no-repeat center;
+            -webkit-background-size: cover;
+            background-size: cover;
           }
           .infos {
             .flex;
@@ -449,10 +457,10 @@
             .borBox;
             width: 100%;
             height: 100%;
-            padding-left: 170/@rem;
+            padding-left: 160/@rem;
             h3 {
               .flex-r(1);
-              .fz(28);
+              .fz(26);
               .txt-normal;
               .c3;
               .ellipsis;
@@ -476,7 +484,7 @@
               }
               span {
                 &.price {
-                  .c3;
+                  .cdiy(@c2);
                   .fz(26);
                 }
                 &.sale-count {
@@ -497,15 +505,18 @@
                 .bdiy(#5cc5d0);
                 .borR(4px);
                 &.exchange {
-                  background: #ca9851;
+                  background: #eca53f;
                 }
               }
             }
             label {
               .flex-r(1);
-              .cdiy(#ecab57);
+              .c9;
               .fz(22);
               .ellipsis;
+              &.price{
+                .cdiy(@c2);
+              }
             }
           }
         }

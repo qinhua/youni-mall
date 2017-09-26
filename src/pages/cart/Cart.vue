@@ -1,67 +1,71 @@
 <template>
   <div class="cart-con" v-cloak>
-    <div class="order-list">
-      <scroller class="inner-scroller" ref="goodsScroller" :on-refresh="refresh" :on-infinite="infinite"
-                refreshText="下拉刷新" noDataText="" snapping>
-        <!-- content goes here -->
-        <section class="v-items" :data-sellerid="goods.sellerId">
-          <h4 class="item-top" v-if="goods.goodsList&&goods.goodsList.length"><i
-            class="ico-store"></i>&nbsp;{{goods.sellerName}}&nbsp;&nbsp;<i
-            class="fa fa-angle-right cc"></i><span
-            @click="editGoods(goods.sellerId)">{{isEdit ? '完成' : '编辑'}}</span><span @click="emptyCart" v-show="!isEdit">清空</span>
-          </h4>
-          <ul class="has-list">
-            <swipeout>
-              <swipeout-item @on-close="" @on-open="" transition-mode="follow" :disabled="isEdit"
-                             v-for="(item,index) in goods.goodsList"
-                             :data-id="item.goodsId" key="index" :ref="'switem-'+goods.sellerId">
-                <div slot="right-menu">
-                  <!--<swipeout-button @click.native="onButtonClick('edit')" type="primary">编辑</swipeout-button>-->
-                  <swipeout-button @click.native="delGoods(item.goodsId)" type="warn">删除</swipeout-button>
-                </div>
-                <div slot="content" class="demo-content vux-1px-t">
-                  <li>
-                    <section class="item-middle">
-                      <div class="img-con"
-                           :style="item.goodsImage?('background-image:url('+item.goodsImage+')'):''"></div>
-                      <div class="info-con">
-                        <h3><span
-                          :class="item.goodsType==='goods_type.2'?'milk':''">{{item.goodsType === 'goods_type.2' ? '奶' : '水'}}</span>{{item.goodsName}}
-                        </h3>
-                        <section class="middle" v-if="item.goodsType!=='goods_type.2'">
-                          <span class="unit-price">￥{{item.price | toFixed}}元</span>
-                          <span class="order-info">{{item.info}}</span>
-                          <!--<label>{{item.label}}</label>-->
-                        </section>
-                        <section class="middle milk" v-else>
-                          <span class="unit-price" @click="showModal('price',item)">订购数量：<i
+    <div class="scroll-view">
+      <div class="order-list">
+        <scroller class="inner-scroller" ref="goodsScroller" :on-refresh="refresh" :on-infinite="infinite"
+                  refreshText="下拉刷新" noDataText="" snapping>
+          <!-- content goes here -->
+          <section class="v-items" :data-sellerid="goods.sellerId">
+            <h4 class="item-top" v-if="goods.goodsList&&goods.goodsList.length" v-cloak><i
+              class="ico-store"></i>&nbsp;{{goods.sellerName}}&nbsp;&nbsp;<i
+              class="fa fa-angle-right cc"></i><span
+              @click="editGoods(goods.sellerId)">{{isEdit ? '完成' : '编辑'}}</span><span @click="emptyCart"
+                                                                                      v-show="!isEdit">清空</span>
+            </h4>
+            <ul class="has-list">
+              <swipeout>
+                <swipeout-item @on-close="" @on-open="" transition-mode="follow" :disabled="isEdit"
+                               v-for="(item,index) in goods.goodsList"
+                               :data-id="item.goodsId" key="index" :ref="'switem-'+goods.sellerId">
+                  <div slot="right-menu">
+                    <!--<swipeout-button @click.native="onButtonClick('edit')" type="primary">编辑</swipeout-button>-->
+                    <swipeout-button @click.native="delGoods(item.goodsId)" type="warn">删除</swipeout-button>
+                  </div>
+                  <div slot="content" class="demo-content vux-1px-t">
+                    <li>
+                      <section class="item-middle">
+                        <div class="img-con"
+                             :style="item.goodsImage?('background-image:url('+item.goodsImage+')'):''"></div>
+                        <div class="info-con">
+                          <h3><span
+                            :class="item.goodsType==='goods_type.2'?'milk':''">{{item.goodsType === 'goods_type.2' ? '奶' : '水'}}</span>{{item.goodsName}}
+                          </h3>
+                          <section class="middle" v-if="item.goodsType!=='goods_type.2'">
+                            <span class="unit-price">￥{{item.price | toFixed}}元</span>
+                            <span class="order-info">{{item.info}}</span>
+                            <!--<label>{{item.label}}</label>-->
+                          </section>
+                          <section class="middle milk" v-else>
+                          <span class="unit-price" @click="showModal('price',item)">订购数：<i
                             :class="isEdit?'active':''">{{item.note.priceLabel}}</i></span>
-                          <span class="order-info">派送量：{{item.dispatchNum}}瓶/天</span>
-                          <!--<label @click="showModal('favor',item.goodsId)">口味：<i :class="isEdit?'active':''">{{item.note.goodsNote}}</i></label>-->
-                          <label>口味：<i>{{item.note.goodsNote}}</i></label>
-                        </section>
-                      </div>
-                      <div class="price-con">
-                        <p class="price">总价：￥{{item.payPrice}}元</p>
-                        <p class="buy-count" v-show="!isEdit&&item.goodsType!=='goods_type.2'">x{{item.goodsNum}}</p>
-                        <div class="checker-con" v-show="isEdit&&item.goodsType!=='goods_type.2'">
-                          <label @click="updateGoods(item.goodsId, 'minus')"><i class="fa fa-minus"></i></label>
-                          <input type="tel" readonly :value="item.goodsNum"
-                                 @blur="updateGoods(item.goodsId, item.goodsNum)">
-                          <label @click="updateGoods(item.goodsId,'add')"><i class="fa fa-plus"></i></label>
+                            <span class="order-info">派送量：{{item.dispatchNum}}瓶/天</span>
+                            <!--<label @click="showModal('favor',item.goodsId)">口味：<i :class="isEdit?'active':''">{{item.note.goodsNote}}</i></label>-->
+                            <label>口味：<i>{{item.note.goodsNote}}</i></label>
+                          </section>
                         </div>
-                      </div>
-                    </section>
-                  </li>
-                </div>
-              </swipeout-item>
-            </swipeout>
-          </ul>
-        </section>
-      </scroller>
+                        <div class="price-con">
+                          <p class="price">总价：￥{{item.payPrice}}元</p>
+                          <p class="buy-count" v-show="!isEdit&&item.goodsType!=='goods_type.2'">x{{item.goodsNum}}</p>
+                          <div class="checker-con" v-show="isEdit&&item.goodsType!=='goods_type.2'">
+                            <label @click="updateGoods(item.goodsId, 'minus')"><i class="fa fa-minus"></i></label>
+                            <input type="tel" readonly :value="item.goodsNum"
+                                   @blur="updateGoods(item.goodsId, item.goodsNum)">
+                            <label @click="updateGoods(item.goodsId,'add')"><i class="fa fa-plus"></i></label>
+                          </div>
+                        </div>
+                      </section>
+                    </li>
+                  </div>
+                </swipeout-item>
+              </swipeout>
+            </ul>
+          </section>
+        </scroller>
+      </div>
+      <div class="iconNoData abs-center-vh" v-if="!goods.sellerId" v-cloak><i></i>
+        <p>空空如也</p></div>
     </div>
-    <div class="iconNoData abs-center-vh" v-if="!goods.sellerId"><i></i>
-      <p>空空如也</p></div>
+
     <div class="count-bar">
       <div class="wrap">
         <div class="txt-total">
@@ -94,7 +98,7 @@
           </div>
           <x-input id="curMilkAmount" title="配送量(瓶/天)：" placeholder="请输入每日配送量" required text-align="right" type="number"
                    v-model="curMilkAmount" @on-change="changeMilkAmout"></x-input>
-          <x-input title="总价：" text-align="right" type="text" readonly disabled v-model="curTotalPrice"></x-input>
+          <x-input title="总价：" text-align="right" type="text" readonly v-model="curTotalPrice"></x-input>
         </group>
         <button type="button" class="btn btn-edit-sure" @click="addToCart">完成</button>
       </popup>
@@ -163,7 +167,7 @@
         /*底部奶的浮窗-end*/
         params: {
           /*pagerSize: 10,
-          pageNo: 1*/
+           pageNo: 1*/
         },
       }
     },
@@ -186,13 +190,13 @@
     mounted() {
       vm = this
       vm.getCart()
-      vm.$nextTick(() => {
+      vm.$nextTick(function () {
         vm.$refs.goodsScroller.finishInfinite(true)
         vm.$refs.goodsScroller.resize()
       })
     },
     /*computed: {
-    },*/
+     },*/
     watch: {
       '$route'(to, from) {
         if (to.name === 'cart') {
@@ -343,15 +347,15 @@
         if (vm.isEdit) {
           vm.isEdit = false
           /*var kk = vm.$refs['switem-' + id]
-          for (var i = 0; i < kk.length; i++) {
-            kk[i].close()
-          }*/
+           for (var i = 0; i < kk.length; i++) {
+           kk[i].close()
+           }*/
         } else {
           vm.isEdit = true
           /*var kk = vm.$refs['switem-' + id]
-          for (var i = 0; i < kk.length; i++) {
-            kk[i].open('right')
-          }*/
+           for (var i = 0; i < kk.length; i++) {
+           kk[i].open('right')
+           }*/
         }
       },
       updateGoods(id, type) {
@@ -375,10 +379,10 @@
           })
         }
         /* vm.loadData(cartApi.update, {goodsId: id, goodsNum: num}, 'POST', function (res) {
-           vm.getCart()
-           vm.isPosting = false
+         vm.getCart()
+         vm.isPosting = false
          }, function () {
-           vm.isPosting = false
+         vm.isPosting = false
          })*/
       },
       delGoods(id) {
@@ -403,15 +407,15 @@
           dispatchNum: data.dispatchNum
         }
         /*if (type === 'favor') {
-          vm.priceTags = []
-          for (var i = 0; i < vm.goods.goodsList.length; i++) {
-            var cur = vm.goods.goodsList[i]
-            if (id === cur.goodsId) {
-              vm.favorTags = cur.goodsFlavourLabel ? cur.goodsFlavourLabel.split(',') : []
-            }
-          }
-        } else {
-          vm.favorTags = []*/
+         vm.priceTags = []
+         for (var i = 0; i < vm.goods.goodsList.length; i++) {
+         var cur = vm.goods.goodsList[i]
+         if (id === cur.goodsId) {
+         vm.favorTags = cur.goodsFlavourLabel ? cur.goodsFlavourLabel.split(',') : []
+         }
+         }
+         } else {
+         vm.favorTags = []*/
 
         vm.curMilkAmount = data.dispatchNum
         vm.priceTags = data.saleConfigDtos
@@ -488,6 +492,14 @@
   @import '../../../static/css/tools.less';
 
   .cart-con {
+    .rel;
+    height: 100%;
+    z-index: 1;
+    overflow: hidden;
+    .scroll-view {
+      height: 100%;
+      overflow: auto;
+    }
 
     .demo2-item, .demo3-item {
       &:before {
@@ -634,15 +646,17 @@
                       color: #f17114;
                       .borR(2px);
                       &.active {
+                        .abs;
+                        z-index:2;
                         padding: 0 40/@rem 0 2px;
                         border: 1px solid #e47b25;
                         &:before {
                           content: "";
                           position: absolute;
-                          top: 5/@rem;
+                          top: 8/@rem;
                           right: 10/@rem;
-                          width: 12/@rem;
-                          height: 12/@rem;
+                          width: 10/@rem;
+                          height: 10/@rem;
                           border: 1px solid #f17114;
                           border-width: 1px 0 0 1px;
                           -webkit-transform: rotate(-135deg);
@@ -722,7 +736,7 @@
     }
 
     .count-bar {
-      .fix;
+      .abs;
       bottom: 0;
       z-index: 20;
       width: 100%;

@@ -1,122 +1,124 @@
 <template>
   <div class="goods-detail">
-    <div class="top">
-      <div class="banner-goods-detail">
-        <div class="swiper-container" v-show="details.imgurl">
-          <div class="swiper-wrapper">
-            <!--<div class="swiper-slide" v-for="(item, index) in details.imgurl" :key="index" :data-id="item.id">-->
-            <div class="swiper-slide" :style="'background-image:url('+details.imgurl+')'">
-              <!--<a :href="item.linkUrl" target="blank">-->
-              <a href="#" target="blank">
-                <!--<img class="wd-img" :src="details.imgurl" alt="">-->
-              </a>
-            </div>
-          </div>
-          <div class="swiper-pagination"></div>
-        </div>
-      </div>
-      <div class="buy-con">
-        <h3 class="title"><span
-          :class="details.categoryName==='奶'?'milk':''">{{details.categoryName}}</span>{{details.name}}</h3>
-        <div class="wrap">
-          <div class="txt-con">
-            <p class="middle"><span class="price">￥{{(details.price || 0) | toFixed}}</span><sub>已售{{details.saleCount}}单</sub><span
-              class="stock">剩余{{details.stock}}件</span></p>
-            <ul class="tags" v-if="details.label">
-              <li v-for="tag in details.label.split(',')">{{tag}}</li>
-            </ul>
-          </div>
-          <div class="right-con">
-            <div class="inner">
-              <button type="button" class="btn btn-addcart"
-                      @click="changeCount({type:'add',id:details.id,sellerId:details.sellerId,linedata:details})"
-                      v-if="isMilk" v-cloak><i class="fa fa-plus"></i>&nbsp;购物车
-              </button>
-              <div class="number-con" v-else>
-                <group>
-                  <x-number :class="details.type==='goods_type.2'?'buy-count-milk':''"
-                            :disabled="cartData && details.sellerId!==cartData.sellerId" :min="0"
-                            :max="200" :value="details.number" align="right" :dataId="details.id"
-                            :dataSellerId="details.sellerId" :linedata="details"
-                            @on-change="changeCount"></x-number>
-                </group>
+    <div class="scroll-view">
+      <div class="top">
+        <div class="banner-goods-detail">
+          <div class="swiper-container" v-show="details.imgurl">
+            <div class="swiper-wrapper">
+              <!--<div class="swiper-slide" v-for="(item, index) in details.imgurl" :key="index" :data-id="item.id">-->
+              <div class="swiper-slide" :style="'background-image:url('+details.imgurl+')'">
+                <!--<a :href="item.linkUrl" target="blank">-->
+                <a href="#" target="blank">
+                  <!--<img class="wd-img" :src="details.imgurl" alt="">-->
+                </a>
               </div>
             </div>
+            <div class="swiper-pagination"></div>
           </div>
         </div>
-      </div>
-    </div>
-    <div class="bottom">
-      <h3 class="title">图文详情</h3>
-      <!--<tab :line-width=2 active-color="#f34c18" v-model="curIndex">
-        <tab-item class="vux-center" :selected="curIndex === index" v-for="(item, index) in tablist"
-                  @click.native="chooseCol(index)" :key="index">{{item}}
-        </tab-item>
-      </tab>-->
-      <div class="detail-con">
-        <div class="detail-content" v-html="details.note" v-if="details.note"></div>
-        <span class="block noData center" v-else>暂无详情</span>
-      </div>
-      <!--<div class="swiper-container swiper-goods-detail">
-        <div class="swiper-wrapper" v-if="details.note">
-          <div class="swiper-slide">
-            <div class="detail-con" v-html="details.note">
-              &lt;!&ndash;<img src="../../../static/img/detail/s01.jpg" class="wd-img" alt="">&ndash;&gt;
-            </div>
-          </div>
-          &lt;!&ndash;<div class="swiper-slide">
-            <ul class="goods-param">
-              <li>规格：4L*6</li>
-              <li>产地：由于农夫山泉采取的是“水源地建厂，水源地灌装”、“水源地就近区域销售”的策略，各地购买到的农夫山泉水源地不尽相同，具体以瓶身标注为准 </li>
-              <li>贮存方法：避免阳光直接照射及高温</li>
-            </ul>
-          </div>
-          <div class="swiper-slide">
-            <div class="appraise">
-              <ul class="appraise-nav">
-                <li :selected="appIdx === 0" @click="filterAppraise(0)">全部</li>
-                <li class="good" :selected="appIdx === 1" @click="filterAppraise(1)">好评</li>
-                <li class="middle" :selected="appIdx === 2" @click="filterAppraise(2)">中评</li>
-                <li class="bad" :selected="appIdx === 3" @click="filterAppraise(3)">差评</li>
+        <div class="buy-con">
+          <h3 class="title"><span
+            :class="details.categoryName==='奶'?'milk':''">{{details.categoryName}}</span>{{details.name}}</h3>
+          <div class="wrap">
+            <div class="txt-con">
+              <p class="middle"><span class="price">￥{{(details.price || 0) | toFixed}}</span><sub>已售{{details.saleCount}}单</sub><span
+                class="stock">剩余{{details.stock}}件</span></p>
+              <ul class="tags" v-if="details.label">
+                <li v-for="tag in details.label.split(',')">{{tag}}</li>
               </ul>
-              <div class="appraise-content">
-                <ol>
-                  <li v-for="uu in appraise">
-                    <div class="wrap">
-                      <div class="buyer">
-                        <img :src="uu.imgUrl" alt="">
-                        <span>{{uu.name}}</span>
-                      </div>
-                      <div class="mtxt-con">
-                        <div class="score-con" v-if="uu.score">
-                          <ul class="u-stars">
-                            <li v-for="idx in uu.score">★</li>
-                          </ul>
-                          <span>{{uu.score}}.0</span>
-                        </div>
-                        <div class="score-con grey" v-else>
-                          <ul class="u-stars">
-                            <li>★</li>
-                            <li>★</li>
-                            <li>★</li>
-                            <li>★</li>
-                            <li>★</li>
-                          </ul>
-                          <span>0.0</span>
-                        </div>
-                        <div class="txt-con">
-                          <p>{{uu.content}}</p>
-                        </div>
-                        <span class="time">{{uu.createTime}}</span>
-                      </div>
-                    </div>
-                  </li>
-                </ol>
+            </div>
+            <div class="right-con">
+              <div class="inner">
+                <button type="button" class="btn btn-addcart"
+                        @click="changeCount({type:'add',id:details.id,sellerId:details.sellerId,linedata:details})"
+                        v-if="isMilk" v-cloak><i class="fa fa-plus"></i>&nbsp;购物车
+                </button>
+                <div class="number-con" v-else>
+                  <group>
+                    <x-number :class="details.type==='goods_type.2'?'buy-count-milk':''"
+                              :disabled="cartData && details.sellerId!==cartData.sellerId" :min="0"
+                              :max="200" :value="details.number" align="right" :dataId="details.id"
+                              :dataSellerId="details.sellerId" :linedata="details"
+                              @on-change="changeCount"></x-number>
+                  </group>
+                </div>
               </div>
             </div>
-          </div>&ndash;&gt;
+          </div>
         </div>
-      </div>-->
+      </div>
+      <div class="bottom">
+        <h3 class="title">图文详情</h3>
+        <!--<tab :line-width=2 active-color="#f34c18" v-model="curIndex">
+          <tab-item class="vux-center" :selected="curIndex === index" v-for="(item, index) in tablist"
+                    @click.native="chooseCol(index)" :key="index">{{item}}
+          </tab-item>
+        </tab>-->
+        <div class="detail-con">
+          <div class="detail-content" v-html="details.note" v-if="details.note"></div>
+          <span class="block noData center" v-else>暂无详情</span>
+        </div>
+        <!--<div class="swiper-container swiper-goods-detail">
+          <div class="swiper-wrapper" v-if="details.note">
+            <div class="swiper-slide">
+              <div class="detail-con" v-html="details.note">
+                &lt;!&ndash;<img src="../../../static/img/detail/s01.jpg" class="wd-img" alt="">&ndash;&gt;
+              </div>
+            </div>
+            &lt;!&ndash;<div class="swiper-slide">
+              <ul class="goods-param">
+                <li>规格：4L*6</li>
+                <li>产地：由于农夫山泉采取的是“水源地建厂，水源地灌装”、“水源地就近区域销售”的策略，各地购买到的农夫山泉水源地不尽相同，具体以瓶身标注为准 </li>
+                <li>贮存方法：避免阳光直接照射及高温</li>
+              </ul>
+            </div>
+            <div class="swiper-slide">
+              <div class="appraise">
+                <ul class="appraise-nav">
+                  <li :selected="appIdx === 0" @click="filterAppraise(0)">全部</li>
+                  <li class="good" :selected="appIdx === 1" @click="filterAppraise(1)">好评</li>
+                  <li class="middle" :selected="appIdx === 2" @click="filterAppraise(2)">中评</li>
+                  <li class="bad" :selected="appIdx === 3" @click="filterAppraise(3)">差评</li>
+                </ul>
+                <div class="appraise-content">
+                  <ol>
+                    <li v-for="uu in appraise">
+                      <div class="wrap">
+                        <div class="buyer">
+                          <img :src="uu.imgUrl" alt="">
+                          <span>{{uu.name}}</span>
+                        </div>
+                        <div class="mtxt-con">
+                          <div class="score-con" v-if="uu.score">
+                            <ul class="u-stars">
+                              <li v-for="idx in uu.score">★</li>
+                            </ul>
+                            <span>{{uu.score}}.0</span>
+                          </div>
+                          <div class="score-con grey" v-else>
+                            <ul class="u-stars">
+                              <li>★</li>
+                              <li>★</li>
+                              <li>★</li>
+                              <li>★</li>
+                              <li>★</li>
+                            </ul>
+                            <span>0.0</span>
+                          </div>
+                          <div class="txt-con">
+                            <p>{{uu.content}}</p>
+                          </div>
+                          <span class="time">{{uu.createTime}}</span>
+                        </div>
+                      </div>
+                    </li>
+                  </ol>
+                </div>
+              </div>
+            </div>&ndash;&gt;
+          </div>
+        </div>-->
+      </div>
     </div>
 
     <!--底部立即购买pop-checker-->
@@ -155,7 +157,7 @@
           </div>
           <x-input id="curMilkAmount" title="配送量(瓶/天)：" placeholder="请输入每日配送量" required text-align="right" type="number"
                    v-model="curMilkAmount" @on-change="changeMilkAmout"></x-input>
-          <x-input class="total-p" title="总价：" text-align="right" type="text" readonly disabled
+          <x-input class="total-p" title="总价：" text-align="right" type="text" readonly
                    v-model="curTotalPrice"></x-input>
         </group>
         <button type="button" class="btn btn-addcart" @click="nextStep">{{isBuy ? '立即购买' : '加入购物车'}}</button>
@@ -457,9 +459,9 @@
 //        if (vm.curWaterAmount) {
 
         /*vm.$router.push({
-          name: 'confirm_order',
-          query: {thedata: encodeURIComponent(JSON.stringify(lastD))}
-        })*/
+         name: 'confirm_order',
+         query: {thedata: encodeURIComponent(JSON.stringify(lastD))}
+         })*/
         /*} else {
          vm.toast('至少选1件哦！', 'warn')
          }*/
@@ -703,8 +705,13 @@
 
   .goods-detail {
     .rel;
+    height: 100%;
     z-index: 1;
-    overflow-x: hidden;
+    overflow: hidden;
+    .scroll-view {
+      height: 100%;
+      overflow: auto;
+    }
     .top {
       margin-bottom: 14/@rem;
       .banner-goods-detail {
@@ -1034,9 +1041,9 @@
         }
       }
     }
-    //部分样式在main.css里
+
     .cart-model {
-      .fix;
+      .abs;
       bottom: 0;
       z-index: 20;
       width: 100%;
@@ -1111,7 +1118,6 @@
         }
       }
     }
-
   }
 
   .buyCountCon {

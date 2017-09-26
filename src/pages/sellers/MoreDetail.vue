@@ -1,76 +1,80 @@
 <template>
   <div class="seller-detail-more" v-cloak>
-    <div class="seller-info">
-      <div class="v-items" :data-id="seller.id">
-        <div class="wrap">
-          <div class="img-con" :style="seller.headimgurl?('background-image:url('+seller.headimgurl+')'):''"></div>
-          <div class="infos">
-            <h3>{{seller.name}}<span
-              :class="['service_type',seller.serviceTypeCls]">{{seller.serviceTypeName}}</span>
-              <span class="distance">{{(seller.distance ? seller.distance : 0) | toFixed(1, true)}}km</span>
-            </h3>
-            <div class="middle">
-              <ol class="star" v-if="seller.sellerScore" v-cloak>
-                <li v-for="star in seller.sellerScore">★</li>
-              </ol>
-              <ol class="star" v-else>
-                <li class="gray" v-for="star in 5">★</li>
-              </ol>
+
+    <div class="scroll-view">
+      <div class="seller-info">
+        <div class="v-items" :data-id="seller.id">
+          <div class="wrap">
+            <div class="img-con" :style="seller.headimgurl?('background-image:url('+seller.headimgurl+')'):''"></div>
+            <div class="infos">
+              <h3>{{seller.name}}<span
+                :class="['service_type',seller.serviceTypeCls]">{{seller.serviceTypeName}}</span>
+                <span class="distance">{{(seller.distance ? seller.distance : 0) | toFixed(1, true)}}km</span>
+              </h3>
+              <div class="middle">
+                <ol class="star" v-if="seller.sellerScore" v-cloak>
+                  <li v-for="star in seller.sellerScore">★</li>
+                </ol>
+                <ol class="star" v-else>
+                  <li class="gray" v-for="star in 5">★</li>
+                </ol>
               <span
                 class="hasSell"><i>{{(seller.sellerScore || 0) | toFixed(1)}}分</i>已售{{seller.sellerCount}}单</span>
+              </div>
+              <div class="tags">
+                <label class="c2">{{seller.authLevelName}}</label>
+                <span class="dispatchTime">平均{{seller.dispatchTime || 22}}分钟送达</span>
+              </div>
             </div>
-            <div class="tags">
-              <label class="c2">{{seller.authLevelName}}</label>
-              <span class="dispatchTime">平均{{seller.dispatchTime || 22}}分钟送达</span>
-            </div>
+            <!--<div class="bottom">
+              <label class="note" v-if="seller.note">{{seller.note || '商家特惠'}}</label>
+            </div>-->
           </div>
-          <!--<div class="bottom">
-            <label class="note" v-if="seller.note">{{seller.note || '商家特惠'}}</label>
-          </div>-->
+        </div>
+        <div class="contacts">
+          <p>配送电话：<a :href="'tel:'+seller.phone">{{seller.phone}}</a>，楼梯房需收取上楼费</p>
         </div>
       </div>
-      <div class="contacts">
-        <p>配送电话：<a :href="'tel:'+seller.phone">{{seller.phone}}</a>，楼梯房需收取上楼费</p>
-      </div>
-    </div>
 
-    <div class="operate-con">
-      <h3><i class="fa fa-hand-o-right"></i>&nbsp;您可以在此处给店铺缴付押金({{seller.mortgage}}元)
-        <button type="button" class="btn btn-deposite" @click="payDeposite(seller.id)">交押金</button>
-      </h3>
-    </div>
-    <div class="bottom">
-      <div class="detail-txt">
-        <div class="title"><h3>基本信息</h3></div>
-        <div class="content basics">
-          <p><i>公司名称：</i><span>{{seller.companyName}}</span></p>
-          <p><i>公司地址：</i><span>{{seller.address}}</span></p>
-          <p><i>联系电话：</i><span>{{seller.phone}}</span><a class="btn btn-dial" :href="'tel:'+seller.phone"><i
-            class="fa fa-phone"></i>&nbsp;拨打</a></p>
+      <div class="operate-con">
+        <h3><i class="fa fa-hand-o-right"></i>&nbsp;您可以在此处给店铺缴付押金({{seller.mortgage}}元)
+          <button type="button" class="btn btn-deposite" @click="payDeposite(seller.id)">交押金</button>
+        </h3>
+      </div>
+      <div class="bottom">
+        <div class="detail-txt">
+          <div class="title"><h3>基本信息</h3></div>
+          <div class="content basics">
+            <p><i>公司名称：</i><span>{{seller.companyName}}</span></p>
+            <p><i>公司地址：</i><span>{{seller.address}}</span></p>
+            <p><i>联系电话：</i><span>{{seller.phone}}</span><a class="btn btn-dial" :href="'tel:'+seller.phone"><i
+              class="fa fa-phone"></i>&nbsp;拨打</a></p>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="bottom" v-if="seller.businessLicense" v-cloak>
-      <div class="detail-txt">
-        <div class="title"><h3>营业执照</h3></div>
-        <div class="content license">
-          <div>
-            <img class="previewer-demo-img" :src="seller.businessLicense" width="100"
-                 @click="preview()">
-            <div v-transfer-dom>
-              <previewer :list="list" ref="previewer" :options="options"></previewer>
+      <div class="bottom" v-if="seller.businessLicense" v-cloak>
+        <div class="detail-txt">
+          <div class="title"><h3>营业执照</h3></div>
+          <div class="content license">
+            <div>
+              <img class="previewer-demo-img" :src="seller.businessLicense" width="100"
+                   @click="preview()">
             </div>
           </div>
         </div>
       </div>
+
+      <div class="bottom">
+        <div class="detail-txt">
+          <div class="title"><h3>店铺介绍</h3></div>
+          <div class="content note">{{seller.note}}</div>
+        </div>
+      </div>
     </div>
 
-    <div class="bottom">
-      <div class="detail-txt">
-        <div class="title"><h3>店铺介绍</h3></div>
-        <div class="content note">{{seller.note}}</div>
-      </div>
+    <div v-transfer-dom>
+      <previewer :list="list" ref="previewer" :options="options"></previewer>
     </div>
   </div>
 </template>
@@ -158,6 +162,7 @@
           }, 'POST', function (res) {
             vm.isPosting = false
             if (res.success) {
+              vm.$vux.confirm.hide()
               vm.pay(res.data, true)
             } else {
               if (res.errorCode == 304) {
@@ -222,6 +227,14 @@
   @import '../../../static/css/tools.less';
 
   .seller-detail-more {
+    .rel;
+    height: 100%;
+    z-index: 1;
+    overflow: hidden;
+    .scroll-view {
+      height: 100%;
+      overflow: auto;
+    }
     .swiper-shop {
       margin-bottom: 10/@rem;
       .swiper-pagination {
@@ -243,7 +256,7 @@
         }
         .img-con {
           .abs;
-          top:0;
+          top: 0;
           .size(150, 150);
           overflow: hidden;
           background: #f5f5f5 url(../../../static/img/bg_nopic.jpg) no-repeat center;
@@ -278,7 +291,8 @@
                 .ce;
                 .fz(22);
                 i {
-                  padding-right: 30/@rem;
+                  .iblock;
+                  padding: 6/@rem 30/@rem 0 0;
                   .txt-normal;
                   .cdiy(#ff9900);
                 }

@@ -3801,11 +3801,8 @@ body {
 .xs-plugin-pullup-container {
   line-height: 40px;
 }
-.seller-detail .inner-scroller .box {
-  padding-bottom: 120px !important;
-}
-.seller-detail .inner-scroller .xs-plugin-pullup-container {
-  display: none !important;
+.vux-cell-value {
+  color: #333 !important;
 }
 ._v-content .loading-layer {
   height: 40px !important;

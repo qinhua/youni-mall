@@ -320,10 +320,10 @@
         if (vm.isPosting) return false
         !isLoadMore ? vm.params.pageNo = 1 : vm.params.pageNo++
         vm.isPosting = true
-//        vm.processing()
+        vm.processing()
         vm.loadData(nearbyApi.sellerList, vm.params, 'POST', function (res) {
           vm.isPosting = false
-//          vm.processing(0, 1)
+          vm.processing(0, 1)
           var resD = res.data.pager
           if (resD.itemList.length) {
             for (var i = 0; i < resD.itemList.length; i++) {
@@ -373,7 +373,7 @@
           console.log(vm.sellers, '附近卖家')
         }, function () {
           vm.isPosting = false
-//          vm.processing(0, 1)
+          vm.processing(0, 1)
         })
       },
       onPullDown() {
@@ -479,6 +479,7 @@
     .bar-chamer {
       min-height: 80/@rem;
     }
+
     .sellers-filter {
       .rel;
       z-index: 10;

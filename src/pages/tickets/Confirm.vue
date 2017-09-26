@@ -1,67 +1,68 @@
 <template>
   <div class="confirm-ticket" v-cloak>
-    <div class="pick-address" data-from="confirm-ticket">
-      <div class="wrap" v-if="address" @click="toAddress(1)">
-        <i class="fa fa-map-marker i-map"></i>
-        <div class="txt-con">
-          <h3>收货人：{{address.name}}<span>{{address.phone}}</span></h3>
-          <p>地址：{{address.address}}</p>
+    <div class="scroll-view">
+      <div class="pick-address" data-from="confirm-ticket">
+        <div class="wrap" v-if="address" @click="toAddress(1)" v-cloak>
+          <i class="fa fa-map-marker i-map"></i>
+          <div class="txt-con">
+            <h3>收货人：{{address.name}}<span>{{address.phone}}</span></h3>
+            <p>地址：{{address.address}}</p>
+          </div>
+          <i class="fa fa-angle-right i-right"></i>
         </div>
-        <i class="fa fa-angle-right i-right"></i>
+        <div class="add-address" data-from="confirm-ticket" v-else @click="toAddress(2)"><i
+          class="fa fa-plus"></i>&nbsp;添加收货地址
+        </div>
       </div>
-      <div class="add-address" data-from="confirm-ticket" v-else @click="toAddress(2)"><i
-        class="fa fa-plus"></i>&nbsp;添加收货地址
-      </div>
-    </div>
-    <div class="goods-info">
-      <section class="v-items">
-        <!--<h4 class="item-top" v-if="tickets"><i
-          class="ico-store"></i>&nbsp;{{tickets.sellerName}}&nbsp;&nbsp;<i
-          class="fa fa-angle-right cc"></i><span class="tag-bonus" v-if="firstData.newUserCoupon">首单优惠</span>
-        </h4>-->
-        <ul class="has-list">
-          <li :data-id="tickets.waterId">
+      <div class="goods-info">
+        <section class="v-items">
+          <!--<h4 class="item-top" v-if="tickets"><i
+            class="ico-store"></i>&nbsp;{{tickets.sellerName}}&nbsp;&nbsp;<i
+            class="fa fa-angle-right cc"></i><span class="tag-bonus" v-if="firstData.newUserCoupon">首单优惠</span>
+          </h4>-->
+          <ul class="has-list">
+            <li :data-id="tickets.waterId">
 
-            <section class="item-middle">
-              <div class="img-con">
-                <img :src="tickets.ticketImage">
-              </div>
-              <div class="info-con">
-                <h3>{{tickets.ticketName}}</h3>
-                <section class="middle">
-                  <span class="unit-price">总价：￥{{tickets.totalAmount | toFixed}}</span>
-                  <!--<span class="order-info">已兑换：{{tickets.payAmount | toFixed}}桶</span>-->
-                </section>
-                <label
-                  class="number-info"><span>总数：{{tickets.totalWaterNum}}桶</span><span>已兑换：{{tickets.exchangeWaterNum}}桶</span></label>
-              </div>
-              <div class="price-con">
-                <!--<p class="price">￥{{tickets.price * tickets.goodsNum}}</p>-->
-                <p class="buy-count">￥{{tickets.payAmount | toFixed}}</p>
-              </div>
-            </section>
-          </li>
-        </ul>
-      </section>
-    </div>
-    <div class="others-col">
-      <group>
-        <popup-picker title="优惠券" :data="coupons" :columns="1" v-model="tmpCoupon" ref="picker1" @on-show=""
-                      @on-hide="" @on-change="changeCoupon"
-                      v-if="!firstData.newUserCoupon&&coupons.length>1"></popup-picker>
-        <div class="bonus-tips" v-if="firstData.newUserCoupon"><p><span
-          class="tit"><i
-          class="fa fa-thumbs-o-up"></i>&nbsp;首单专享&nbsp;<i>(已优惠{{firstData.totalAmount - firstData.payAmount}}元)</i></span><span
-          class="price">￥{{firstData.payAmount | toFixed}}</span></p></div>
-        <x-input title="兑换数量：" placeholder="多少桶" required type="number" text-align="right"
-                 v-model="params.exchangeWaterNum" @on-change="checkNumber"></x-input>
-        <datetime title="配送时间" format="YYYY-MM-DD HH:mm" minute-row v-model="params.dispatchTime"
-                  @on-change="changeTime"></datetime>
-        <!-- <popup-picker title="优惠券" :data="coupons" :columns="1" v-model="tmpCoupon" ref="picker1" @on-show=""
-                       @on-hide="" @on-change="changeCoupon"></popup-picker>-->
-        <x-textarea title="留言：" :max="20" placeholder="一些想对卖家说的话…" @on-blur="" v-model="params.userMessage"
-                    show-clear></x-textarea>
-      </group>
+              <section class="item-middle">
+                <div class="img-con"
+                     :style="tickets.ticketImage?('background-image:url('+tickets.ticketImage+')'):''"></div>
+                <div class="info-con">
+                  <h3>{{tickets.ticketName}}</h3>
+                  <section class="middle">
+                    <span class="unit-price">总价：￥{{tickets.totalAmount | toFixed}}元</span>
+                    <!--<span class="order-info">已兑换：{{tickets.payAmount | toFixed}}桶</span>-->
+                  </section>
+                  <label
+                    class="number-info"><span>总数：{{tickets.totalWaterNum}}桶</span><span>已兑换：{{tickets.exchangeWaterNum}}桶</span></label>
+                </div>
+                <!--<div class="price-con">
+                  &lt;!&ndash;<p class="price">￥{{tickets.price * tickets.goodsNum}}</p>&ndash;&gt;
+                  <p class="buy-count">￥{{tickets.payAmount | toFixed}}</p>
+                </div>-->
+              </section>
+            </li>
+          </ul>
+        </section>
+      </div>
+      <div class="others-col">
+        <group>
+          <popup-picker title="优惠券" :data="coupons" :columns="1" v-model="tmpCoupon" ref="picker1" @on-show=""
+                        @on-hide="" @on-change="changeCoupon"
+                        v-if="!firstData.newUserCoupon&&coupons.length>1"></popup-picker>
+          <div class="bonus-tips" v-if="firstData.newUserCoupon"><p><span
+            class="tit"><i
+            class="fa fa-thumbs-o-up"></i>&nbsp;首单专享&nbsp;<i>(已优惠{{firstData.totalAmount - firstData.payAmount}}元)</i></span><span
+            class="price">￥{{firstData.payAmount | toFixed}}</span></p></div>
+          <x-input title="兑换数量：" placeholder="多少桶" required type="number" text-align="right"
+                   v-model.number="params.exchangeWaterNum"></x-input>
+          <datetime title="配送时间" format="YYYY-MM-DD HH:mm" minute-row v-model="params.dispatchTime"
+                    @on-change="changeTime"></datetime>
+          <!-- <popup-picker title="优惠券" :data="coupons" :columns="1" v-model="tmpCoupon" ref="picker1" @on-show=""
+                         @on-hide="" @on-change="changeCoupon"></popup-picker>-->
+          <x-textarea title="留言：" :max="20" placeholder="一些想对卖家说的话…" @on-blur="" v-model="params.userMessage"
+                      show-clear></x-textarea>
+        </group>
+      </div>
     </div>
     <div class="count-bar">
       <div class="wrap">
@@ -90,10 +91,9 @@
         goodsIds: [],
         tickets: {},
         params: {
-          // goods: [],
           id: null,
           addressId: null,
-          exchangeWaterNum: 1,
+          exchangeWaterNum: null,
           dispatchTime: '',
           userMessage: '',
           // couponId: ''
@@ -120,9 +120,10 @@
     },
     mounted() {
       vm = this
-      this.$nextTick(function () {
+      vm.$nextTick(function () {
         vm.getAddress()
         vm.getGoods()
+        vm.params.dispatchTime = me.formatDate(new Date(), false, 2) //默认派送时间
       })
     },
     computed: {
@@ -139,16 +140,6 @@
       }
     },
     methods: {
-      checkNumber(val) {
-        if (val < 1) {
-          vm.toast('至少兑换一桶')
-          vm.params.exchangeWaterNum = 1
-        }
-        if (val > this.curBucketNum) {
-          vm.toast('最多能兑换' + this.curBucketNum + '桶')
-          vm.params.exchangeWaterNum = val - 1
-        }
-      },
       toAddress(type) {
         me.sessions.set('ynTmpConfirm', vm.$route.query.thedata)
         type === 1 ? vm.jump('myaddress', {from: 'confirm_ticket'}) : vm.jump('edit_address', {from: 'confirm_ticket'})
@@ -159,11 +150,13 @@
           return false
         }
         if (!vm.params.exchangeWaterNum) {
-          vm.toast('请填写兑换数量！', 'warn')
+          vm.toast('至少兑换一桶', 'warn')
+          vm.params.exchangeWaterNum = 1
           return false
         }
-        if (vm.params.exchangeWaterNum < 0 || vm.params.exchangeWaterNum > this.curBucketNum) {
-          vm.toast('兑换数量请填写0~' + this.curBucketNum + '桶！', 'warn')
+        if (parseInt(vm.params.exchangeWaterNum) > vm.curBucketNum) {
+          vm.toast('最多能兑换' + vm.curBucketNum + '桶', 'warn')
+          vm.params.exchangeWaterNum = vm.curBucketNum
           return false
         }
         if (!vm.params.dispatchTime) {
@@ -171,9 +164,13 @@
           return false
         }
         /*if (!vm.params.couponId) {
-          vm.toast('请选择优惠券！', 'warn')
-          return false
-        } */
+         vm.toast('请选择优惠券！', 'warn')
+         return false
+         } */
+        if (!me.isWeixin) {
+          vm.toast('请在微信中操作！')
+          return
+        }
         return true
       },
       switchData(data, value, target, isUpdate) {
@@ -299,222 +296,243 @@
   @import '../../../static/css/tools.less';
 
   .confirm-ticket {
-    padding-bottom: 100/@rem;
-  }
-
-  .pick-address {
     .rel;
-    margin-bottom: 10/@rem;
-    .bf;
-    .bor-b;
-    .wrap {
-      padding: 20/@rem 0;
+    height: 100%;
+    z-index: 1;
+    overflow: hidden;
+    .scroll-view {
+      height: 100%;
+      overflow: auto;
     }
-    .i-map {
-      .abs-center-vertical;
-      left: 0;
-      padding: 0 20/@rem;
-      .fz(36);
-      .cdiy(@c2);
-    }
-    .i-right {
-      .abs-center-vertical;
-      right: 0;
-      padding: 0 20/@rem;
-      .fz(40);
-    }
-    .txt-con {
-      .borBox;
-      padding: 0 55/@rem 0 70/@rem;
-      h3 {
-        .fz(24);
-        .c3;
-        .txt-normal;
-        span {
-          .fr;
+    .pick-address {
+      .rel;
+      margin-bottom: 10/@rem;
+      .bf;
+      .bor-b;
+      .wrap {
+        padding: 20/@rem 0;
+      }
+      .i-map {
+        .abs-center-vertical;
+        left: 0;
+        padding: 0 20/@rem;
+        .fz(36);
+        .cdiy(@c2);
+      }
+      .i-right {
+        .abs-center-vertical;
+        right: 0;
+        padding: 0 20/@rem;
+        .fz(40);
+      }
+      .txt-con {
+        .borBox;
+        padding: 0 55/@rem 0 70/@rem;
+        h3 {
+          .fz(24);
+          .c3;
+          .txt-normal;
+          span {
+            .fr;
+          }
+        }
+        p {
+          .fz(22);
+          .c6;
+          line-height: 1.8;
         }
       }
-      p {
-        .fz(22);
-        .c6;
-        line-height: 1.8;
+      .add-address {
+        width: 100%;
+        padding: 24/@rem;
+        .center;
+        .cf;
+        .fz(28);
+        .bdiy(@c2);
       }
     }
-    .add-address {
-      width: 100%;
-      padding: 24/@rem;
-      .center;
-      .cf;
-      .fz(28);
-      .bdiy(@c2);
-    }
-  }
 
-  .goods-info {
-    .v-items {
-      .borBox;
-      margin-bottom: 10/@rem;
-      .item-top {
+    .goods-info {
+      .v-items {
+        .borBox;
+        margin-bottom: 10/@rem;
+        .item-top {
+          .rel;
+          .borBox;
+          padding: 14/@rem 60/@rem 14/@rem 20/@rem;
+          .txt-normal;
+          .c3;
+          .fz(24);
+          .ellipsis;
+          .bf;
+          .bor-t;
+          .bor-b;
+          .ico-store {
+            .fl;
+            display: inline-block;
+            margin-top: 2/@rem;
+            font-size: inherit;
+            .size(30, 30);
+            background: url(../../../static/img/ico_store.png);
+            .ele-base;
+          }
+          span {
+            .abs-center-vertical;
+            right: 20/@rem;
+            padding-left: 40/@rem;
+            .fz(22);
+            .cdiy(@c2);
+            &.tag-bonus {
+              padding: 0 2px;
+              .bor(1px, solid, @c2);
+              .borR(2px)
+            }
+          }
+        }
+        .has-list {
+          .bf1;
+          li {
+            .borBox;
+            padding: 14/@rem 14/@rem;
+            .rel;
+            .bf;
+            .bor-b;
+          }
+        }
+        .item-middle {
+          .rel;
+          width: 100%;
+          min-height: 140/@rem;
+          .img-con {
+            .abs;
+            top: 0;
+            .size(140, 140);
+            overflow: hidden;
+            background: #f5f5f5 url(../../../static/img/bg_nopic.jpg) no-repeat center;
+            -webkit-background-size: cover;
+            background-size: cover;
+          }
+          .info-con {
+            .borBox;
+            width: 100%;
+            padding: 0 0 0 160/@rem;
+            h3 {
+              .borBox;
+              /*padding: 0 160/@rem 10/@rem 0;*/
+              padding: 0 0 10/@rem 0;
+              .txt-normal;
+              .c3;
+              .fz(26);
+              .ellipsis-clamp-2;
+              span {
+                margin-right: 4px;
+                padding: 0 2px;
+                font-weight: normal;
+                .cf;
+                .fz(22);
+                background: #2acaad;
+                .borR(2px);
+                &.milk {
+                  background: #74c361;
+                }
+              }
+            }
+            .middle {
+              padding-bottom: 10/@rem;
+              .c9;
+              .fz(22);
+              .ellipsis-clamp-2;
+              .unit-price {
+                padding-right: 40/@rem;
+                .cdiy(@c2);
+                .fz(24);
+              }
+            }
+            .number-info {
+              span {
+                padding-right: 30/@rem;
+                .fz(24);
+                .c9;
+              }
+            }
+          }
+          .price-con {
+            .abs;
+            top: 14/@rem;
+            right: 20/@rem;
+            .price {
+              padding-bottom: 10/@rem;
+              .c3;
+              .fz(24);
+            }
+            .buy-count {
+              .c9;
+              .fz(22);
+            }
+          }
+        }
+        &.grey {
+          .c9!important;
+        }
+      }
+    }
+
+    .others-col {
+      padding-bottom: 120/@rem;
+      .vux-no-group-title {
+        margin-top: 0;
+      }
+      .vux-x-input, .address-area, .vux-datetime, .vux-selector, .vux-cell-box, .vux-x-textarea {
+        .fz(26);
+      }
+    }
+
+    .count-bar {
+      .abs;
+      bottom: 0;
+      z-index: 20;
+      width: 100%;
+      .ma-w(640);
+      .c3;
+      .bf;
+      .bor-t;
+      .wrap {
+        .rel;
+        height: 88/@rem;
+      }
+      .txt-total {
         .rel;
         .borBox;
-        padding: 14/@rem 60/@rem 14/@rem 20/@rem;
-        .txt-normal;
-        .c3;
-        .fz(24);
-        .ellipsis;
-        .bf;
-        .bor-t;
-        .bor-b;
-        .ico-store {
-          .fl;
-          display: inline-block;
-          margin-top: 2/@rem;
-          font-size: inherit;
-          .size(30, 30);
-          background: url(../../../static/img/ico_store.png);
-          .ele-base;
-        }
-        span {
-          .abs-center-vertical;
-          right: 20/@rem;
-          padding-left: 40/@rem;
-          .fz(22);
-          .cdiy(@c2);
-          &.tag-bonus {
-            padding: 0 2px;
-            .bor(1px, solid, @c2);
-            .borR(2px)
-          }
-        }
-      }
-      .has-list {
-        .bf1;
-        li {
-          .rel;
-          .bf;
-          .bor-b;
-        }
-      }
-      .item-middle {
-        width: 100%;
-        .borBox;
-        padding: 14/@rem 20/@rem 14/@rem 20/@rem;
-        .flex;
-        h3 {
-          .fz(26);
-        }
-        .img-con {
-          .rel;
-          padding: 10/@rem 0;
-          .size(140, 120);
-          overflow: hidden;
-          img {
-            width: 100%;
-            .abs-center-vh;
-          }
-        }
-        .info-con {
-          .flex-r(2);
-          padding: 0 14/@rem;
-          h3 {
-            padding-bottom: 10/@rem;
-            .txt-normal;
-            .c3;
-            .fz(26);
-            .ellipsis-clamp-2;
-          }
-          .middle {
-            padding-bottom: 10/@rem;
-            .c9;
-            .fz(22);
-            .ellipsis-clamp-2;
-            .unit-price {
-              padding-right: 40/@rem;
-              .cdiy(@c2);
-              .fz(24);
-            }
-          }
-          .number-info {
-            span {
-              padding-right: 20/@rem;
-              .fz(24);
-              .c9;
-            }
-          }
-        }
-        .price-con {
-          .flex-r(1);
+        .fl;
+        padding: 0 30/@rem;
+        width: 70%;
+        height: 100%;
+        line-height: 88/@rem;
+        h4 {
+          .fz(24);
           .right;
-          .price {
-            padding-bottom: 10/@rem;
-            .c3;
-            .fz(24);
-          }
-          .buy-count {
-            .c9;
-            .fz(22);
-          }
-        }
-      }
-      &.grey {
-        .c9!important;
-      }
-    }
-  }
-
-  .others-col {
-    .vux-no-group-title {
-      margin-top: 0;
-    }
-    .vux-x-input, .address-area, .vux-datetime, .vux-selector, .vux-cell-box, .vux-x-textarea {
-      .fz(26);
-    }
-  }
-
-  .count-bar {
-    .fix;
-    bottom: 0;
-    z-index: 20;
-    width: 100%;
-    .ma-w(640);
-    .c3;
-    .bf;
-    .bor-t;
-    .wrap {
-      .rel;
-      height: 88/@rem;
-    }
-    .txt-total {
-      .rel;
-      .borBox;
-      .fl;
-      padding: 0 30/@rem;
-      width: 70%;
-      height: 100%;
-      line-height: 88/@rem;
-      h4 {
-        .fz(24);
-        .right;
-        .txt-normal;
-        span {
-          .cdiy(@c2);
-        }
-        i {
           .txt-normal;
-          .fz(16);
-          .c9;
+          span {
+            .cdiy(@c2);
+          }
+          i {
+            .txt-normal;
+            .fz(16);
+            .c9;
+          }
         }
       }
-    }
-    .btn {
-      .fl;
-      width: 30%;
-      height: 100%;
-      line-height: 88/@rem;
-      .center;
-      .cf;
-      background: -webkit-linear-gradient(90deg, #dc0404, #ff7600);
-      background: linear-gradient(90deg, #dc0404, #ff7600);
+      .btn {
+        .fl;
+        width: 30%;
+        height: 100%;
+        line-height: 88/@rem;
+        .center;
+        .cf;
+        background: -webkit-linear-gradient(90deg, #dc0404, #ff7600);
+        background: linear-gradient(90deg, #dc0404, #ff7600);
+      }
     }
   }
+
 </style>

@@ -27,8 +27,8 @@
               </div>
             </div>
             <div class="bottom">
-              <label class="note" v-if="seller.companyName"><i class="ion ion-home"></i>{{seller.companyName}}</label>
-              <span>&lt;已上传营业执照&gt;</span>
+              <label class="note" v-if="seller.companyName"><i class="ion ion-ent">企</i>{{seller.companyName}}</label>
+              <span><i class="fa fa-check-circle"></i>营业执照</span>
             </div>
           </div>
         </div>
@@ -127,7 +127,7 @@
           </div>
           <x-input id="curMilkAmount" title="配送量(瓶/天)：" placeholder="请输入每日配送量" required text-align="right" type="number"
                    v-model="curMilkAmount" @on-change="changeMilkAmout"></x-input>
-          <x-input class="total-p" title="总价：" text-align="right" type="text" readonly disabled
+          <x-input class="total-p" title="总价：" text-align="right" type="text" readonly
                    v-model="curTotalPrice"></x-input>
         </group>
         <button type="button" class="btn btn-add-cart" @click="addToCart">加入购物车</button>
@@ -777,7 +777,7 @@
         }
         .img-con {
           .abs;
-          top:0;
+          top: 0;
           .size(150, 150);
           overflow: hidden;
           background: #f5f5f5 url(../../../static/img/bg_nopic.jpg) no-repeat center;
@@ -809,7 +809,8 @@
                 .ce;
                 .fz(22);
                 i {
-                  padding-right: 30/@rem;
+                  .iblock;
+                  padding:6/@rem 30/@rem 0 0;
                   .txt-normal;
                   .cdiy(#ff9900);
                 }
@@ -868,28 +869,22 @@
           .note {
             .fl;
             .rel;
-            padding: 10/@rem 0 0 30/@rem;
+            padding-top: 10/@rem;
             .cd;
             .block;
             .fz(20);
-            &:before {
-              .abs;
-              .block;
-              left: 0;
-              top: 16/@rem;
-              /*content: '惠';*/
-              content: '企';
-              .size(26, 26);
-              .center;
-              line-height: 26/@rem;
-              /*background: #f38918;*/
+            i{
+              .iblock;
+              margin-right:2px;
+              padding: 1px;
               background: #18abf3;
+              .borR(2px);
             }
           }
           span {
             padding-top: 10/@rem;
             .fr;
-            .cc;
+            .cdiy(#7cda19);
             .fz(20);
           }
         }
@@ -917,7 +912,7 @@
         .fz(20);
         .cf;
         overflow: hidden;
-        background: rgba(0, 0, 0, .5);
+        background: rgba(115, 115, 115, 0.58);
         p {
           .iblock;
           white-space: nowrap;
@@ -1208,6 +1203,9 @@
         padding: 24/@rem 30/@rem;
         input {
           .c3;
+          &:read-only {
+            .c3;
+          }
           &:disabled {
             .c3;
           }

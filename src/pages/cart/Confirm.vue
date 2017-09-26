@@ -1,66 +1,71 @@
 <template>
   <div class="confirm-order" v-cloak>
-    <div class="pick-address" data-from="confirm_order">
-      <div class="wrap" v-if="address" @click="toAddress(1)">
-        <i class="fa fa-map-marker i-map"></i>
-        <div class="txt-con">
-          <h3>收货人：{{address.name}}<span>{{address.phone}}</span></h3>
-          <p>地址：{{address.address}}</p>
+
+    <div class="scroll-view">
+      <div class="pick-address" data-from="confirm_order">
+        <div class="wrap" v-if="address" @click="toAddress(1)" v-cloak>
+          <i class="fa fa-map-marker i-map"></i>
+          <div class="txt-con">
+            <h3>收货人：{{address.name}}<span>{{address.phone}}</span></h3>
+            <p>地址：{{address.address}}</p>
+          </div>
+          <i class="fa fa-angle-right i-right"></i>
         </div>
-        <i class="fa fa-angle-right i-right"></i>
+        <div class="add-address" data-from="confirm_order" v-else @click="toAddress(2)"><i class="fa fa-plus"></i>&nbsp;添加收货地址
+        </div>
       </div>
-      <div class="add-address" data-from="confirm_order" v-else @click="toAddress(2)"><i class="fa fa-plus"></i>&nbsp;添加收货地址
+      <div class="goods-info" v-if="curCartData.goodsList&&curCartData.goodsList.length">
+        <section class="v-items">
+          <h4 class="item-top"><i
+            class="ico-store"></i>&nbsp;{{curCartData.sellerName}}&nbsp;&nbsp;<i class="fa fa-angle-right cc"></i><span
+            class="tag-bonus" v-if="firstData.newUserCoupon">首单优惠</span></h4>
+          <ul class="has-list">
+            <li v-for="(item,index) in curCartData.goodsList">
+              <section class="item-middle">
+                <div class="img-con" :style="item.goodsImage?('background-image:url('+item.goodsImage+')'):''"></div>
+                <div class="info-con">
+                  <h3><span
+                    :class="item.goodsType==='goods_type.2'?'milk':''">{{item.goodsType === 'goods_type.2' ? '奶' : '水'}}</span>{{item.goodsName}}
+                  </h3>
+                  <section class="middle" v-if="item.goodsType!=='goods_type.2'">
+                    <span class="unit-price">￥{{item.price | toFixed}}元</span>
+                    <span class="order-info">{{item.info}}</span>
+                    <!--<label>{{item.label}}</label>-->
+                  </section>
+                  <section class="middle milk" v-else>
+                    <span class="unit-price"
+                          @click="showModal('price',item)">订购数量：<i>{{item.note.priceLabel}}</i></span>
+                    <span class="order-info">派送量：{{item.dispatchNum}}瓶/天</span>
+                    <label>口味：<i>{{item.note.goodsNote}}</i></label>
+                  </section>
+                </div>
+                <div class="price-con">
+                  <p class="price">总价：￥{{item.payPrice}}元</p>
+                  <p class="buy-count" v-show="item.goodsType!=='goods_type.2'">x{{item.goodsNum}}</p>
+                </div>
+              </section>
+            </li>
+          </ul>
+        </section>
+      </div>
+      <div class="others-col">
+        <group>
+          <popup-picker title="优惠券" :data="coupons" :columns="1" v-model="tmpCoupon" ref="picker1" @on-show=""
+                        @on-hide="" @on-change="changeCoupon"
+                        v-if="!firstData.newUserCoupon&&coupons.length>1"></popup-picker>
+          <div class="bonus-tips" v-if="firstData.newUserCoupon"><p><span
+            class="tit"><i
+            class="fa fa-thumbs-o-up"></i>&nbsp;首单专享&nbsp;<i>(已优惠{{firstData.totalAmount - firstData.payAmount}}元)</i></span><span
+            class="price">￥{{firstData.payAmount | toFixed}}</span></p></div>
+          <datetime title="配送时间" format="YYYY-MM-DD HH:mm" minute-row v-model="params.dispatchTime"
+                    @on-change="changeTime"></datetime>
+          <!--<x-input title="商品名称：" placeholder="商品名称" required text-align="right" v-model="params.name"></x-input>-->
+          <x-textarea title="留言：" :max="20" placeholder="一些想对卖家说的话…" @on-blur="" v-model="params.userMessage"
+                      show-clear></x-textarea>
+        </group>
       </div>
     </div>
-    <div class="goods-info" v-if="curCartData.goodsList&&curCartData.goodsList.length">
-      <section class="v-items">
-        <h4 class="item-top"><i
-          class="ico-store"></i>&nbsp;{{curCartData.sellerName}}&nbsp;&nbsp;<i class="fa fa-angle-right cc"></i><span
-          class="tag-bonus" v-if="firstData.newUserCoupon">首单优惠</span></h4>
-        <ul class="has-list">
-          <li v-for="(item,index) in curCartData.goodsList">
-            <section class="item-middle">
-              <div class="img-con" :style="item.goodsImage?('background-image:url('+item.goodsImage+')'):''"></div>
-              <div class="info-con">
-                <h3><span
-                  :class="item.goodsType==='goods_type.2'?'milk':''">{{item.goodsType === 'goods_type.2' ? '奶' : '水'}}</span>{{item.goodsName}}
-                </h3>
-                <section class="middle" v-if="item.goodsType!=='goods_type.2'">
-                  <span class="unit-price">￥{{item.price | toFixed}}元</span>
-                  <span class="order-info">{{item.info}}</span>
-                  <!--<label>{{item.label}}</label>-->
-                </section>
-                <section class="middle milk" v-else>
-                  <span class="unit-price" @click="showModal('price',item)">订购数量：<i>{{item.note.priceLabel}}</i></span>
-                  <span class="order-info">派送量：{{item.dispatchNum}}瓶/天</span>
-                  <label>口味：<i>{{item.note.goodsNote}}</i></label>
-                </section>
-              </div>
-              <div class="price-con">
-                <p class="price">总价：￥{{item.payPrice}}元</p>
-                <p class="buy-count" v-show="item.goodsType!=='goods_type.2'">x{{item.goodsNum}}</p>
-              </div>
-            </section>
-          </li>
-        </ul>
-      </section>
-    </div>
-    <div class="others-col">
-      <group>
-        <popup-picker title="优惠券" :data="coupons" :columns="1" v-model="tmpCoupon" ref="picker1" @on-show=""
-                      @on-hide="" @on-change="changeCoupon"
-                      v-if="!firstData.newUserCoupon&&coupons.length>1"></popup-picker>
-        <div class="bonus-tips" v-if="firstData.newUserCoupon"><p><span
-          class="tit"><i
-          class="fa fa-thumbs-o-up"></i>&nbsp;首单专享&nbsp;<i>(已优惠{{firstData.totalAmount - firstData.payAmount}}元)</i></span><span
-          class="price">￥{{firstData.payAmount | toFixed}}</span></p></div>
-        <datetime title="配送时间" format="YYYY-MM-DD HH:mm" minute-row v-model="params.dispatchTime"
-                  @on-change="changeTime"></datetime>
-        <!--<x-input title="商品名称：" placeholder="商品名称" required text-align="right" v-model="params.name"></x-input>-->
-        <x-textarea title="留言：" :max="20" placeholder="一些想对卖家说的话…" @on-blur="" v-model="params.userMessage"
-                    show-clear></x-textarea>
-      </group>
-    </div>
+
     <div class="count-bar">
       <div class="wrap">
         <div class="txt-total">
@@ -117,10 +122,10 @@
     },
     mounted() {
       vm = this
-      vm.params.dispatchTime = me.formatDate(new Date(), false, 2) //默认派送时间
       this.$nextTick(function () {
         vm.getAddress()
         vm.getCart()
+        vm.params.dispatchTime = me.formatDate(new Date(), false, 2) //默认派送时间
       })
     },
 //    computed: {
@@ -286,12 +291,12 @@
             vm.firstData = resD
           }
           /*else {
-            vm.firstData = {
-              newUserCoupon: true,
-              payAmount: 8,
-              totalAmount: 20
-            }
-          }*/
+           vm.firstData = {
+           newUserCoupon: true,
+           payAmount: 8,
+           totalAmount: 20
+           }
+           }*/
           console.log(vm.firstData, '首单优惠数据')
           cb ? cb(resD) : null
         }, function () {
@@ -308,7 +313,6 @@
             if (res.success && res.data) {
               // alert(JSON.stringify(res.data))
               vm.payOrder(res.data)
-              vm.jump('order')
             } else {
               if (res.errorCode == 304) {
                 vm.toast('请先绑定手机号！')
@@ -369,348 +373,360 @@
   @import '../../../static/css/tools.less';
 
   .confirm-order {
-    padding-bottom: 100/@rem;
-  }
-
-  .pick-address {
     .rel;
-    margin-bottom: 10/@rem;
-    .bf;
-    .bor-b;
-    .wrap {
-      padding: 20/@rem 0;
+    height: 100%;
+    z-index: 1;
+    overflow: hidden;
+    .scroll-view {
+      height: 100%;
+      overflow: auto;
     }
-    .i-map {
-      .abs-center-vertical;
-      left: 0;
-      padding: 0 20/@rem;
-      .fz(36);
-      .cdiy(@c2);
-    }
-    .i-right {
-      .abs-center-vertical;
-      right: 0;
-      padding: 0 20/@rem;
-      .fz(40);
-    }
-    .txt-con {
-      .borBox;
-      padding: 0 55/@rem 0 70/@rem;
-      h3 {
-        .fz(24);
-        .c3;
-        .txt-normal;
-        span {
-          .fr;
-        }
-      }
-      p {
-        .fz(22);
-        .c6;
-        line-height: 1.8;
-      }
-    }
-    .add-address {
-      width: 100%;
-      padding: 24/@rem;
-      .center;
-      .cf;
-      .fz(28);
-      .bdiy(@c2);
-    }
-  }
 
-  .goods-info {
-    .v-items {
-      .borBox;
-      margin-bottom: 20/@rem;
-      .bsd(0, 2px, 10px, 0, #ccc);
-      .item-top {
-        .rel;
-        .borBox;
-        padding: 14/@rem 20/@rem 14/@rem 20/@rem;
-        .txt-normal;
-        .c3;
-        .fz(24);
-        .ellipsis;
-        .bor-b;
-        .ico-store {
-          .fl;
-          display: inline-block;
-          margin-top: 2/@rem;
-          font-size: inherit;
-          .size(30, 30);
-          background: url(../../../static/img/ico_store.png);
-          .ele-base;
-        }
-        span {
-          .fr;
-          padding-left: 40/@rem;
-          .fz(22);
-          .cdiy(@c2);
-        }
+    .pick-address {
+      .rel;
+      margin-bottom: 10/@rem;
+      .bf;
+      .bor-b;
+      .wrap {
+        padding: 20/@rem 0;
       }
-      .has-list {
-        .bf1;
-        li {
-          .rel;
-          .bf;
-          .bor-b;
-        }
-      }
-      .vux-checker-box {
+      .i-map {
         .abs-center-vertical;
-        left: 10/@rem;
-        .vux-checker-item {
-          .size(28, 28);
-          line-height: 28/@rem;
-        }
+        left: 0;
+        padding: 0 20/@rem;
+        .fz(36);
+        .cdiy(@c2);
       }
-      .checker-con {
-        .abs;
-        bottom: 14/@rem;
-        right: 20/@rem;
-        .center;
-        label, input {
-          .iblock;
-          height: 50/@rem;
-          line-height: 50/@rem;
-          .center;
-          .c3;
-        }
-        label {
-          width: 50/@rem;
-          .fz(22);
-        }
-        input {
-          .bor;
-          margin: 0 3px;
-          width: 70/@rem;
-        }
+      .i-right {
+        .abs-center-vertical;
+        right: 0;
+        padding: 0 20/@rem;
+        .fz(40);
       }
-      .item-middle {
-        .rel;
-        width: 100%;
+      .txt-con {
         .borBox;
-        padding: 14/@rem 20/@rem 14/@rem 14/@rem;
-        min-height: 170/@rem;
-        .img-con {
-          .abs;
-          top: 10/@rem;
-          padding: 10/@rem 0;
-          .size(140, 120);
-          overflow: hidden;
-          background: #f5f5f5 url(../../../static/img/bg_nopic.jpg) no-repeat center;
-          -webkit-background-size: cover;
-          background-size: cover;
+        padding: 0 55/@rem 0 70/@rem;
+        h3 {
+          .fz(24);
+          .c3;
+          .txt-normal;
+          span {
+            .fr;
+          }
         }
-        .info-con {
+        p {
+          .fz(22);
+          .c6;
+          line-height: 1.8;
+        }
+      }
+      .add-address {
+        width: 100%;
+        padding: 24/@rem;
+        .center;
+        .cf;
+        .fz(28);
+        .bdiy(@c2);
+      }
+    }
+
+    .goods-info {
+      .v-items {
+        .borBox;
+        margin-bottom: 20/@rem;
+        .bsd(0, 2px, 10px, 0, #ccc);
+        .item-top {
+          .rel;
           .borBox;
-          width: 100%;
-          padding: 0 0 0 160/@rem;
-          h3 {
+          padding: 14/@rem 20/@rem 14/@rem 20/@rem;
+          .txt-normal;
+          .c3;
+          .fz(24);
+          .ellipsis;
+          .bor-b;
+          .ico-store {
+            .fl;
+            display: inline-block;
+            margin-top: 2/@rem;
+            font-size: inherit;
+            .size(30, 30);
+            background: url(../../../static/img/ico_store.png);
+            .ele-base;
+          }
+          span {
+            .fr;
+            padding-left: 40/@rem;
+            .fz(22);
+            .cdiy(@c2);
+          }
+        }
+        .has-list {
+          .bf1;
+          li {
             .borBox;
-            padding: 0 160/@rem 10/@rem 0;
-            .txt-normal;
+            padding: 14/@rem;
+            .rel;
+            .bf;
+            .bor-b;
+          }
+        }
+        .vux-checker-box {
+          .abs-center-vertical;
+          left: 10/@rem;
+          .vux-checker-item {
+            .size(28, 28);
+            line-height: 28/@rem;
+          }
+        }
+        .checker-con {
+          .abs;
+          bottom: 14/@rem;
+          right: 20/@rem;
+          .center;
+          label, input {
+            .iblock;
+            height: 50/@rem;
+            line-height: 50/@rem;
+            .center;
             .c3;
-            .fz(26);
-            .ellipsis-clamp-2;
-            span {
-              margin-right: 4px;
-              padding: 0 2px;
-              font-weight: normal;
-              .cf;
+          }
+          label {
+            width: 50/@rem;
+            .fz(22);
+          }
+          input {
+            .bor;
+            margin: 0 3px;
+            width: 70/@rem;
+          }
+        }
+        .item-middle {
+          .rel;
+          width: 100%;
+          .borBox;
+          /*padding: 14/@rem 20/@rem 14/@rem 14/@rem;*/
+          min-height: 140/@rem;
+          .img-con {
+            .abs;
+            top: 0;
+            padding: 10/@rem 0;
+            .size(140, 120);
+            overflow: hidden;
+            background: #f5f5f5 url(../../../static/img/bg_nopic.jpg) no-repeat center;
+            -webkit-background-size: cover;
+            background-size: cover;
+          }
+          .info-con {
+            .borBox;
+            width: 100%;
+            padding: 0 0 0 160/@rem;
+            h3 {
+              .borBox;
+              padding: 0 160/@rem 10/@rem 0;
+              .txt-normal;
+              .c3;
+              .fz(26);
+              .ellipsis-clamp-2;
+              span {
+                margin-right: 4px;
+                padding: 0 2px;
+                font-weight: normal;
+                .cf;
+                .fz(22);
+                background: #2acaad;
+                .borR(2px);
+                &.milk {
+                  background: #74c361;
+                }
+              }
+            }
+            .middle {
+              .c9;
               .fz(22);
-              background: #2acaad;
-              .borR(2px);
+              .ellipsis-clamp-2;
+              .unit-price {
+                padding-right: 40/@rem;
+                .c3;
+                .fz(24);
+              }
               &.milk {
-                background: #74c361;
+                .unit-price {
+                  padding-right: 0;
+                  i {
+                    .rel;
+                    font-style: normal;
+                    color: #f17114;
+                    &.active {
+                      padding: 0 40/@rem 0 2px;
+                      border: 1px solid #e47b25;
+                      &:before {
+                        content: "";
+                        position: absolute;
+                        width: 12/@rem;
+                        height: 12/@rem;
+                        border: 1px solid #f17114;
+                        border-width: 1px 0 0 1px;
+                        -webkit-transform: rotate(-135deg);
+                        transform: rotate(-135deg);
+                        top: 5/@rem;
+                        right: 10/@rem;
+                      }
+                    }
+                  }
+                }
+                .order-info {
+                  .fr;
+                }
+                label {
+                  padding-top: 10/@rem;
+                  display: block;
+                  .fz(24);
+                  .c3;
+                  i {
+                    .rel;
+                    font-style: normal;
+                    color: #f17114;
+                    &.active {
+                      padding: 0 40/@rem 0 2px;
+                      border: 1px solid #e47b25;
+                      &:before {
+                        content: "";
+                        position: absolute;
+                        width: 12/@rem;
+                        height: 12/@rem;
+                        border: 1px solid #f17114;
+                        border-width: 1px 0 0 1px;
+                        -webkit-transform: rotate(-135deg);
+                        transform: rotate(-135deg);
+                        top: 5/@rem;
+                        right: 10/@rem;
+                      }
+                    }
+                  }
+                }
               }
             }
           }
-          .middle {
-            .c9;
-            .fz(22);
-            .ellipsis-clamp-2;
-            .unit-price {
-              padding-right: 40/@rem;
+          .price-con {
+            .abs;
+            .borBox;
+            padding: 14/@rem 20/@rem;
+            height: 160/@rem;
+            top: 0;
+            right: 0;
+            .price {
+              padding-bottom: 10/@rem;
               .c3;
               .fz(24);
             }
-            &.milk {
-              .unit-price {
-                padding-right: 0;
-                i {
-                  .rel;
-                  font-style: normal;
-                  color: #f17114;
-                  &.active {
-                    padding: 0 40/@rem 0 2px;
-                    border: 1px solid #e47b25;
-                    &:before {
-                      content: "";
-                      position: absolute;
-                      width: 12/@rem;
-                      height: 12/@rem;
-                      border: 1px solid #f17114;
-                      border-width: 1px 0 0 1px;
-                      -webkit-transform: rotate(-135deg);
-                      transform: rotate(-135deg);
-                      top: 5/@rem;
-                      right: 10/@rem;
-                    }
-                  }
-                }
-              }
-              .order-info {
-                .fr;
-              }
-              label {
-                padding-top: 10/@rem;
-                display: block;
-                .fz(24);
-                .c3;
-                i {
-                  .rel;
-                  font-style: normal;
-                  color: #f17114;
-                  &.active {
-                    padding: 0 40/@rem 0 2px;
-                    border: 1px solid #e47b25;
-                    &:before {
-                      content: "";
-                      position: absolute;
-                      width: 12/@rem;
-                      height: 12/@rem;
-                      border: 1px solid #f17114;
-                      border-width: 1px 0 0 1px;
-                      -webkit-transform: rotate(-135deg);
-                      transform: rotate(-135deg);
-                      top: 5/@rem;
-                      right: 10/@rem;
-                    }
-                  }
-                }
-              }
+            .buy-count {
+              .fr;
+              .right;
+              .c9;
+              .fz(22);
+            }
+            .checker-con {
+              width: 100%;
+            }
+            .type {
+              .fz(22);
+              padding: 1px;
+              .cf;
+              background: red;
             }
           }
         }
-        .price-con {
-          .abs;
-          .borBox;
-          padding: 14/@rem 20/@rem;
-          height: 160/@rem;
-          top: 0;
-          right: 0;
-          .price {
-            padding-bottom: 10/@rem;
-            .c3;
+        &.grey {
+          .c9!important;
+        }
+      }
+    }
+
+    .others-col {
+      padding-bottom: 120/@rem;
+      .bonus-tips {
+        .borBox;
+        padding: 30/@rem 24/@rem;
+        .bf;
+        p {
+          .fz(26);
+        }
+        .tit {
+          .cdiy(@c2);
+          .fa-thumbs-o-up {
+            .cdiy(@c2);
+          }
+          i {
+            font-style: normal;
+            .c9
+          }
+          span {
             .fz(24);
           }
-          .buy-count {
-            .fr;
-            .right;
-            .c9;
-            .fz(22);
-          }
-          .checker-con {
-            width: 100%;
-          }
-          .type {
-            .fz(22);
-            padding: 1px;
-            .cf;
-            background: red;
-          }
+        }
+        .price {
+          .fr;
+          .fz(30);
         }
       }
-      &.grey {
-        .c9!important;
-      }
-    }
-  }
 
-  .others-col {
-    .bonus-tips {
-      .borBox;
-      padding: 30/@rem 24/@rem;
-      .bf;
-      p {
+      .vux-no-group-title {
+        margin-top: 0;
+      }
+
+      .vux-x-input, .address-area, .vux-datetime, .vux-selector, .vux-cell-box, .vux-x-textarea {
         .fz(26);
       }
-      .tit {
-        .cdiy(@c2);
-        .fa-thumbs-o-up {
-          .cdiy(@c2);
-        }
-        i {
-          font-style: normal;
-          .c9
-        }
-        span {
+
+    }
+
+    .count-bar {
+      .abs;
+      bottom: 0;
+      z-index: 20;
+      width: 100%;
+      .ma-w(640);
+      .c3;
+      .bf;
+      .bor-t;
+      .wrap {
+        .rel;
+        height: 88/@rem;
+      }
+      .txt-total {
+        .rel;
+        .borBox;
+        .fl;
+        padding: 0 30/@rem;
+        width: 70%;
+        height: 100%;
+        line-height: 88/@rem;
+        h4 {
           .fz(24);
-        }
-      }
-      .price {
-        .fr;
-        .fz(30);
-      }
-    }
-
-    .vux-no-group-title {
-      margin-top: 0;
-    }
-
-    .vux-x-input, .address-area, .vux-datetime, .vux-selector, .vux-cell-box, .vux-x-textarea {
-      .fz(26);
-    }
-
-  }
-
-  .count-bar {
-    .fix;
-    bottom: 0;
-    z-index: 20;
-    width: 100%;
-    .ma-w(640);
-    .c3;
-    .bf;
-    .bor-t;
-    .wrap {
-      .rel;
-      height: 88/@rem;
-    }
-    .txt-total {
-      .rel;
-      .borBox;
-      .fl;
-      padding: 0 30/@rem;
-      width: 70%;
-      height: 100%;
-      line-height: 88/@rem;
-      h4 {
-        .fz(24);
-        .right;
-        .txt-normal;
-        span {
-          .cdiy(@c2);
-        }
-        i {
+          .right;
           .txt-normal;
-          .fz(16);
-          .c9;
+          span {
+            .cdiy(@c2);
+          }
+          i {
+            .txt-normal;
+            .fz(16);
+            .c9;
+          }
         }
       }
+      .btn {
+        .fl;
+        width: 30%;
+        height: 100%;
+        line-height: 88/@rem;
+        .center;
+        .cf;
+        background: -webkit-linear-gradient(90deg, #dc0404, #ff7600);
+        background: linear-gradient(90deg, #dc0404, #ff7600);
+      }
     }
-    .btn {
-      .fl;
-      width: 30%;
-      height: 100%;
-      line-height: 88/@rem;
-      .center;
-      .cf;
-      background: -webkit-linear-gradient(90deg, #dc0404, #ff7600);
-      background: linear-gradient(90deg, #dc0404, #ff7600);
-    }
+
   }
+
 </style>

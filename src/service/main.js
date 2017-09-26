@@ -27,7 +27,8 @@ const nearbyApi = {
 const ticketApi = {
   list: host + '/home/ticketList',
   user: host + '/userTicket/list',
-  buy: host + '/userTicket/add',
+  add: host + '/userTicket/add',
+  repay: host + '/userTicket/payTicket',
   calcPrice: host + '/userTicket/calcuPrice',
   exchange: host + '/order/ticketExchange'
 }

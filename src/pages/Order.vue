@@ -29,11 +29,12 @@
                 <ul>
                   <li v-for="itm in item.goodsList" v-cloak>
                     <section class="item-middle">
-                      <div class="img-con">
-                        <img :src="itm.goodsImage">
-                      </div>
+                      <div class="img-con"
+                           :style="itm.goodsImage?('background-image:url('+itm.goodsImage+')'):''"></div>
                       <div class="info-con">
-                        <h3>{{itm.goodsName}}</h3>
+                        <h3><span
+                          :class="itm.goodsType==='goods_type.2'?'milk':''">{{itm.goodsType === 'goods_type.2' ? '奶' : '水'}}</span>{{itm.goodsName}}
+                        </h3>
                         <section class="middle">
                           <span class="unit-price">￥{{itm.goodsPrice | toFixed}}元</span>
                           <span class="order-info">{{itm.info}}</span>
@@ -307,32 +308,6 @@
           vm.isPosting = false
         })
       },
-      rePay(id) {
-        if (!me.isWeixin) {
-          vm.toast('请在微信中操作！')
-          return
-        }
-        if (vm.isPosting) return false
-        vm.isPosting = true
-        vm.loadData(orderApi.repay, {orderId: id}, 'POST', function (res) {
-          vm.isPosting = false
-          if (res.success && res.data) {
-            // alert(JSON.stringify(res.data))
-            vm.pay(res.data)
-          } else {
-            if (res.errorCode == 304) {
-              vm.toast('请先绑定手机号！')
-              setTimeout(function () {
-                vm.jump('bind')
-              }, 800)
-            } else {
-              vm.toast(res.message || '支付失败！')
-            }
-          }
-        }, function () {
-          vm.isPosting = false
-        })
-      },
       AppraiseOrder(id) {
         vm.appraise.curOrderId = id
         vm.showPop = true
@@ -340,20 +315,50 @@
       setOrderStatus(id, status) {
         if (vm.isPosting) return false
         vm.isPosting = true
-        vm.confirm(status === 4 ? '确定暂停？' : '确认恢复派送？', null, function () {
-          vm.isPosting = true
-          vm.loadData(orderApi.updateOrderStatus, {userType: 1, id: id, status: status}, 'POST', function (res) {
-            vm.isPosting = false
-            if (res.success) {
-              vm.toast(status === 4 ? '已暂停' : '已恢复派送')
-              vm.getOrders()
-            } else {
-              vm.toast(res.message || '操作失败！')
+        if (status === 4) {
+          vm.confirm('请填写暂停天数', '<div class="depositeModal"><input id="stopDay" type="number" placeholder="输入天数" required></div>', function () {
+            var curVal = window.document.getElementById('stopDay').value
+            if (!curVal) {
+              vm.toast('请填写天数', 'warn')
+              return false
             }
+            vm.isPosting = true
+            vm.loadData(orderApi.updateOrderStatus, {
+              userType: 1,
+              id: id,
+              status: status,
+              stopDay: curVal
+            }, 'POST', function (res) {
+              vm.isPosting = false
+              if (res.success) {
+                vm.toast('已暂停')
+                vm.$vux.confirm.hide()
+                vm.getOrders()
+              } else {
+                vm.toast(res.message || '操作失败！')
+              }
+            }, function () {
+              vm.isPosting = false
+            })
           }, function () {
             vm.isPosting = false
+          }, null, null, true)
+        } else {
+          vm.confirm('确认恢复派送？', null, function () {
+            vm.isPosting = true
+            vm.loadData(orderApi.updateOrderStatus, {userType: 1, id: id, status: status}, 'POST', function (res) {
+              vm.isPosting = false
+              if (res.success) {
+                vm.toast('已恢复派送')
+                vm.getOrders()
+              } else {
+                vm.toast(res.message || '操作失败！')
+              }
+            }, function () {
+              vm.isPosting = false
+            })
           })
-        })
+        }
       },
       onItemClick(status) {
         vm.orders = []
@@ -384,6 +389,32 @@
             vm.isPosting = false
           })
         }
+      },
+      rePay(id) {
+        if (!me.isWeixin) {
+          vm.toast('请在微信中操作！')
+          return
+        }
+        if (vm.isPosting) return false
+        vm.isPosting = true
+        vm.loadData(orderApi.repay, {orderId: id}, 'POST', function (res) {
+          vm.isPosting = false
+          if (res.success && res.data) {
+            // alert(JSON.stringify(res.data))
+            vm.pay(res.data)
+          } else {
+            if (res.errorCode == 304) {
+              vm.toast('请先绑定手机号！')
+              setTimeout(function () {
+                vm.jump('bind')
+              }, 800)
+            } else {
+              vm.toast(res.message || '支付失败！')
+            }
+          }
+        }, function () {
+          vm.isPosting = false
+        })
       },
       pay(data) {
         wx.config({
@@ -499,28 +530,43 @@
             }
           }
           .item-middle {
+            .rel;
             padding: 14/@rem 20/@rem;
-            .flex;
+            min-height: 160/@rem;
             .bf8;
             .bor-b;
             .img-con {
-              .rel;
-              .size(130, 130);
+              .abs;
+              top: 14/@rem;
+              padding: 10/@rem 0;
+              .size(140, 120);
               overflow: hidden;
-              img {
-                .abs-center-vh;
-                width: 100%;
-              }
+              background: #f5f5f5 url(../../static/img/bg_nopic.jpg) no-repeat center;
+              -webkit-background-size: cover;
+              background-size: cover;
             }
             .info-con {
-              .flex-r(2);
-              padding: 0 14/@rem;
+              .borBox;
+              width: 100%;
+              padding: 0 0 0 160/@rem;
               h3 {
                 padding-bottom: 10/@rem;
                 .txt-normal;
                 .c3;
                 .fz(26);
                 .ellipsis-clamp-2;
+                span {
+                  margin-right: 4px;
+                  padding: 0 2px;
+                  font-weight: normal;
+                  .cf;
+                  .fz(22);
+                  background: #2acaad;
+                  .borR(2px);
+                  &.milk {
+                    background: #74c361;
+                  }
+                }
               }
               .middle {
                 .c9;
@@ -542,14 +588,20 @@
               }
             }
             .price-con {
-              .flex-r(1);
-              .right;
+              .abs;
+              .borBox;
+              padding: 14/@rem 20/@rem;
+              height: 160/@rem;
+              top: 0;
+              right: 0;
               .price {
                 padding-bottom: 10/@rem;
                 .c3;
                 .fz(24);
               }
               .buy-count {
+                .fr;
+                .right;
                 .c9;
                 .fz(22);
               }
