@@ -45,7 +45,7 @@
           <section class="v-items" v-for="(item, index) in tickets" :data-id="item.id" :data-waterid="item.waterId"
                    v-cloak>
             <section class="wrap">
-              <div class="img-con" :style="item.imgurl?('background-image:url('+item.imgurl+')'):''"></div>
+              <div class="img-con" :style="item.ticketImage?('background-image:url('+item.ticketImage+')'):''"></div>
               <section class="infos">
                 <h3>{{item.ticketName}}<span class="count">数量：<i>{{item.totalWaterNum}}桶</i></span></h3>
                 <section class="middle">
