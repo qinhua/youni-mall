@@ -26,7 +26,7 @@
                 <h4 class="item-top"><i class="ico-seller"
                                         :style="item.sellerImage?'background-image:url('+item.sellerImage+')':''"></i>&nbsp;{{item.sellerName}}&nbsp;&nbsp;<i
                   class="fa fa-angle-right cc"></i><span>{{item.statusName}}</span></h4>
-                <ul>
+                <ul @click="toDetail(item.orderId)">
                   <li v-for="itm in item.goodsList" v-cloak>
                     <section class="item-middle">
                       <div class="img-con"
@@ -203,10 +203,10 @@
       }
     },
     methods: {
+      toDetail(id) {
+        vm.$router.push({name: 'order_detail', query: {id: id}})
+      },
       /* 上下拉刷新 */
-      /*onScroll(pos) {
-       this.scrollTop = pos.top
-       },*/
       refresh(done) {
         // console.log('下拉加载')
         setTimeout(function () {
@@ -262,7 +262,7 @@
             } else {
               resD.itemList.length ? vm.orders.concat(cur) : vm.noMore = true
             }
-            console.log(vm.orders, '订单数据')
+            // console.log(vm.orders, '订单数据')
           }, function () {
             vm.onFecthing = false
             vm.processing(0, 1)
@@ -279,6 +279,7 @@
             vm.isPosting = false
           })
         }, function () {
+          vm.isPosting = false
         })
       },
       cancelOrder(id) {
@@ -294,7 +295,7 @@
             vm.isPosting = false
           })
         }, function () {
-          // console.log('no')
+          vm.isPosting = false
         })
       },
       pushOrder(id) {
@@ -374,7 +375,6 @@
       },
       onConfirm(msg) {
         var curVal = window.document.querySelector('.vux-rater input').value
-        console.log(curVal)
         if (curVal == 0) {
           vm.toast('请先评分！', 'warn')
           return false

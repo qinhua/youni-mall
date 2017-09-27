@@ -35,6 +35,7 @@ const ticketApi = {
 const orderApi = {
   list: host + '/order/list',
   add: host + '/order/add',
+  view: host + '/order/view',
   repay: host + '/order/payOrder',
   score: host + '/order/score',
   del: host + '/order/del',

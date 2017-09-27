@@ -23,7 +23,7 @@
               </div>
               <div class="tags">
                 <label class="c2">{{seller.authLevelName}}</label>
-                <span class="dispatchTime">平均{{seller.dispatchTime || 22}}分钟送达</span>
+                <span class="dispatchTime" v-if="seller.label" v-cloak>平均{{seller.label}}分钟送达</span>
               </div>
             </div>
             <div class="bottom">

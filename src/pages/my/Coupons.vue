@@ -9,7 +9,7 @@
     </tab>
     <div class="coupon-list">
       <scroller class="inner-scroller" ref="couponScroller" :on-refresh="refresh" :on-infinite="infinite"
-                refreshText="下拉刷新" noDataText="没有更多数据" snapping v-if="coupons.length">
+                refreshText="下拉刷新" :noDataText="coupons.length?没有更多数据:''" snapping>
         <!-- content goes here -->
         <section class="v-items" v-for="(item, index) in coupons" :data-id="item.id" :data-couponid="item.couponId">
           <div :class="('stamp type0'+item.type) + (!item.status?' expired':'')">
@@ -53,8 +53,8 @@
       return {
         show: false,
         types: ['coupon_type.1', 'coupon_type.2', 'coupon_type.3', 'coupon_type.4'],
-//        coupons: [],
-        coupons: [
+        coupons: [],
+        /*coupons: [
           {
             "id": "pbhhlujn7qielom4pvuh8vk6dh",
             "userId": "562bedbb7b4611e78a0f0242ac110002",
@@ -69,7 +69,8 @@
             "maxAmount": 50,
             "discountRate": 1,
             "couponId": "2"
-          },],
+          },
+        ],*/
         params: {
           pagerSize: 10,
           pageNo: 1
@@ -84,8 +85,8 @@
     },
     mounted() {
       vm = this
-      // vm.getCoupons()
-      vm.$nextTick(() => {
+      vm.getCoupons()
+      vm.$nextTick(function () {
         vm.$refs.couponScroller.finishInfinite(true)
         vm.$refs.couponScroller.resize()
       })

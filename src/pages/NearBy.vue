@@ -62,7 +62,7 @@
                 </section>
                 <div class="tags">
                   <label :class="item.authLevelCls">{{item.authLevelName}}</label>
-                  <span class="dispatchTime">平均{{item.dispatchTime || 22}}分钟送达</span>
+                  <span class="dispatchTime" v-if="item.label" v-cloak>平均{{item.label}}分钟送达</span>
                 </div>
               </section>
               <div class="bottom" v-if="item.ticket">

@@ -6,6 +6,7 @@ import Home from '@/pages/Home'
 import NearBy from '@/pages/NearBy'
 import Ticket from '@/pages/Ticket'
 import Order from '@/pages/Order'
+import OrderDetail from '@/pages/orders/Detail'
 import Map from '@/pages/Map'
 import Amap from '@/components/Amap'
 import My from '@/pages/My'
@@ -114,6 +115,15 @@ export default new Router({
       component: Order,
       meta: {
         title: '订单',
+        keepAlive: false
+      }
+    },
+    {
+      path: '/order_detail',
+      name: 'order_detail',
+      component: OrderDetail,
+      meta: {
+        title: '订单详情',
         keepAlive: false
       }
     },
