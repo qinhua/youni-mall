@@ -55,7 +55,7 @@ const userApi = {
   addressList: host + '/user/addressList',
   setAddress: host + '/user/setAddress',
   setDefaultAddress: host + '/user/setDefaultAddress',
-  delAddress: host + '/user/delAddress',
+  delAddress: host + '/user/delAddress'
 }
 const depositApi = {
   list: host + '/userDeposit/list',

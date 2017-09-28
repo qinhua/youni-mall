@@ -1,6 +1,6 @@
 <template>
   <div class="order-detail">
-    <div class="status-col">
+    <div :class="'status-col s' + details.status">
       <div class="left-con">
         <span v-if="details.status===1">待支付…<br><i>请尽快支付</i></span>
         <span v-if="details.status===2">待派送…<br><i>等待商家派达中</i></span>
@@ -376,6 +376,36 @@
       .cf;
       background: linear-gradient(left, #ffc369, #ff5800);
       background: -webkit-linear-gradient(left, #ffc369, #ff5800);
+      &.s1 {
+        background: url(../../../static/img/s1.png) no-repeat 88% center, linear-gradient(left, #ffc369, #ff5800);
+        background: url(../../../static/img/s1.png) no-repeat 88% center, -webkit-linear-gradient(left, #ffc369, #ff5800);
+        -webkit-background-size: auto 60%, auto 100%;
+        background-size: auto 60%, auto 100%;
+      }
+      &.s2 {
+        background: url(../../../static/img/s2.png) no-repeat 88% center, linear-gradient(left, #ffc369, #ff5800);
+        background: url(../../../static/img/s2.png) no-repeat 88% center, -webkit-linear-gradient(left, #ffc369, #ff5800);
+        -webkit-background-size: auto 60%, auto 100%;
+        background-size: auto 60%, auto 100%;
+      }
+      &.s3 {
+        background: url(../../../static/img/s3.png) no-repeat 88% center, linear-gradient(left, #ffc369, #ff5800);
+        background: url(../../../static/img/s3.png) no-repeat 88% center, -webkit-linear-gradient(left, #ffc369, #ff5800);
+        -webkit-background-size: auto 60%, auto 100%;
+        background-size: auto 60%, auto 100%;
+      }
+      &.s4 {
+        background: url(../../../static/img/s4.png) no-repeat right bottom, linear-gradient(left, #ffc369, #ff5800);
+        background: url(../../../static/img/s4.png) no-repeat right bottom, -webkit-linear-gradient(left, #ffc369, #ff5800);
+        -webkit-background-size: auto 60%, auto 100%;
+        background-size: auto 60%, auto 100%;
+      }
+      &.s5 {
+        background: url(../../../static/img/s6.png) no-repeat 88% center, linear-gradient(left, #ffc369, #ff5800);
+        background: url(../../../static/img/s6.png) no-repeat 88% center, -webkit-linear-gradient(left, #ffc369, #ff5800);
+        -webkit-background-size: auto 60%, auto 100%;
+        background-size: auto 60%, auto 100%;
+      }
       &.waitPay {
         background: #40ceca;
       }
@@ -400,7 +430,7 @@
         padding: 24/@rem 0 24/@rem 24/@rem;
         span {
           .abs-center-vertical;
-          left: 24/@rem;
+          left: 40/@rem;
           .fz(34);
           i {
             opacity: .8;
