@@ -24,10 +24,11 @@
                 </div>
                 <p class="info">{{item.couponNote || '满减优惠'}}</p>
               </div>
-              <div class="copy" v-if="!item.expired">{{item.label}}<p>
-                {{item.createTime.split(' ')[0] + '~'}}{{item.expireTime.split(' ')[0]}}
+              <div class="copy" v-if="item.expireTime&&!item.expired">{{item.label}}<p>
+                {{item.createTime+ '~' + item.expireTime}}
               </p>
               </div>
+              <div class="copy" v-else-if="!item.expireTime"><span class="exp">永久有效</span></div>
               <div class="copy" v-else><span class="exp">已过期</span></div>
             </div>
             <i></i>
@@ -54,23 +55,6 @@
         show: false,
         types: ['coupon_type.1', 'coupon_type.2', 'coupon_type.3', 'coupon_type.4'],
         coupons: [],
-        /*coupons: [
-          {
-            "id": "pbhhlujn7qielom4pvuh8vk6dh",
-            "userId": "562bedbb7b4611e78a0f0242ac110002",
-            "status": 0,
-            "createTime": "2017-09-13 18:18:59",
-            "updateTime": "2017-09-13 18:18:59",
-            "goodsType": "goods_type.2",
-            "sellerType": 1,
-            "type": 1,
-            "discountAmount": 30,
-            "expireTime": "2017-09-23 00:00:00",
-            "maxAmount": 50,
-            "discountRate": 1,
-            "couponId": "2"
-          },
-        ],*/
         params: {
           pagerSize: 10,
           pageNo: 1
@@ -267,7 +251,7 @@
             .content {
               padding: 10/@rem 0;
               .value {
-                .fz(48);
+                .fz(34);
                 color: #fff;
                 font-weight: normal;
                 margin-right: 14/@rem;
