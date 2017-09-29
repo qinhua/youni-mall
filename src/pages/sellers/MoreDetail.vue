@@ -466,6 +466,7 @@
           p {
             .rel;
             padding: 12/@rem 0;
+            overflow: hidden;
             > i {
               font-style: normal;
               .fl;

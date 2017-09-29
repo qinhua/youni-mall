@@ -223,11 +223,14 @@
           vm.onFetching = false
           vm.processing(0, 1)
           var resD = res.data
-          for (var i = 0; i < resD.goodsList.length; i++) {
-            var cur = resD.goodsList[i]
-            cur.note = cur.note ? JSON.parse(cur.note) : null
-            vm.params.goods.push({goodsId: cur.goodsId})
+          if (!vm.params.goods.length) {
+            for (var i = 0; i < resD.goodsList.length; i++) {
+              var cur = resD.goodsList[i]
+              cur.note = cur.note ? JSON.parse(cur.note) : null
+              vm.params.goods.push({goodsId: cur.goodsId})
+            }
           }
+
           vm.curCartData = resD
           // vm.countTotal()
           console.log(vm.curCartData, '购物车数据')

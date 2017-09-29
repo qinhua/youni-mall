@@ -138,7 +138,8 @@
           </div>
           <x-input id="curMilkAmount" title="配送量(瓶/天)：" placeholder="请输入每日配送量" required text-align="right" type="number"
                    v-model="curMilkAmount" @on-change="changeMilkAmout"></x-input>
-          <x-input class="total-p" title="总价：" text-align="right" type="text" readonly v-model="curTotalPrice"></x-input>
+          <x-input class="total-p" title="总价：" text-align="right" type="text" readonly
+                   v-model="curTotalPrice"></x-input>
         </group>
         <button type="button" class="btn btn-add-cart" @click="addToCart">加入购物车</button>
       </popup>
@@ -528,14 +529,14 @@
         vm.isPosting = true
         vm.loadData(goodsApi.saleConfigList, {goodsId: id}, 'POST', function (res) {
           vm.isPosting = false
-          if (res.data.itemList.length) {
+          if (res.success && res.data.itemList.length) {
             vm.curMilkAmount = 1
             vm.priceTags = res.data.itemList
             vm.curPriceTag = vm.priceTags[0]
             vm.curTotalPrice = me.floatMulti(vm.curMilkAmount, vm.curPriceTag.salePrice) + '元'
             vm.showPop = true
           } else {
-            vm.toast('此商品暂无法购买', 'warn')
+            vm.toast(res.message || '此商品暂无法购买', 'warn')
           }
         }, function () {
           vm.isPosting = false

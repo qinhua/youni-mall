@@ -122,7 +122,7 @@
     </div>
 
     <!--底部立即购买pop-checker-->
-    <div v-transfer-dom class="buyCountCon">
+    <div v-transfer-dom>
       <popup v-model="showPop" position="bottom" max-height="80%" v-if="!isMilk">
         <group class="number-con">
           <x-number fillable title="数量：" :disabled="cartData && details.sellerId!==cartData.sellerId"
@@ -133,7 +133,7 @@
         <button type="button" class="btn btn-addcart" @click="nextStep">立即购买
         </button>
       </popup>
-      <popup class="buyCountCon" v-model="showPop" position="bottom" max-height="80%" v-else>
+      <popup class="buyCon" v-model="showPop" position="bottom" max-height="80%" v-else>
         <group>
           <div class="tags-con" v-if="favorTags" v-cloak>
             <div class="wrap">
@@ -604,7 +604,6 @@
             if (cur.goodsId === vm.details.id) {
               vm.details['number'] = cur.goodsNum
               vm.details['payPrice'] = cur.payPrice
-              console.error(cur.goodsNum, vm.details.number, 888)
             }
           }
         } else {
@@ -1120,7 +1119,7 @@
     }
   }
 
-  .buyCountCon {
+  .buyCon {
     .vux-no-group-title {
       margin-top: 0;
       padding: 20/@rem 0 40/@rem;
@@ -1177,13 +1176,14 @@
       }
     }
 
-    .btn-addcart {
-      width: 100%;
-      padding: 30/@rem 0;
-      .fz(26);
-      .cf;
-      .bdiy(@c2);
-    }
+  }
+
+  .btn-addcart {
+    width: 100%;
+    padding: 30/@rem 0;
+    .fz(26);
+    .cf;
+    .bdiy(@c2);
   }
 
 </style>
