@@ -469,15 +469,6 @@
         vm.isPosting = true
 //        vm.processing()
         !isLoadMore ? vm.params.pageNo = 1 : vm.params.pageNo++
-        /* if (!isLoadMore) {
-         vm.params.pageNo = 1
-         } else {
-         if (!vm.noMore) {
-         vm.params.pageNo++
-         } else {
-         return false
-         }
-         }*/
         vm.loadData(goodsApi.list, vm.params, 'POST', function (res) {
           vm.isPosting = false
 //          vm.processing(0, 1)
@@ -500,7 +491,7 @@
             }
             // resD.itemList.length ? vm.goods.concat(resD.itemList) : vm.noMore = true
           }
-          console.log(vm.goods, '首页GoodsList')
+          // console.log(vm.goods, '首页GoodsList')
         }, function () {
           vm.isPosting = false
 //          vm.processing(0, 1)
@@ -1123,7 +1114,6 @@
         }
       }
     }
-
   }
 
   .buyCountCon {
