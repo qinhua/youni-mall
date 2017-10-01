@@ -527,7 +527,7 @@
             vm.curTotalPrice = me.floatMulti(vm.curMilkAmount, vm.curPriceTag.salePrice) + '元'
             vm.showPop = true
           } else {
-            vm.toast(res.message || '此商品暂无法购买', 'warn')
+            vm.toast('此商品暂无法购买', 'warn')
           }
         }, function () {
           vm.isPosting = false

@@ -1,7 +1,7 @@
 <template>
-  <div class="goods-detail">
+  <div class="goods-detail needsClick">
     <div class="scroll-view">
-      <div class="top">
+      <div class="top" ref="topBanner">
         <div class="banner-goods-detail">
           <div class="swiper-container" v-show="details.imgurl">
             <div class="swiper-wrapper">
@@ -55,7 +55,8 @@
           </tab-item>
         </tab>-->
         <div class="detail-con">
-          <div class="detail-content" v-html="details.note" v-if="details.note"></div>
+          <div class="detail-content" :style="curMinHeigth" v-html="details.note" v-if="details.note"
+               v-cloak></div>
           <span class="block noData center" v-else>暂无详情</span>
         </div>
         <!--<div class="swiper-container swiper-goods-detail">
@@ -254,6 +255,11 @@
     beforeMount() {
       me = window.me
     },
+    computed: {
+      curMinHeigth() {
+        return 'min-height:' + (vm.$refs.topBanner.offsetHeight + 200) + 'px'
+      }
+    },
     mounted() {
       vm = this
       vm.getDetail(function () {
@@ -262,6 +268,7 @@
         // vm.swiperDetail()
         // vm.getAppraise()
       })
+      console.log(vm.curMinHeigth)
 //      vm.$nextTick(function() {
 //        vm.$refs.orderScroller.finishInfinite(true)
 //        vm.$refs.orderScroller.resize()
@@ -304,7 +311,6 @@
           // Navigation arrows
           // nextButton: '.swiper-button-next',
           // prevButton: '.swiper-button-prev',
-          grabCursor: true,
           // onClick: function (swiper) {
           // var curIdx = swiper.activeIndex
           // },
@@ -705,7 +711,6 @@
   .goods-detail {
     .rel;
     height: 100%;
-    z-index: 1;
     overflow: hidden;
     .scroll-view {
       height: 100%;
@@ -1185,5 +1190,4 @@
     .cf;
     .bdiy(@c2);
   }
-
 </style>

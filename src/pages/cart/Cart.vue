@@ -166,7 +166,7 @@
         /*口味标签-end*/
         /*底部奶的浮窗-end*/
         params: {
-          /*pagerSize: 10,
+          /*pageSize: 10,
            pageNo: 1*/
         },
       }
@@ -570,6 +570,7 @@
             .abs;
             bottom: 14/@rem;
             right: 20/@rem;
+            white-space:nowrap;
             .center;
             label, input {
               .iblock;

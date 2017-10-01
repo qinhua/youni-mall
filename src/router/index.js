@@ -21,6 +21,7 @@ import MyAddress from '@/pages/my/Address'
 import Bind from '@/pages/my/Bind'
 import MyFavorite from '@/pages/my/Favorite'
 import Help from '@/pages/my/Help'
+import Rules from '@/pages/my/Rules'
 import About from '@/pages/my/About'
 import Appraise from '@/pages/orders/Appraise'
 import GoodsDetail from '@/pages/goods/Detail'
@@ -219,6 +220,15 @@ export default new Router({
       component: Help,
       meta: {
         title: '使用帮助',
+        keepAlive: false
+      }
+    },
+    {
+      path: '/rules',
+      name: 'rules',
+      component: Rules,
+      meta: {
+        title: '用户协议',
         keepAlive: false
       }
     },

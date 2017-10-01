@@ -18,8 +18,8 @@
                 <ol class="star" v-else>
                   <li class="gray" v-for="star in 5">★</li>
                 </ol>
-              <span
-                class="hasSell"><i>{{(seller.sellerScore || 0) | toFixed(1)}}分</i>已售{{seller.sellerCount}}单</span>
+                <span
+                  class="hasSell"><i>{{(seller.sellerScore || 0) | toFixed(1)}}分</i>已售{{seller.sellerCount}}单</span>
               </div>
               <div class="tags">
                 <label class="c2">{{seller.authLevelName}}</label>
@@ -39,6 +39,7 @@
       <div class="operate-con">
         <h3><i class="fa fa-hand-o-right"></i>&nbsp;您可以在此处给店铺缴付押金({{seller.mortgage}}元)
           <button type="button" class="btn btn-deposite" @click="payDeposite(seller.id)">交押金</button>
+          <!--<span>已交押金{{seller.currentMortgage}}</span>-->
         </h3>
       </div>
       <div class="bottom">
@@ -59,7 +60,7 @@
           <div class="content license">
             <div>
               <img class="previewer-demo-img" :src="seller.businessLicense" width="100"
-                   @click="preview()">
+                   @click="preview(0)">
             </div>
           </div>
         </div>
@@ -76,6 +77,21 @@
     <div v-transfer-dom>
       <previewer :list="list" ref="previewer" :options="options"></previewer>
     </div>
+
+    <!--提现须知-->
+    <div v-transfer-dom>
+      <popup class="pop-txtcon" v-model="showPop" position="bottom" max-height="80%">
+        <group class="pop-content">
+          <h3>关于押金</h3>
+          <ul class="txt-list">
+            <li>1. 您购买押金类商品后，支付的押金将自动支付给商品所属的配送点，同时系统自动生成电子押金券发放到你的账户；</li>
+            <li>2. 您需要退押金时可直接点击电子押金券上的‘退押金’按钮向收取押金的配送点申请退还押金，退桶和退还押金双方在线下完成交易；</li>
+            <li>免责声明:电子押金券仅作为您与指定配送点线上交易的电子凭证，友你梦想（武汉）科技有限公司不会对交易过程产生的任何后果负责。</li>
+          </ul>
+        </group>
+        <button type="button" class="btn btn-sure" @click="showPop=false">知道了</button>
+      </popup>
+    </div>
   </div>
 </template>
 
@@ -84,7 +100,7 @@
   /* eslint-disable */
   let me
   let vm
-  import {Previewer, TransferDom} from 'vux'
+  import {Group, Previewer, Popup, TransferDom} from 'vux'
   import {depositApi} from '../../service/main.js'
 
   export default {
@@ -97,6 +113,7 @@
         seller: {},
         isPosting: false,
         noMore: false,
+        showPop: false,
         list: [{src: ''}],
         options: {
           getThumbBoundsFn(index) {
@@ -115,7 +132,7 @@
         }
       }
     },
-    components: {Previewer},
+    components: {Group, Previewer, Popup},
     beforeMount() {
       me = window.me
     },
@@ -129,7 +146,8 @@
           vm.getSeller()
         } else {
           try {
-            this.$refs.previewer.close(0)
+            vm.showPop = false
+            this.$refs.previewer.close()
           } catch (e) {
             // console.log(e)
           }
@@ -138,18 +156,19 @@
     },
     methods: {
       preview(index) {
-        this.$refs.previewer.show(0)
+        this.$refs.previewer.show(index)
       },
       getSeller() {
         try {
           vm.seller = vm.$route.query.thedata ? JSON.parse(window.decodeURIComponent(vm.$route.query.thedata)) : {}
           vm.list[0].src = vm.seller.businessLicense
-          console.log(vm.seller, '带过来的数据')
+          // console.log(vm.seller, '带过来的数据')
         } catch (e) {
           // console.log(e)
         }
       },
       payDeposite(id) {
+        vm.showPop = true
         if (!me.isWeixin) {
           vm.toast('请在微信中操作！')
           return
@@ -499,6 +518,58 @@
         }
       }
     }
+
   }
 
+  .pop-txtcon {
+    .vux-no-group-title {
+      margin-top: 0;
+      padding: 20/@rem 0 40/@rem;
+      .vux-x-input {
+        padding: 24/@rem 30/@rem;
+        input {
+          .c3;
+          &:disabled {
+            .c3;
+          }
+        }
+      }
+      .vux-x-input, .vux-cell-box, .vux-x-textarea {
+        .fz(26);
+      }
+    }
+
+    .pop-content {
+      .rel;
+      height: 100%;
+      .borBox;
+      padding: 14/@rem 14/@rem 90/@rem;
+      h3 {
+        .fz(30);
+        font-weight: normal;
+        .center;
+        .c3;
+      }
+      ul {
+        padding: 14/@rem;
+        overflow: hidden;
+      }
+      li {
+        margin: 8/@rem;
+        line-height: 1.8;
+        font-size: 24/@rem;
+        .c3;
+      }
+    }
+    .btn-sure {
+      .fix;
+      bottom: 0;
+      z-index: 5;
+      width: 100%;
+      padding: 30/@rem 0;
+      .fz(26);
+      .cf;
+      .bdiy(@c1);
+    }
+  }
 </style>

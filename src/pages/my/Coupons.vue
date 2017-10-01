@@ -56,7 +56,7 @@
         types: ['coupon_type.1', 'coupon_type.2', 'coupon_type.3', 'coupon_type.4'],
         coupons: [],
         params: {
-          pagerSize: 10,
+          pageSize: 10,
           pageNo: 1
         },
         noMore: false,

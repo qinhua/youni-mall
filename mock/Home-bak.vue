@@ -443,7 +443,7 @@
       getGoods (isLoadMore) {
         if (vm.onFetching) return false
         var params = vm.filterData || {
-            pagerSize: 10,
+            pageSize: 10,
             pageNo: 1,
             goodsType: 'XXX',
             goodsCategory: '',

@@ -107,7 +107,7 @@
         params: {
           waterTicketType: 'water_ticket_type.1',
           userType: 1,
-          pagerSize: 10,
+          pageSize: 10,
           pageNo: 1
         },
         noMore: false,
