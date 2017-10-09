@@ -1,23 +1,25 @@
 <template>
   <div class="my-coupons">
-    <tab class="order-tab" active-color="#f34c18">
+    <!--<tab class="order-tab" active-color="#f34c18">
       <tab-item :selected="!params.type?true:false" @on-item-click="onItemClick">全部</tab-item>
       <tab-item :selected="params.type==1?true:false" @on-item-click="onItemClick(1)">红包</tab-item>
       <tab-item :selected="params.type==2?true:false" @on-item-click="onItemClick(2)">现金券</tab-item>
       <tab-item :selected="params.type==3?true:false" @on-item-click="onItemClick(3)">满减</tab-item>
       <tab-item :selected="params.type==4?true:false" @on-item-click="onItemClick(4)">水票</tab-item>
-    </tab>
+    </tab>-->
     <div class="coupon-list">
       <scroller class="inner-scroller" ref="couponScroller" :on-refresh="refresh" :on-infinite="infinite"
-                refreshText="下拉刷新" :noDataText="coupons.length?没有更多数据:''" snapping>
+                refreshText="下拉刷新" :noDataText="coupons.length?'没有更多数据':''" snapping>
         <!-- content goes here -->
         <section class="v-items" v-for="(item, index) in coupons" :data-id="item.id" :data-couponid="item.couponId">
-          <div :class="('stamp type0'+item.type) + (!item.status?' expired':'')">
+          <!--<div :class="('stamp type0'+item.type) + (!item.status?' expired':'')">-->
+          <div class="stamp type01">
             <div class="wrap">
               <div class="par">
                 <!--<p>{{item.sellerName}}</p>-->
                 <div class="content">
-                  <h3 class="value">￥{{item.discountAmount | toFixed}}元<sub class="type">{{item.typeName}}</sub></h3>
+                  <!--<h3 class="value">￥{{item.discountAmount | toFixed}}元<sub class="type">{{item.typeName}}</sub></h3>-->
+                  <h3 class="value">{{item.discountRate}}折<sub class="type">{{item.typeName}}</sub></h3>
                   <sub class="sign">（最多抵扣）￥{{item.maxAmount | toFixed}}元</sub>
                   <!--<sub class="type">{{item.goodsType | couponType(item.goodsType)}}</sub>-->
 
@@ -182,7 +184,8 @@
   .coupon-list {
     .inner-scroller {
       .borBox;
-      padding: 50px 0 20px 0;
+      /*padding: 50px 0 20px 0;*/
+      padding: 10px 0 20px 0;
       .v-items {
         .borBox;
         width: 100%;

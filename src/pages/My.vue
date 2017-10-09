@@ -35,7 +35,7 @@
       </grid>
     </div>
     <group class="list-modal">
-      <cell title="我的卡券" link="/mycoupons">
+      <cell title="我的卡券" link="/my_coupons">
         <!--<i slot="icon" width="20" style="margin-right:5px;" class="fa fa-credit-card"></i>-->
       </cell>
       <cell title="我的水票" link="/ticket/2">

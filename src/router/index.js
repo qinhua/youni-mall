@@ -19,6 +19,7 @@ import MyCoupons from '@/pages/my/Coupons'
 import MyGuarantee from '@/pages/my/Guarantee'
 import MyAddress from '@/pages/my/Address'
 import Bind from '@/pages/my/Bind'
+import GetCoupon from '@/pages/my/GetCoupon'
 import MyFavorite from '@/pages/my/Favorite'
 import Help from '@/pages/my/Help'
 import Rules from '@/pages/my/Rules'
@@ -29,6 +30,7 @@ import SellerDetail from '@/pages/sellers/Detail'
 import SellerDetailMore from '@/pages/sellers/MoreDetail'
 
 import NoPage from '@/pages/NoPage'
+
 Router.prototype.goBack = function () {
   this.isBack = true
   window.history.go(-1)
@@ -152,8 +154,8 @@ export default new Router({
       }
     },
     {
-      path: '/mycoupons',
-      name: 'mycoupons',
+      path: '/my_coupons',
+      name: 'my_coupons',
       component: MyCoupons,
       meta: {
         title: '我的卡券',
@@ -211,6 +213,15 @@ export default new Router({
       component: Bind,
       meta: {
         title: '绑定手机号',
+        keepAlive: false
+      }
+    },
+    {
+      path: '/get_coupon',
+      name: 'get_coupon',
+      component: GetCoupon,
+      meta: {
+        title: '领取优惠券',
         keepAlive: false
       }
     },

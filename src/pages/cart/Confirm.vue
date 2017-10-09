@@ -55,7 +55,7 @@
                         v-if="!firstData.newUserCoupon&&coupons.length>1"></popup-picker>
           <div class="bonus-tips" v-if="firstData.newUserCoupon"><p><span
             class="tit"><i
-            class="fa fa-thumbs-o-up"></i>&nbsp;首单专享&nbsp;<i>(已优惠{{firstData.totalAmount - firstData.payAmount}}元)</i></span><span
+            class="fa fa-thumbs-o-up"></i>&nbsp;首单专享&nbsp;<i>(已优惠{{new Number().sub(firstData.totalAmount, firstData.payAmount)}}元)</i></span><span
             class="price">￥{{firstData.payAmount | toFixed}}</span></p></div>
           <datetime title="配送时间" format="YYYY-MM-DD HH:mm" minute-row v-model="params.dispatchTime"
                     @on-change="changeTime"></datetime>
