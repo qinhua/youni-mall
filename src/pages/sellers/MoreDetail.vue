@@ -89,7 +89,7 @@
             <li>免责声明:电子押金券仅作为您与指定配送点线上交易的电子凭证，友你梦想（武汉）科技有限公司不会对交易过程产生的任何后果负责。</li>
           </ul>
         </group>
-        <button type="button" class="btn btn-sure" @click="showPop=false">知道了</button>
+        <button type="button" class="btn btn-sure" @click="showDialog(seller.id)">知道了</button>
       </popup>
     </div>
   </div>
@@ -167,15 +167,15 @@
           // console.log(e)
         }
       },
-      payDeposite(id) {
-        vm.showPop = true
-        if (!me.isWeixin) {
-          vm.toast('请在微信中操作！')
-          return
-        }
-        if (vm.isPosting) return false
-        vm.isPosting = true
+      showDialog(id) {
+        vm.showPop = false
         vm.confirm('请填写桶数？', '<div class="depositeModal"><input id="bucketAmount" type="number" placeholder="输入数量（桶）" required></div>', function () {
+          if (!me.isWeixin) {
+            vm.toast('请在微信中操作！')
+            return
+          }
+          if (vm.isPosting) return false
+          vm.isPosting = true
           var curVal = window.document.getElementById('bucketAmount').value
           if (!curVal) {
             vm.toast('请填写数量', 'warn')
@@ -207,9 +207,12 @@
           vm.isPosting = false
         }, '支付', null, true)
       },
+      payDeposite() {
+        vm.showPop = true
+      },
       pay(data, other) {
         wx.config({
-          debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+          debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
           appId: data.appId, // 必填，公众号的唯一标识
           timestamp: data.timeStamp, // 必填，生成签名的时间戳
           nonceStr: data.nonceStr, // 必填，生成签名的随机串

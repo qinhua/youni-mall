@@ -7,10 +7,20 @@
       </tab-item>
     </tab>
     <!--<slide-tab ref="slidernav" skey="s01" :slides="navs" @on-select="selectCategory"></slide-tab>-->
-    <div class="v-slide-tab" ref="slidernav">
+    <div class="v-slide-tab" ref="slidernav" v-if="!isMe" v-cloak>
       <div class="swiper-container slide-tab-con">
         <div class="swiper-wrapper">
-          <div :class="['swiper-slide',current===index?'active':'']" v-for="(item,index) in navs" :key="index+1"
+          <div :class="['swiper-slide',current===index?'active':'']" v-for="(item,index) in navs01" :key="index+1"
+               @click="filterTicket({index:index,key:item.key,value:item.value})" v-cloak>
+            <a :data-id="item.key">{{item.value}}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="v-slide-tab" ref="slidernav" v-else>
+      <div class="swiper-container slide-tab-con">
+        <div class="swiper-wrapper">
+          <div :class="['swiper-slide',current===index?'active':'']" v-for="(item,index) in navs02" :key="index+1"
                @click="filterTicket({index:index,key:item.key,value:item.value})" v-cloak>
             <a :data-id="item.key">{{item.value}}</a>
           </div>
@@ -84,7 +94,7 @@
         curBtnText: null,
         curApi: ticketApi.list,
         tickets: [],
-        navs: [{
+        navs01: [{
           'key': 'water_ticket_type.1',
           'value': '买5送1'
         },
@@ -104,8 +114,23 @@
             'key': 'water_ticket_type.5',
             'value': '买100送40'
           }],
+        navs02: [{
+          'key': '',
+          'value': '全部'
+          }, {
+            'key': 1,
+            'value': '待支付'
+          },
+          {
+            'key': 2,
+            'value': '可兑换'
+          },
+          {
+            'key': 3,
+            'value': '已兑完'
+          }],
         params: {
-          waterTicketType: 'water_ticket_type.1',
+          // waterTicketType: 'water_ticket_type.1',
           userType: 1,
           pageSize: 10,
           pageNo: 1
@@ -142,7 +167,13 @@
       '$route'(to, from) {
         if (to.name === 'ticket') {
           vm.current = 0
-          vm.params.waterTicketType = vm.navs[0].key
+          if (vm.isMe) {
+            vm.params.status = vm.navs02[0].key
+            delete vm.params.waterTicketType
+          } else {
+            vm.params.waterTicketType = vm.navs01[0].key
+            delete vm.params.status
+          }
           vm.tickets = []
           vm.keepFresh(vm.$route.params.type)
           vm.getTickets()
@@ -212,7 +243,13 @@
       },
       onItemClick(type) {
         vm.current = 0
-        vm.params.waterTicketType = vm.navs[0].key
+        if (vm.isMe) {
+          vm.params.status = vm.navs02[0].key
+          delete vm.params.waterTicketType
+        } else {
+          vm.params.waterTicketType = vm.navs01[0].key
+          delete vm.params.status
+        }
         if (type === 0) {
           vm.$router.push({path: '/ticket'})
         }
@@ -221,7 +258,12 @@
       },
       filterTicket(obj) {
         vm.current = obj.index
-        vm.params.waterTicketType = obj.key
+        if (obj.key) {
+          !vm.isMe ? vm.params.waterTicketType = obj.key : vm.params.status = obj.key
+        } else {
+          delete vm.params.waterTicketType
+          delete vm.params.status
+        }
         vm.getTickets()
       },
       getTickets(isLoadMore) {
@@ -248,7 +290,7 @@
               resD.itemList.length ? vm.tickets.concat(resD.itemList) : vm.noMore = true
             }
           }
-          console.log(vm.tickets, '水票数据')
+          // console.log(vm.tickets, '水票数据')
         }, function () {
           vm.onFetching = false
         })
@@ -312,7 +354,7 @@
                 vm.jump('bind')
               }, 800)
             } else {
-              vm.toast(res.data || '操作失败！')
+              vm.toast(res.message || '操作失败！')
             }
           }
         }, function () {
@@ -321,7 +363,7 @@
       },
       pay(data) {
         wx.config({
-          debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+          debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
           appId: data.appId, // 必填，公众号的唯一标识
           timestamp: data.timeStamp, // 必填，生成签名的时间戳
           nonceStr: data.nonceStr, // 必填，生成签名的随机串
@@ -514,7 +556,7 @@
               .c9;
               .fz(22);
               .ellipsis;
-              &.price{
+              &.price {
                 .cdiy(@c2);
               }
             }

@@ -320,7 +320,9 @@
         if (vm.isPosting) return false
         !isLoadMore ? vm.params.pageNo = 1 : vm.params.pageNo++
         vm.isPosting = true
-        vm.processing()
+        if (!isLoadMore) {
+          vm.processing()
+        }
         vm.loadData(nearbyApi.sellerList, vm.params, 'POST', function (res) {
           vm.isPosting = false
           vm.processing(0, 1)

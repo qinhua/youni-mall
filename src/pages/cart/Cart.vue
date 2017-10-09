@@ -14,9 +14,12 @@
             </h4>
             <ul class="has-list">
               <swipeout>
-                <swipeout-item @on-close="" @on-open="" transition-mode="follow" :disabled="isEdit"
+                <!--<swipeout-item @on-close="" @on-open="" transition-mode="follow" :disabled="isEdit"
                                v-for="(item,index) in goods.goodsList"
-                               :data-id="item.goodsId" key="index" :ref="'switem-'+goods.sellerId">
+                               :data-id="item.goodsId" key="index" :ref="'switem-'+goods.sellerId">-->
+                  <swipeout-item @on-close="" @on-open="" transition-mode="follow"
+                                 v-for="(item,index) in goods.goodsList"
+                                 :data-id="item.goodsId" key="index" :ref="'switem-'+goods.sellerId">
                   <div slot="right-menu">
                     <!--<swipeout-button @click.native="onButtonClick('edit')" type="primary">编辑</swipeout-button>-->
                     <swipeout-button @click.native="delGoods(item.goodsId)" type="warn">删除</swipeout-button>
