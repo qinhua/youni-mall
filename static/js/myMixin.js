@@ -2543,7 +2543,7 @@ import $ from 'jquery'
     return ((arg1 * m - arg2 * m) / m).toFixed(n);
   }
 
-//给Number类型增加一个add方法
+//给Number类型增加一个sub方法
   Number.prototype.sub = function (arg1, arg2) {
     return accSub(arg1, arg2);
   }
