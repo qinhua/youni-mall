@@ -371,7 +371,7 @@ new Vue({
   components: {App},
   created() {
     vm = this
-    window.youniMall.userAuth = vm.$store.state.global.wxInfo || (me.locals.get('ynWxUser') ? JSON.parse(me.locals.get('ynWxUser')) : null)
+    window.youniMall.userAuth = vm.$store.state.global.wxInfo || (me.locals.get('ynWxUser') ? JSON.parse(me.locals.get('ynWxUser')).data : null)
     !vm.$store.state.global.dict ? vm.getDict() : null
     vm.addUser(window.youniMall.userAuth)
   },
@@ -429,9 +429,9 @@ new Vue({
       })
     },
     getUser() {
-      var localSeller = me.sessions.get('ynMallInfo')
-      if (localSeller) {
-        vm.$store.commit('storeData', {key: 'userInfo', data: JSON.parse(localSeller)})
+      var localUser = me.sessions.get('ynMallInfo')
+      if (localUser) {
+        vm.$store.commit('storeData', {key: 'userInfo', data: JSON.parse(localUser)})
         return false
       } else {
         vm.loadData(userApi.get, null, 'POST', function (res) {

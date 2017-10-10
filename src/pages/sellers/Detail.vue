@@ -4,12 +4,12 @@
     <div class="scroll-view" ref="scrollView">
       <!--店铺信息-->
       <div class="seller-info">
-        <div class="v-items" :data-id="seller.id" @click="toMore">
+        <div class="v-items" :data-id="seller.id" @click="toMore" v-if="seller.id" v-cloak>
           <div class="wrap">
             <div class="img-con" :style="seller.headimgurl?('background-image:url('+seller.headimgurl+')'):''"></div>
             <div class="infos">
-              <h3>{{seller.name}}<span
-                :class="['service_type',seller.serviceTypeCls]">{{seller.serviceTypeName}}</span>
+              <h3>{{seller.name}}<span :class="['service_type',seller.serviceTypeCls]"
+                                       v-text="seller.serviceTypeName"></span>
                 <span class="distance">{{(seller.distance ? seller.distance : 0) | toFixed(1, true)}}km</span>
               </h3>
               <div class="middle">
@@ -22,7 +22,7 @@
                 <span class="hasSell"><i>{{(seller.sellerScore || 0) | toFixed(1)}}分</i>已售{{seller.sellerCount}}单</span>
               </div>
               <div class="tags">
-                <label class="c2">{{seller.authLevelName}}</label>
+                <label class="c2" v-text="seller.authLevelName"></label>
                 <span class="dispatchTime" v-if="seller.label" v-cloak>平均{{seller.label}}分钟送达</span>
               </div>
             </div>
@@ -32,8 +32,8 @@
             </div>
           </div>
         </div>
-        <div class="notice-con" v-if="seller.notice" ref="noticeCon">
-          <p class="txt-scroll" ref="noticeTxt">{{seller.notice}}</p>
+        <div class="notice-con" v-if="seller.notice" ref="noticeCon" v-cloak>
+          <p class="txt-scroll" ref="noticeTxt" v-text="seller.notice"></p>
         </div>
       </div>
 
@@ -88,7 +88,7 @@
                           :max="200" :value="item.number" align="right" :dataId="item.id"
                           :dataSellerId="item.sellerId" :linedata="item"
                           @on-change="changeCount"></x-number>
-                <span class="stock">剩余：{{item.stock}}件</span>
+                <!--<span class="stock">剩余：{{item.stock}}件</span>-->
               </group>
             </section>
           </li>
@@ -327,7 +327,6 @@
     },
     mounted() {
       vm = this
-      // me.attachClick()
       vm.getSeller()
       vm.getGoods()
       vm.viewCart()
@@ -465,7 +464,7 @@
             } else {
               noticeTxt.classList.remove('txt-slow,txt-slow,txt-fast')
             }
-          }, 0)
+          }, 100)
         }
       },
       getGoods(isLoadMore) {
@@ -492,7 +491,7 @@
               vm.noMore = true
             }
           }
-          console.log(vm.goods, '商家的GoodsList')
+          // console.log(vm.goods, '商家的GoodsList')
         }, function () {
           vm.isPosting = false
         })
@@ -810,7 +809,7 @@
                 .fz(22);
                 i {
                   .iblock;
-                  padding:6/@rem 30/@rem 0 0;
+                  padding: 6/@rem 30/@rem 0 0;
                   .txt-normal;
                   .cdiy(#ff9900);
                 }
@@ -873,9 +872,9 @@
             .cd;
             .block;
             .fz(20);
-            i{
+            i {
               .iblock;
-              margin-right:2px;
+              margin-right: 2px;
               padding: 1px;
               background: #18abf3;
               .borR(2px);

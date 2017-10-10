@@ -11,7 +11,7 @@
                 <div class="content">
                   <h3 class="value">{{coupons.discountRate}}折<sub class="type" v-if="coupons.goodsTypeName">{{coupons.goodsTypeName}}</sub>
                   </h3>
-                  <sub class="sign">最多抵扣￥{{coupons.maxAmount | toFixed}}元</sub>
+                  <sub class="sign">最多抵扣￥{{coupons.maxDiscountAmount | toFixed}}元</sub>
                   <!--<sub class="type">{{coupons.goodsTypeName}}</sub>-->
                 </div>
                 <p class="info">{{coupons.couponNote || '平台优惠'}}<span v-if="coupons.newUser">首单优惠</span></p>
@@ -77,18 +77,21 @@
           vm.isPosting = false
           var resD = res.data.itemList
           for (var i = 0; i < resD.length; i++) {
-            resD[i].expired = me.compareCurrentDate(resD[i].expireTime)
-            switch (resD[i].goodsType) {
-              case 'goods_type.1':
-                resD[i].goodsTypeName = '水'
-                break
-              case 'goods_type.2':
-                resD[i].goodsTypeName = '奶'
-                break
-            }
-            resD[i].createTime = resD[i].createTime ? resD[i].createTime.split(' ')[0] : ''
-            resD[i].expireTime = resD[i].expireTime ? resD[i].expireTime.split(' ')[0] : ''
             if (!vm.coupons.id && vm.couponId === resD[i].id) {
+              resD[i].expired = me.compareCurrentDate(resD[i].expireTime)
+              switch (resD[i].goodsType) {
+                case 'goods_type.1':
+                  resD[i].goodsTypeName = '水'
+                  break
+                case 'goods_type.2':
+                  resD[i].goodsTypeName = '奶'
+                  break
+                case '':
+                  resD[i].goodsTypeName = '水&奶'
+                  break
+              }
+              resD[i].createTime = resD[i].createTime ? resD[i].createTime.split(' ')[0] : ''
+              resD[i].expireTime = resD[i].expireTime ? resD[i].expireTime.split(' ')[0] : ''
               vm.coupons = resD[i]
             }
           }

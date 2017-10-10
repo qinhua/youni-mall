@@ -2060,9 +2060,15 @@ import $ from 'jquery'
       }
 
       return re;
-    }
-    ,
+    },
 
+    /**
+     *纯js评分
+     */
+    rate: function (score) {
+      var rate = score || 0;
+      return '★★★★★☆☆☆☆☆'.slice(5 - rate, 10 - rate)
+    },
     /**
      * 移动端模拟hover
      * @param obj 对象
@@ -2373,10 +2379,10 @@ import $ from 'jquery'
         // 当有文件添加进来的时候
         uploader.on('fileQueued', function (file) {
           var $li = $(
-            '<div id="' + file.id + '" class="file-item thumbnail">' +
-            '<img>' +
-            '<div class="info">' + file.name + '</div>' +
-            '</div>'
+              '<div id="' + file.id + '" class="file-item thumbnail">' +
+              '<img>' +
+              '<div class="info">' + file.name + '</div>' +
+              '</div>'
             ),
             $img = $li.find('img');
 
@@ -2490,6 +2496,9 @@ import $ from 'jquery'
     return (0 == this.getYear() % 4 && ((this.getYear() % 100 != 0) || (this.getYear() % 400 == 0)));
   }
 
+//小数加法，用来得到精确的减法结果
+//调用：accAdd(arg1,arg2)
+//返回值：arg1加arg2的精确结果
   function accAdd(arg1, arg2) {
     console.log(arguments)
     var r1, r2, m;
@@ -2507,13 +2516,12 @@ import $ from 'jquery'
     return (arg1 * m + arg2 * m) / m
   }
 
-//给Number类型增加一个add方法，调用起来更加方便。
+//给Number类型增加一个add方法
   Number.prototype.add = function (arg1, arg2) {
     return accAdd(arg1, arg2);
   }
 
 //减法函数，用来得到精确的减法结果
-//说明：javascript的减法结果会有误差，在两个浮点数相减的时候会比较明显。这个函数返回较为精确的加法结果。
 //调用：accSub(arg1,arg2)
 //返回值：arg1减去arg2的精确结果
 
@@ -2535,7 +2543,7 @@ import $ from 'jquery'
     return ((arg1 * m - arg2 * m) / m).toFixed(n);
   }
 
-//给Number类型增加一个add方法，调用起来更加方便。
+//给Number类型增加一个add方法
   Number.prototype.sub = function (arg1, arg2) {
     return accSub(arg1, arg2);
   }

@@ -94,7 +94,6 @@
       vm = this
       vm.getUser()
       vm.genWave()
-      me.sessions.remove('ynTmpConfirm')
     },
     watch: {
       '$route' (to, from) {
@@ -113,8 +112,8 @@
         vm.jump(pathName, param, isParams)
       },
       getUser() {
-        var localSeller = me.sessions.get('ynMallInfo')
-        if (localSeller) {
+        var localUser = me.sessions.get('ynMallInfo')
+        if (localUser) {
           vm.userInfo = JSON.parse(me.sessions.get('ynMallInfo'))
           vm.getOrderCount()
           return false

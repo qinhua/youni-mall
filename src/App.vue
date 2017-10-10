@@ -24,7 +24,8 @@
         <img slot="icon-active" src="../static/img/ico_ticket_sel.png">
         <span slot="label">水票</span>
       </tabbar-item>
-      <tabbar-item :selected="(curSelected===4||$route.path=='/order')?true:false" show-dot link="/order">
+      <!--<tabbar-item :selected="(curSelected===4||$route.path=='/order')?true:false" show-dot link="/order">-->
+      <tabbar-item :selected="(curSelected===4||$route.path=='/order')?true:false" link="/order">
         <img slot="icon" src="../static/img/ico_order.png">
         <img slot="icon-active" src="../static/img/ico_order_sel.png">
         <span slot="label">订单</span>

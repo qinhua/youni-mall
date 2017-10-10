@@ -6,11 +6,12 @@
                   refreshText="下拉刷新" noDataText="" snapping>
           <!-- content goes here -->
           <section class="v-items" :data-sellerid="goods.sellerId">
-            <h4 class="item-top" v-if="goods.goodsList&&goods.goodsList.length" v-cloak><i
-              class="ico-store"></i>&nbsp;{{goods.sellerName}}&nbsp;&nbsp;<i
+            <!--<h4 class="item-top" v-if="goods.goodsList&&goods.goodsList.length" v-cloak><i class="ico-seller" :style="item.sellerImage?'background-image:url('+item.sellerImage+')':''"></i>&nbsp;{{goods.sellerName}}&nbsp;&nbsp;<i
               class="fa fa-angle-right cc"></i><span
               @click="editGoods(goods.sellerId)">{{isEdit ? '完成' : '编辑'}}</span><span @click="emptyCart"
                                                                                       v-show="!isEdit">清空</span>
+            </h4>-->
+            <h4 class="item-top" v-if="goods.goodsList&&goods.goodsList.length" v-cloak><i class="ico-seller" :style="goods.sellerImage?'background-image:url('+goods.sellerImage+')':''"></i>&nbsp;{{goods.sellerName}}&nbsp;&nbsp;<i class="fa fa-angle-right cc"></i><span @click="emptyCart">清空</span>
             </h4>
             <ul class="has-list">
               <swipeout>
@@ -203,7 +204,7 @@
     watch: {
       '$route'(to, from) {
         if (to.name === 'cart') {
-          vm.isEdit = false
+          // vm.isEdit = false
           vm.getCart()
         }
       }
@@ -477,10 +478,10 @@
         }
       },
       goConfirm() {
-        if (vm.isEdit) {
+        /*if (vm.isEdit) {
           vm.toast('请先完成编辑！', 'warn')
           return false
-        }
+        }*/
         vm.jump('confirm_order')
       },
       change(val) {

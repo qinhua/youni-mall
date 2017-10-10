@@ -53,7 +53,7 @@
           "city": "武汉",
           "province": "湖北",
           "country": "中国",
-          "headimgurl": "http://wx.qlogo.cn/mmopen/vi_32/Q0j4TwGTfTIPsbt7BibERGzRjOLVtdWDp2W1chq8aoyMOz3sJYTqsHhmOjgugokeCiamkr0snBMNkUd6k2sHyELw/0",
+          "headimgurl": "http://wx.qlogo.cn/mmopen/vi_32/Q0j4TwGTfTIPsbt7BibERGzRjOLVtdWDp2W1chq8aoyMOz3sJYTqsHhmOjgugokeCtic91a5UGicGMYfVuJQjfJwA/0",
           "privilege": []
         }
         window.youniMall.userAuth = vm.$store.state.global.wxInfo = info

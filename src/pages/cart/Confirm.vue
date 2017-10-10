@@ -16,8 +16,7 @@
       </div>
       <div class="goods-info" v-if="curCartData.goodsList&&curCartData.goodsList.length">
         <section class="v-items">
-          <h4 class="item-top"><i
-            class="ico-store"></i>&nbsp;{{curCartData.sellerName}}&nbsp;&nbsp;<i class="fa fa-angle-right cc"></i><span
+          <h4 class="item-top"><i class="ico-seller" :style="curCartData.sellerImage?'background-image:url('+curCartData.sellerImage+')':''"></i>&nbsp;{{curCartData.sellerName}}&nbsp;&nbsp;<i class="fa fa-angle-right cc"></i><span
             class="tag-bonus" v-if="firstData.newUserCoupon">首单优惠</span></h4>
           <ul class="has-list">
             <li v-for="(item,index) in curCartData.goodsList">
@@ -53,10 +52,12 @@
           <popup-picker title="优惠券" :data="coupons" :columns="1" v-model="tmpCoupon" ref="picker1" @on-show=""
                         @on-hide="" @on-change="changeCoupon"
                         v-if="!firstData.newUserCoupon&&coupons.length>1"></popup-picker>
-          <div class="bonus-tips" v-if="firstData.newUserCoupon"><p><span
-            class="tit"><i
-            class="fa fa-thumbs-o-up"></i>&nbsp;首单专享&nbsp;<i>(已优惠{{new Number().sub(firstData.totalAmount, firstData.payAmount)}}元)</i></span><span
-            class="price">￥{{firstData.payAmount | toFixed}}</span></p></div>
+          <div class="bonus-tips" v-if="firstData.newUserCoupon">
+            <p>
+              <span class="tit"><i class="fa fa-thumbs-o-up"></i>&nbsp;首单专享{{firstData.newUserDiscountRate}}折&nbsp;<i>(已优惠{{new Number().sub(firstData.totalAmount, firstData.payAmount)}}元)</i></span>
+              <span class="price">￥{{firstData.payAmount | toFixed}}</span>
+            </p>
+          </div>
           <datetime title="配送时间" format="YYYY-MM-DD HH:mm" minute-row v-model="params.dispatchTime"
                     @on-change="changeTime"></datetime>
           <!--<x-input title="商品名称：" placeholder="商品名称" required text-align="right" v-model="params.name"></x-input>-->
