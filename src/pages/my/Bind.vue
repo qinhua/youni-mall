@@ -204,7 +204,7 @@
       .fz(28);
       .bdiy(rgba(255, 255, 255, 0.5));
       .borR(4px);
-      .bor(1px, solide, #fff);
+      .bor(1px, solid, #fff);
       .bsd(0, 3px, 10px, 0, #2892de);
     }
     .b-txt {

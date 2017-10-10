@@ -179,14 +179,14 @@ Vue.prototype.alert = function (title, content, showCb, hideCb) {
   })
 }
 /* confirm */
-Vue.prototype.confirm = function (title, content, confirmCb, cancelCb, confirmtext, canelText, noAutoClose) {
+Vue.prototype.confirm = function (title, content, confirmCb, cancelCb, confirmtext, cancelText, noAutoClose) {
   const _this = this
   _this.$vux.confirm.show({
     theme: 'ios',
     title: title || '',
     content: content || '',
     confirmText: confirmtext || '确定',
-    cancelText: canelText || '取消',
+    cancelText: cancelText || '取消',
     closeOnConfirm: !noAutoClose,
     onCancel() {
       cancelCb ? cancelCb() : null

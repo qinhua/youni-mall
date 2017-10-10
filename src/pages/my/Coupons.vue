@@ -185,7 +185,7 @@
     .inner-scroller {
       .borBox;
       /*padding: 50px 0 20px 0;*/
-      padding: 10px 0 20px 0;
+      padding: 5px 0 20px 0;
       .v-items {
         .borBox;
         width: 100%;
@@ -281,7 +281,7 @@
             .rel;
             z-index: 5;
             padding: 30/@rem;
-            .fz(32);
+            .fz(26);
             .center;
             color: rgb(255, 255, 255);
             .exp {

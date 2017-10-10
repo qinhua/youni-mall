@@ -51,6 +51,7 @@ const userApi = {
   updateName: host + '/user/updateName',
   orderCount: host + '/order/userCount',
   couponList: host + '/userCoupon/list',
+  platformCoupon: host + '/platformCoupon/list',
   userCoupon: host + '/userCoupon/add',
   addressList: host + '/user/addressList',
   setAddress: host + '/user/setAddress',
