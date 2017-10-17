@@ -285,6 +285,11 @@
             {
               key: 9,
               value: '昆仑山'
+            },
+            {
+              key: -1,
+              value: '其它',
+              name: '其它'
             }
           ]
         },
@@ -491,7 +496,7 @@
             }
             // resD.itemList.length ? vm.goods.concat(resD.itemList) : vm.noMore = true
           }
-          // console.log(vm.goods, '首页GoodsList')
+           console.log(vm.goods, '首页GoodsList')
         }, function () {
           vm.isPosting = false
 //          vm.processing(0, 1)

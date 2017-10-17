@@ -23,7 +23,7 @@
               </div>
               <div class="tags">
                 <label class="c2">{{seller.authLevelName}}</label>
-                <span class="dispatchTime" v-if="seller.label" v-cloak>平均{{seller.label}}分钟送达</span>
+                <span class="dispatchTime" v-if="seller.label" v-cloak>平均{{seller.label.replace(/^0/, '')}}分钟送达</span>
               </div>
             </div>
             <!--<div class="bottom">
@@ -31,12 +31,12 @@
             </div>-->
           </div>
         </div>
-        <div class="contacts">
+        <!--<div class="contacts">
           <p>配送电话：<a :href="'tel:'+seller.phone">{{seller.phone}}</a>，楼梯房需收取上楼费</p>
-        </div>
+        </div>-->
       </div>
 
-      <div class="operate-con">
+      <div class="operate-con" v-if="seller.serviceType!=='seller_service_type.2'">
         <h3><i class="fa fa-hand-o-right"></i>&nbsp;您可以在此处给店铺缴付押金({{seller.mortgage}}元)
           <button type="button" class="btn btn-deposite" @click="payDeposite(seller.id)">交押金</button>
           <!--<span>已交押金{{seller.currentMortgage}}</span>-->
@@ -44,7 +44,7 @@
       </div>
       <div class="bottom">
         <div class="detail-txt">
-          <div class="title"><h3>基本信息</h3></div>
+          <div class="title"><h3>基本信息<span>营业时间：{{seller.businessTime||'24小时'}}</span></h3></div>
           <div class="content basics">
             <p><i>公司名称：</i><span>{{seller.companyName}}</span></p>
             <p><i>公司地址：</i><span>{{seller.address}}</span></p>
@@ -78,7 +78,7 @@
       <previewer :list="list" ref="previewer" :options="options"></previewer>
     </div>
 
-    <!--提现须知-->
+    <!--关于押金-->
     <div v-transfer-dom>
       <popup class="pop-txtcon" v-model="showPop" position="bottom" max-height="80%">
         <group class="pop-content">
@@ -474,6 +474,12 @@
           .fz(24);
           background: #fff;
           .bor-l(3px, solid, @c2);
+          span {
+            .fr;
+            padding-right: 20/@rem;
+            font-weight: normal;
+            .c9;
+          }
         }
       }
       .content {

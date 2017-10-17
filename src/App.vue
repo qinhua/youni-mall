@@ -22,7 +22,7 @@
       <tabbar-item :selected="(curSelected===3||$route.path.indexOf('/ticket')>-1)?true:false" link="/ticket">
         <img slot="icon" src="../static/img/ico_ticket.png">
         <img slot="icon-active" src="../static/img/ico_ticket_sel.png">
-        <span slot="label">水票</span>
+        <span slot="label">友票</span>
       </tabbar-item>
       <!--<tabbar-item :selected="(curSelected===4||$route.path=='/order')?true:false" show-dot link="/order">-->
       <tabbar-item :selected="(curSelected===4||$route.path=='/order')?true:false" link="/order">

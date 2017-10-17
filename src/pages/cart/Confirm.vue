@@ -58,6 +58,8 @@
               <span class="price">￥{{firstData.payAmount | toFixed}}</span>
             </p>
           </div>
+          <popup-picker title="配送方式" :data="dispatches" :columns="1" v-model="tmpDispatch" ref="picker1" @on-show=""
+                        @on-hide="" @on-change="changeDispatch"></popup-picker>
           <datetime title="配送时间" format="YYYY-MM-DD HH:mm" minute-row v-model="params.dispatchTime"
                     @on-change="changeTime"></datetime>
           <!--<x-input title="商品名称：" placeholder="商品名称" required text-align="right" v-model="params.name"></x-input>-->
@@ -104,12 +106,22 @@
         isPosting: false,
         onFetching: false,
         tmpCoupon: ['未选择'],
+        tmpDispatch: ['商家配送'],
         types: {
           'goods_type.1': '买5送1',
           'goods_type.2': '买10送2',
           'goods_type.3': '买100送35',
           'goods_type.4': '买100送40'
         },
+        dispatches: [{
+          key: '1',
+          value: '商家配送',
+          name: '商家配送'
+        },{
+          key: '2',
+          value: '用户自提',
+          name: '用户自提'
+        }],
         coupons: [{
           key: '',
           value: '未选择',
@@ -200,6 +212,10 @@
         vm.switchData(vm.coupons, vm.tmpCoupon, 'couponId')
         console.log(val, vm.params.couponId)
         vm.calcPrice(vm.params.couponId)
+      },
+      changeDispatch(val) {
+        vm.switchData(vm.dispatches, vm.tmpDispatch, 'dispatch')
+        console.log(val, vm.params.dispatch)
       },
       changeTime(val) {
         console.log('change', val)

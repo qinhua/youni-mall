@@ -32,9 +32,7 @@
                       <div class="img-con"
                            :style="itm.goodsImage?('background-image:url('+itm.goodsImage+')'):''"></div>
                       <div class="info-con">
-                        <h3><span
-                          :class="itm.goodsType==='goods_type.2'?'milk':''">{{itm.goodsType === 'goods_type.2' ? '奶' : '水'}}</span>{{itm.goodsName}}
-                        </h3>
+                        <h3><span :class="itm.goodsType==='goods_type.2'?'milk':''">{{itm.goodsType === 'goods_type.2' ? '奶' : '水'}}</span>{{itm.goodsName}}<span class="from-ticket" v-if="itm.isFromTicket">水票</span></h3>
                         <section class="middle">
                           <span class="unit-price">￥{{itm.goodsPrice | toFixed}}元</span>
                           <span class="order-info">{{itm.info}}</span>

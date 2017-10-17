@@ -205,6 +205,11 @@
             {
               key: 9,
               value: '昆仑山'
+            },
+            {
+              key: -1,
+              value: '其它',
+              name: '其它'
             }
           ],
           specials: [

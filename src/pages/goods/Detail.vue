@@ -47,6 +47,12 @@
             </div>
           </div>
         </div>
+        <div class="operate-con" v-if="details.type==='goods_type.1'">
+          <h3><i class="fa fa-hand-o-right"></i>&nbsp;缴付押金({{details.mortgage||0}}元)
+            <button type="button" class="btn btn-deposite" @click="payDeposite(details.id)">交押金</button>
+            <!--<span>已交押金{{seller.currentMortgage}}</span>-->
+          </h3>
+        </div>
       </div>
       <div class="bottom">
         <h3 class="title">图文详情</h3>
@@ -166,6 +172,21 @@
       </popup>
     </div>
 
+    <!--关于押金-->
+    <div v-transfer-dom>
+      <popup class="pop-txtcon" v-model="showTip" position="bottom" max-height="80%">
+        <group class="pop-content">
+          <h3>关于押金</h3>
+          <ul class="txt-list">
+            <li>1. 您购买押金类商品后，支付的押金将自动支付给商品所属的配送点，同时系统自动生成电子押金券发放到你的账户；</li>
+            <li>2. 您需要退押金时可直接点击电子押金券上的‘退押金’按钮向收取押金的配送点申请退还押金，退桶和退还押金双方在线下完成交易；</li>
+            <li>免责声明:电子押金券仅作为您与指定配送点线上交易的电子凭证，友你梦想（武汉）科技有限公司不会对交易过程产生的任何后果负责。</li>
+          </ul>
+        </group>
+        <button type="button" class="btn btn-sure" @click="showDialog(details.id)">知道了</button>
+      </popup>
+    </div>
+
     <!--购物车-->
     <div class="ball-container">
       <!--小球-->
@@ -201,7 +222,7 @@
   let vm
   import Swiper from 'swiper'
   import {Tab, TabItem, XInput, XNumber, Group, Cell, TransferDom, Popup, XButton} from 'vux'
-  import {homeApi, nearbyApi, goodsApi, cartApi} from '../../service/main.js'
+  import {goodsApi, cartApi,depositApi} from '../../service/main.js'
 
   export default {
     name: 'goods-detail',
@@ -221,6 +242,7 @@
         addText: '添加购物车',
         /*底部奶的浮窗-start*/
         showPop: false,
+        showTip: false,
         /*价格标签-start*/
         curWaterAmount: 1,// 水的默认数量
         curMilkAmount: 1,// 奶的默认数量
@@ -269,7 +291,7 @@
         // vm.swiperDetail()
         // vm.getAppraise()
       })
-      console.log(vm.curMinHeigth)
+      // console.log(vm.curMinHeigth)
 //      vm.$nextTick(function() {
 //        vm.$refs.orderScroller.finishInfinite(true)
 //        vm.$refs.orderScroller.resize()
@@ -338,14 +360,14 @@
         })
       },
       refresh(done) {
-        console.log('下拉加载')
+        // console.log('下拉加载')
         setTimeout(function () {
           vm.getOrders()
           vm.$refs.orderScroller.finishPullToRefresh()
         }, 1200)
       },
       infinite(done) {
-        console.log('无限滚动')
+        // console.log('无限滚动')
         setTimeout(function () {
           vm.getOrders(true)
           vm.$refs.orderScroller.finishInfinite(true)
@@ -364,7 +386,7 @@
             resD.categoryName = (resD.type === 'goods_type.1') ? '水' : '奶'
             vm.isMilk = (resD.type === 'goods_type.2') ? true : false
             vm.details = resD
-            console.log(vm.details, '商品详情')
+            // console.log(vm.details, '商品详情')
           }
           cb ? cb() : null
         }, function () {
@@ -378,7 +400,7 @@
       getAppraise(index) {
         vm.loadData(goodsApi.appraise, {type: index || 0}, 'POST', function (res) {
           vm.appraiseData = vm.appraise = res.data.itemList
-          console.log(vm.appraiseData, '用户评价数据')
+          // console.log(vm.appraiseData, '用户评价数据')
           cb ? cb() : null
         }, function () {
         })
@@ -575,6 +597,87 @@
             })
           }
         }
+      },
+
+
+      showDialog(id) {
+        vm.showTip = false
+        vm.confirm('请填写桶数？', '<div class="depositeModal"><input id="bucketAmount" type="number" placeholder="输入数量（桶）" required></div>', function () {
+          if (!me.isWeixin) {
+            vm.toast('请在微信中操作！')
+            return
+          }
+          if (vm.isPosting) return false
+          vm.isPosting = true
+          var curVal = window.document.getElementById('bucketAmount').value
+          if (!curVal) {
+            vm.toast('请填写数量', 'warn')
+            return false
+          }
+          vm.loadData(depositApi.add, {
+            sellerId: id,
+            bucketNum: curVal
+          }, 'POST', function (res) {
+            vm.isPosting = false
+            if (res.success) {
+              vm.$vux.confirm.hide()
+              vm.pay(res.data, true)
+            } else {
+              if (res.errorCode == 304) {
+                vm.toast('请先绑定手机号！')
+                setTimeout(function () {
+                  vm.jump('bind')
+                }, 800)
+              } else {
+                vm.toast(res.message || '支付失败！')
+              }
+            }
+          }, function () {
+            vm.isPosting = false
+            // vm.toast(res.message || '支付失败！')
+          })
+        }, function () {
+          vm.isPosting = false
+        }, '支付', null, true)
+      },
+      payDeposite() {
+        vm.showTip = true
+      },
+      pay(data, other) {
+        wx.config({
+          debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+          appId: data.appId, // 必填，公众号的唯一标识
+          timestamp: data.timeStamp, // 必填，生成签名的时间戳
+          nonceStr: data.nonceStr, // 必填，生成签名的随机串
+          signature: data.paySign,// 必填，签名，见附录1
+          jsApiList: [
+            'chooseWXPay'
+          ] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+        });
+        wx.ready(function () {
+          // config信息验证后会执行ready方法，所有接口调用都必须在config接口获得结果之后，config是一个客户端的异步操作，所以如果需要在页面加载时就调用相关接口，则须把相关接口放在ready函数中调用来确保正确执行。对于用户触发时才调用的接口，则可以直接调用，不需要放在ready函数中。
+          wx.chooseWXPay({
+            appId: data.appId,
+            timestamp: data.timeStamp, // 支付签名时间戳，注意微信jssdk中的所有使用timestamp字段均为小写。但最新版的支付后台生成签名使用的timeStamp字段名需大写其中的S字符
+            nonceStr: data.nonceStr, // 支付签名随机串，不长于 32 位
+            package: data.package, // 统一支付接口返回的prepay_id参数值，提交格式如：prepay_id=***）
+            signType: data.signType, // 签名方式，默认为'SHA1'，使用新版支付需传入'MD5'
+            paySign: data.paySign, // 支付签名
+            success: function (res) {
+              // 支付成功后的回调函数
+              /*if(other){
+
+               }else{
+
+               }
+               vm.$router.push({path: '/order'})*/
+            }
+          })
+        })
+        wx.error(function (res) {
+          // config信息验证失败会执行error函数，如签名过期导致验证失败，具体错误信息可以打开config的debug模式查看，也可以在返回的res参数中查看，对于SPA可以在这里更新签名。
+          // alert(JSON.stringify(res))
+        })
       },
       swPopOver() {
         vm.isBuy = true
@@ -788,6 +891,7 @@
           }
         }
       }
+
       .txt-con {
         .borBox;
         padding-right: 200/@rem;
@@ -823,6 +927,7 @@
           }
         }
       }
+
       .right-con {
         .abs;
         top: 0;
@@ -855,6 +960,28 @@
               background-size: 100% 100%;
             }*/
           }
+        }
+      }
+
+      .operate-con {
+        .borBox;
+        padding: 30/@rem 26/@rem;
+        .bf;
+        .bor-t;
+        h3 {
+          .rel;
+          font-weight: normal;
+          .fz(24);
+        }
+        .btn-deposite {
+          .abs-center-vertical;
+          right: 0;
+          .fz(24);
+          .cf;
+          .block;
+          padding: 10/@rem 20/@rem;
+          background: #f9a11e;
+          .borR(4px);
         }
       }
     }
@@ -1190,5 +1317,57 @@
     .fz(26);
     .cf;
     .bdiy(@c2);
+  }
+
+  .pop-txtcon {
+    .vux-no-group-title {
+      margin-top: 0;
+      padding: 20/@rem 0 40/@rem;
+      .vux-x-input {
+        padding: 24/@rem 30/@rem;
+        input {
+          .c3;
+          &:disabled {
+            .c3;
+          }
+        }
+      }
+      .vux-x-input, .vux-cell-box, .vux-x-textarea {
+        .fz(26);
+      }
+    }
+
+    .pop-content {
+      .rel;
+      height: 100%;
+      .borBox;
+      padding: 14/@rem 14/@rem 90/@rem;
+      h3 {
+        .fz(30);
+        font-weight: normal;
+        .center;
+        .c3;
+      }
+      ul {
+        padding: 14/@rem;
+        overflow: hidden;
+      }
+      li {
+        margin: 8/@rem;
+        line-height: 1.8;
+        font-size: 24/@rem;
+        .c3;
+      }
+    }
+    .btn-sure {
+      .fix;
+      bottom: 0;
+      z-index: 5;
+      width: 100%;
+      padding: 30/@rem 0;
+      .fz(26);
+      .cf;
+      .bdiy(@c1);
+    }
   }
 </style>

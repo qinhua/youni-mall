@@ -23,12 +23,13 @@
               </div>
               <div class="tags">
                 <label class="c2" v-text="seller.authLevelName"></label>
-                <span class="dispatchTime" v-if="seller.label" v-cloak>平均{{seller.label}}分钟送达</span>
+                <span class="dispatchTime" v-if="seller.label" v-cloak>平均{{seller.label.replace(/^0/, '')}}分钟送达</span>
               </div>
             </div>
             <div class="bottom">
               <label class="note" v-if="seller.companyName"><i class="ion ion-ent">企</i>{{seller.companyName}}</label>
-              <span><i class="fa fa-check-circle"></i>营业执照</span>
+              <!--<span><i class="fa fa-check-circle"></i>营业执照</span>-->
+              <span><i class="fa fa-clock-o"></i>&nbsp;{{seller.businessTime||'24小时营业'}}</span>
             </div>
           </div>
         </div>
@@ -259,6 +260,11 @@
             {
               key: 9,
               value: '昆仑山'
+            },
+            {
+              key: -1,
+              value: '其它',
+              name: '其它'
             }
           ]
         },

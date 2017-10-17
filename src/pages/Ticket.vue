@@ -34,41 +34,52 @@
                 noDataText="就这么多了"
                 snapping>
         <!-- content goes here -->
-        <div v-show="tickets.length&&!isMe" v-cloak>
-          <section class="v-items" v-for="(item, index) in tickets" :data-id="item.id" :data-waterid="item.waterId"
-                   v-cloak>
-            <section class="wrap">
-              <div class="img-con" :style="item.imgurl?('background-image:url('+item.imgurl+')'):''"></div>
-              <section class="infos">
-                <h3>{{item.name}}<span class="count">数量：<i>{{item.waterNum}}桶</i></span></h3>
-                <section class="middle">
-                  <span class="price">￥{{item.price | toFixed}}元</span>
-                  <span class="sale-count">已售：<i>{{item.saleCount}}件</i></span>
-                  <button type="button" class="btn btn-buy" @click="onButtonClick($event,item.id)">购买</button>
+        <swipeout>
+          <swipeout-item @on-close="" @on-open="" transition-mode="follow" v-for="(item, index) in tickets"
+                         :data-id="item.id" :data-waterid="item.waterId"
+                         v-cloak key="index" :disabled="!isMe">
+            <div slot="right-menu">
+              <swipeout-button @click.native="onSwiperClick('delete',item.id)" type="warn">删除</swipeout-button>
+            </div>
+            <div slot="content" class="demo-content vux-1px-t">
+              <div v-show="tickets.length&&!isMe" v-cloak>
+                <section class="v-items" @click="toSeller(item.sellerId)">
+                  <section class="wrap">
+                    <div class="img-con" :style="item.imgurl?('background-image:url('+item.imgurl+')'):''"></div>
+                    <section class="infos">
+                      <h3>{{item.name}}<span class="count">数量：<i>{{item.waterNum}}桶</i></span></h3>
+                      <section class="middle">
+                        <span class="price">￥{{item.price | toFixed}}元</span>
+                        <span class="sale-count">已售：<i>{{item.saleCount}}件</i></span>
+                        <button type="button" class="btn btn-buy" @click="onButtonClick($event,item.id)">购买</button>
+                      </section>
+                      <label>{{item.waterNote}}</label>
+                    </section>
+                  </section>
                 </section>
-                <label>{{item.waterNote}}</label>
-              </section>
-            </section>
-          </section>
-        </div>
-        <div v-show="tickets.length&&isMe" v-cloak>
-          <section class="v-items" v-for="(item, index) in tickets" :data-id="item.id" :data-waterid="item.waterId"
-                   v-cloak>
-            <section class="wrap">
-              <div class="img-con" :style="item.ticketImage?('background-image:url('+item.ticketImage+')'):''"></div>
-              <section class="infos">
-                <h3>{{item.ticketName}}<span class="count">数量：<i>{{item.totalWaterNum}}桶</i></span></h3>
-                <section class="middle">
-                  <span class="txt-del c9">￥{{item.totalAmount | toFixed}}元</span>
-                  <span class="sale-count">已兑换：<i>{{item.exchangeWaterNum}}桶</i></span>
-                  <button type="button" :class="['btn btn-buy',item.payStatus?'exchange':'']"
-                          @click="onButtonClick($event,item.id,item)" v-text="item.payStatus ? '兑换' : '支付'"></button>
+              </div>
+              <div v-show="tickets.length&&isMe" v-cloak>
+                <section class="v-items">
+                  <section class="wrap">
+                    <div class="img-con"
+                         :style="item.ticketImage?('background-image:url('+item.ticketImage+')'):''"></div>
+                    <section class="infos">
+                      <h3>{{item.ticketName}}<span class="count">数量：<i>{{item.totalWaterNum}}桶</i></span></h3>
+                      <section class="middle">
+                        <span class="txt-del c9">￥{{item.totalAmount | toFixed}}元</span>
+                        <span class="sale-count">已兑换：<i>{{item.exchangeWaterNum}}桶</i></span>
+                        <button type="button" :class="['btn btn-buy',item.payStatus?'exchange':'']"
+                                @click="onButtonClick($event,item.id,item)"
+                                v-text="item.payStatus ? '兑换' : '支付'"></button>
+                      </section>
+                      <label class="price">实付：￥{{item.payAmount | toFixed}}元</label>
+                    </section>
+                  </section>
                 </section>
-                <label class="price">实付：￥{{item.payAmount | toFixed}}元</label>
-              </section>
-            </section>
-          </section>
-        </div>
+              </div>
+            </div>
+          </swipeout-item>
+        </swipeout>
       </scroller>
     </div>
     <div class="iconNoData abs-center-vh" v-if="!tickets.length"><i></i>
@@ -81,7 +92,7 @@
   let me
   let vm
   //  import SlideTab from '../components/SlideTab'
-  import {Tab, TabItem} from 'vux'
+  import {Tab, TabItem, Swipeout, SwipeoutItem, SwipeoutButton} from 'vux'
   import {ticketApi} from '../service/main.js'
 
   export default {
@@ -117,10 +128,10 @@
         navs02: [{
           'key': '',
           'value': '全部'
-          }, {
-            'key': 1,
-            'value': '待支付'
-          },
+        }, {
+          'key': 1,
+          'value': '待支付'
+        },
           {
             'key': 2,
             'value': '可兑换'
@@ -140,7 +151,7 @@
         onFetching: false
       }
     },
-    components: {Tab, TabItem},
+    components: {Tab, TabItem, Swipeout, SwipeoutItem, SwipeoutButton},
     beforeMount() {
       me = window.me
     },
@@ -181,8 +192,8 @@
       }
     },
     methods: {
-      toDetail(id) {
-        vm.$router.push({path: '/detail/' + id})
+      toSeller(id) {
+        vm.jump('seller_detail', {id: id})
       },
       initTab() {
         vm.slideTab = new Swiper('.slide-tab-con', {
@@ -240,6 +251,23 @@
             // console.log(e)
           }
         }, 1000)
+      },
+      onSwiperClick(type, id) {
+        if (type === 'delete') {
+          vm.del(id)
+        }
+      },
+      del(id) {
+        if (vm.isPosting) return false
+        vm.confirm('确认删除？', null, function () {
+          vm.isPosting = true
+          vm.loadData(ticketApi.del, {id: id}, 'POST', function (res) {
+            vm.isPosting = false
+          }, function () {
+            vm.isPosting = false
+          })
+        }, function () {
+        })
       },
       onItemClick(type) {
         vm.current = 0
@@ -471,6 +499,15 @@
     }
 
     .ticket-list {
+      .vux-swipeout-button {
+        font-size: 14px;
+      }
+      .vux-swipeout-button-primary {
+        background: #5d5454;
+      }
+      .vux-1px-t:before {
+        .none;
+      }
       .inner-scroller {
         .borBox;
         padding: 88px 0 150px;
