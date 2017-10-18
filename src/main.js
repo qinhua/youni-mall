@@ -30,6 +30,10 @@ import {commonApi, userApi} from './service/main.js'
 Vue.config.productionTip = false
 let me = window.me
 let vm
+// 若是隐私模式提示关闭
+if(me.isPrivacyMode()){
+  alert('为了正常使用，请关闭隐私模式！')
+}
 // 在路由路由跳转前判断一些东西
 router.beforeEach((to, from, next) => {
   console.log(store.state, '当前vuex中的data')

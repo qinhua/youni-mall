@@ -30,7 +30,8 @@ const ticketApi = {
   add: host + '/userTicket/add',
   repay: host + '/userTicket/payTicket',
   calcPrice: host + '/userTicket/calcuPrice',
-  exchange: host + '/order/ticketExchange'
+  exchange: host + '/order/ticketExchange',
+  del: host + '/userTicket/del'
 }
 const orderApi = {
   list: host + '/order/list',

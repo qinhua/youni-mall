@@ -499,6 +499,11 @@
     }
 
     .ticket-list {
+      .vux-swipeout-item {
+        &:not(:last-child) {
+          .bor-b;
+        }
+      }
       .vux-swipeout-button {
         font-size: 14px;
       }
@@ -514,9 +519,9 @@
         .v-items {
           padding: 20/@rem;
           .bf;
-          &:not(:last-child) {
+          /*&:not(:last-child) {
             .bor-b;
-          }
+          }*/
           .wrap {
             .rel;
             .h(140);
