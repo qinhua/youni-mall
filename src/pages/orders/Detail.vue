@@ -214,7 +214,7 @@
           vm.loadData(orderApi.cancel, {orderId: id}, 'POST', function (res) {
             vm.isPosting = false
             vm.toast('已取消')
-            vm.getDetail()
+            vm.jump('home')
           }, function () {
             vm.toast(res.data || '取消失败')
             vm.isPosting = false

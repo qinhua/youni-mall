@@ -87,7 +87,7 @@
                   <ul class="tags" v-if="item.label" v-cloak>
                     <li v-for="t in item.label.split(',')">{{t}}</li>
                   </ul>
-                  <label></label>
+                  <!--<label></label>-->
                 </section>
               </div>
               <group class="buy-count">
@@ -114,32 +114,41 @@
 
     <!--底部添加奶pop-checker-->
     <div v-transfer-dom>
-      <popup class="buyCountCon" v-model="showPop" position="bottom" max-height="80%">
+      <popup class="buyCountCon" v-model="showPop" position="bottom" max-height="100%">
         <group>
-          <div class="tags-con" v-if="favorTags" v-cloak>
+          <div class="top-con" v-if="curLinedata.linedata" v-cloak>
+            <div class="img-con"
+                 :style="curLinedata.linedata.imgurl?('background-image:url('+curLinedata.linedata.imgurl+')'):''"></div>
+            <div class="side-con">
+              <h3>￥{{curTotalPrice}}<!--<span>￥{{tg.originPrice}}</span>--></h3>
+              <p>单价：{{curLinedata.linedata.price|toFixed}}元</p>
+              <label>已选：{{curPriceTag?curPriceTag.note:'未选择'}}</label>
+            </div>
+          </div>
+          <div class="tags-con" v-if="priceTags.length" v-cloak>
             <div class="wrap">
-              <h4>口味：</h4>
+              <h4>订购数量：</h4>
               <ul>
-                <li :class="idx===curFavorIdx?'active':''" v-for="(fa,idx) in favorTags"
-                    @click="changeFavorTag(idx,fa)">
-                  {{fa}}
+                <li :class="idx===curPriceIdx?'active':''" v-for="(tg,idx) in priceTags" :data-id="tg.id"
+                    @click="changePriceTag(idx,tg)">{{tg.note}}({{tg.saleNum}}瓶)<br><i
+                  class="txt-del">￥{{tg.originPrice}}</i>【￥{{tg.salePrice}}元】
                 </li>
               </ul>
             </div>
           </div>
-          <div class="tags-con" v-if="priceTags.length" v-cloak>
-            <h4>订购数量：</h4>
+          <div class="tags-con" v-if="favorTags" v-cloak>
+            <h4>口味：</h4>
             <ul>
-              <li :class="idx===curPriceIdx?'active':''" v-for="(tg,idx) in priceTags" :data-id="tg.id"
-                  @click="changePriceTag(idx,tg)">{{tg.note}}({{tg.saleNum}}瓶)<br><i
-                class="txt-del">￥{{tg.originPrice}}</i>【￥{{tg.salePrice}}元】
+              <li :class="idx===curFavorIdx?'active':''" v-for="(fa,idx) in favorTags"
+                  @click="changeFavorTag(idx,fa)">
+                {{fa}}
               </li>
             </ul>
           </div>
           <x-input id="curMilkAmount" title="配送量(瓶/天)：" placeholder="请输入每日配送量" required text-align="right" type="number"
                    v-model="curMilkAmount" @on-change="changeMilkAmout"></x-input>
-          <x-input class="total-p" title="总价：" text-align="right" type="text" readonly
-                   v-model="curTotalPrice"></x-input>
+          <!--<x-input class="total-p" title="总价：" text-align="right" type="text" readonly
+                   v-model="curTotalPrice"></x-input>-->
         </group>
         <button type="button" class="btn btn-add-cart" @click="addToCart">加入购物车</button>
       </popup>
@@ -204,7 +213,7 @@
         banner: [],
         notice: [],
         goods: [],
-        curLinedata: null,
+        curLinedata: {},
         params: {
           status: 1,
           pageSize: 5,
@@ -458,14 +467,14 @@
       /* 页面数据 */
       getBanner(cb) {
         vm.loadData(homeApi.banner, null, 'POST', function (res) {
-          console.log(res.data, '首页Banner')
+          // console.log(res.data, '首页Banner')
           vm.banner = res.data.itemList
           cb ? cb() : null
         })
       },
       getNotice() {
         vm.loadData(homeApi.topNotice, null, 'POST', function (res) {
-          console.log(res.data, '首页TopNews')
+          // console.log(res.data, '首页TopNews')
           vm.notice = res.data.itemList
         })
       },
@@ -496,10 +505,10 @@
             }
             // resD.itemList.length ? vm.goods.concat(resD.itemList) : vm.noMore = true
           }
-           console.log(vm.goods, '首页GoodsList')
+          // console.log(vm.goods, '首页GoodsList')
         }, function () {
           vm.isPosting = false
-//          vm.processing(0, 1)
+          // vm.processing(0, 1)
         })
       },
       onPullDown() {
@@ -613,8 +622,11 @@
       viewCart(cb) {
         vm.loadData(cartApi.view, null, 'POST', function (res) {
           var resD = res.data
-          // console.log(resD, '购物车数据')
+          console.log(resD, '购物车数据')
           vm.cartData = resD
+          if (!resD.goodsList.length) {
+            me.locals.set('isFirstConfirm', true)
+          }
           vm.curCount = resD.totalNum
           vm.syncList()
           cb ? cb() : null
@@ -989,7 +1001,7 @@
         .wrap {
           .flex;
           .rel;
-          .h(150);
+          min-height: 150/@rem;
         }
         .click-wrap {
           .borBox;
@@ -997,20 +1009,20 @@
           overflow: hidden;
         }
         .img-con {
-          .abs-center-vertical;
+          .abs;
           .size(140, 140);
+          left: 0;
+          top: 0;
           overflow: hidden;
           background: #f5f5f5 url(../../static/img/bg_nopic.jpg) no-repeat center;
           -webkit-background-size: cover;
           background-size: cover;
         }
         .infos {
-          .flex;
-          .flex-d-v;
           .borBox;
           width: 100%;
           height: 100%;
-          padding-left: 160/@rem;
+          padding-left: 150/@rem;
           h3 {
             padding-bottom: 10/@rem;
             .txt-normal;
@@ -1031,7 +1043,6 @@
             }
           }
           .middle {
-            .flex-r(1);
             padding: 8/@rem 0;
             .price {
             }
@@ -1054,8 +1065,8 @@
             overflow: hidden;
             li {
               .fl;
-              margin-right: 10/@rem;
-              padding: 1px 8px;
+              margin: 0 10/@rem 10/@rem;
+              padding: 1px 6px;
               line-height: 1.8;
               .cf;
               .fz(16);
@@ -1138,10 +1149,54 @@
         .fz(26);
       }
     }
-
+    .top-con {
+      .rel;
+      .borBox;
+      padding: 10/@rem 20/@rem 10/@rem;
+      .bor-b;
+      .img-con {
+        .abs;
+        .size(150, 150);
+        left: 20/@rem;
+        top: 0;
+        overflow: hidden;
+        background: #f5f5f5 url(../../static/img/bg_nopic.jpg) no-repeat center;
+        -webkit-background-size: cover;
+        background-size: cover;
+        .bor;
+        .borR(3px);
+      }
+      .side-con {
+        .borBox;
+        width: 100%;
+        height: 100%;
+        padding-left: 180/@rem;
+        h3 {
+          padding-bottom: 10/@rem;
+          .txt-normal;
+          .cdiy(@c2);
+          .fz(34);
+          span {
+            margin-left: 40/@rem;
+            .c9;
+            .fz(22);
+            .txt-del;
+          }
+        }
+        p {
+          .c9;
+          .fz(24);
+        }
+        label {
+          .c9;
+          .fz(24);
+        }
+      }
+    }
     .tags-con {
-      padding: 20/@rem 24/@rem;
+      padding: 10/@rem 24/@rem;
       .wrap {
+        padding: 14/@rem 0;
         .bor-b;
       }
       h4 {

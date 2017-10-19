@@ -131,7 +131,7 @@
 
     <!--底部立即购买pop-checker-->
     <div v-transfer-dom>
-      <popup v-model="showPop" position="bottom" max-height="80%" v-if="!isMilk">
+      <popup v-model="showPop" position="bottom" max-height="100%" v-if="!isMilk">
         <group class="number-con">
           <x-number fillable title="数量：" :disabled="cartData && details.sellerId!==cartData.sellerId"
                     :value="curWaterAmount"
@@ -143,18 +143,16 @@
       </popup>
       <popup class="buyCon" v-model="showPop" position="bottom" max-height="80%" v-else>
         <group>
-          <div class="tags-con" v-if="favorTags" v-cloak>
-            <div class="wrap">
-              <h4>口味：</h4>
-              <ul>
-                <li :class="idx===curFavorIdx?'active':''" v-for="(fa,idx) in favorTags"
-                    @click="changeFavorTag(idx,fa)">
-                  {{fa}}
-                </li>
-              </ul>
+          <div class="top-con" v-if="details.imgurl" v-cloak>
+            <div class="img-con" :style="details.imgurl?('background-image:url('+details.imgurl+')'):''"></div>
+            <div class="side-con">
+              <h3>￥{{curTotalPrice}}<!--<span>￥{{tg.originPrice}}</span>--></h3>
+              <p>单价：{{details.price|toFixed}}元</p>
+              <label>已选：{{curPriceTag?curPriceTag.note:'未选择'}}</label>
             </div>
           </div>
           <div class="tags-con" v-if="priceTags.length" v-cloak>
+            <div class="wrap">
             <h4>订购数量：</h4>
             <ul>
               <li :class="idx===curPriceIdx?'active':''" v-for="(tg,idx) in priceTags" :data-id="tg.id"
@@ -162,11 +160,21 @@
                 class="txt-del">￥{{tg.originPrice}}</i>【￥{{tg.salePrice}}元】
               </li>
             </ul>
+            </div>
+          </div>
+          <div class="tags-con" v-if="favorTags" v-cloak>
+            <h4>口味：</h4>
+            <ul>
+              <li :class="idx===curFavorIdx?'active':''" v-for="(fa,idx) in favorTags"
+                  @click="changeFavorTag(idx,fa)">
+                {{fa}}
+              </li>
+            </ul>
           </div>
           <x-input id="curMilkAmount" title="配送量(瓶/天)：" placeholder="请输入每日配送量" required text-align="right" type="number"
                    v-model="curMilkAmount" @on-change="changeMilkAmout"></x-input>
-          <x-input class="total-p" title="总价：" text-align="right" type="text" readonly
-                   v-model="curTotalPrice"></x-input>
+          <!--<x-input class="total-p" title="总价：" text-align="right" type="text" readonly
+                   v-model="curTotalPrice"></x-input>-->
         </group>
         <button type="button" class="btn btn-addcart" @click="nextStep">{{isBuy ? '立即购买' : '加入购物车'}}</button>
       </popup>
@@ -1270,9 +1278,55 @@
       }
     }
 
+    .top-con {
+      .rel;
+      .borBox;
+      padding: 10/@rem 20/@rem 10/@rem;
+      .bor-b;
+      .img-con {
+        .abs;
+        .size(150, 150);
+        left: 20/@rem;
+        top: 0;
+        overflow: hidden;
+        background: #f5f5f5 url(../../../static/img/bg_nopic.jpg) no-repeat center;
+        -webkit-background-size: cover;
+        background-size: cover;
+        .bor;
+        .borR(3px);
+      }
+      .side-con {
+        .borBox;
+        width: 100%;
+        height: 100%;
+        padding-left: 180/@rem;
+        h3 {
+          padding-bottom: 10/@rem;
+          .txt-normal;
+          .cdiy(@c2);
+          .fz(34);
+          span {
+            margin-left: 40/@rem;
+            .c9;
+            .fz(22);
+            .txt-del;
+          }
+        }
+        p {
+          .c9;
+          .fz(24);
+        }
+        label {
+          .c9;
+          .fz(24);
+        }
+      }
+    }
+
     .tags-con {
-      padding: 20/@rem 24/@rem;
+      padding: 10/@rem 24/@rem;
       .wrap {
+        padding: 14/@rem 0;
         .bor-b;
       }
       h4 {

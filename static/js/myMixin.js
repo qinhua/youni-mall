@@ -2526,7 +2526,6 @@ import $ from 'jquery'
 //返回值：arg1减去arg2的精确结果
 
   function accSub(arg1, arg2) {
-    console.log(arguments)
     var r1, r2, m, n;
     try {
       r1 = arg1.toString().split(".")[1].length

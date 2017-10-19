@@ -479,15 +479,6 @@
       width: 100%;
       top: 0;
       z-index: 20;
-    }
-
-    .orders-list-con {
-      height: 100%;
-    }
-
-    .order-list {
-      .rel;
-      height: 100%;
       .order-tab {
         z-index: 10;
         .vux-tab-item {
@@ -504,6 +495,15 @@
           top: 0;
         }
       }
+    }
+
+    .orders-list-con {
+      height: 100%;
+    }
+
+    .order-list {
+      .rel;
+      height: 100%;
       .inner-scroller {
         .borBox;
         padding: 43px 0 50px;

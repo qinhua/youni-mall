@@ -8,15 +8,18 @@
           <div class="txt-con">
             <h3>收货人：{{address.name}}<span>{{address.phone}}</span></h3>
             <p>地址：{{address.address}}</p>
+            <p>门牌号：{{address.houseCode}}</p>
           </div>
           <i class="fa fa-angle-right i-right"></i>
         </div>
         <div class="add-address" data-from="confirm_order" v-else @click="toAddress(2)"><i class="fa fa-plus"></i>&nbsp;添加收货地址
         </div>
       </div>
-      <div class="goods-info" v-if="curCartData.goodsList&&curCartData.goodsList.length">
+      <div class="goods-info" v-if="curCartData.goodsList&&curCartData.goodsList.length" v-cloak>
         <section class="v-items">
-          <h4 class="item-top"><i class="ico-seller" :style="curCartData.sellerImage?'background-image:url('+curCartData.sellerImage+')':''"></i>&nbsp;{{curCartData.sellerName}}&nbsp;&nbsp;<i class="fa fa-angle-right cc"></i><span
+          <h4 class="item-top"><i class="ico-seller"
+                                  :style="curCartData.sellerImage?'background-image:url('+curCartData.sellerImage+')':''"></i>&nbsp;{{curCartData.sellerName}}&nbsp;&nbsp;<i
+            class="fa fa-angle-right cc"></i><span
             class="tag-bonus" v-if="firstData.newUserCoupon">首单优惠</span></h4>
           <ul class="has-list">
             <li v-for="(item,index) in curCartData.goodsList">
@@ -26,7 +29,7 @@
                   <h3><span
                     :class="item.goodsType==='goods_type.2'?'milk':''">{{item.goodsType === 'goods_type.2' ? '奶' : '水'}}</span>{{item.goodsName}}
                   </h3>
-                  <section class="middle" v-if="item.goodsType!=='goods_type.2'">
+                  <section class="middle" v-if="item.goodsType==='goods_type.1'">
                     <span class="unit-price">￥{{item.price | toFixed}}元</span>
                     <span class="order-info">{{item.info}}</span>
                     <!--<label>{{item.label}}</label>-->
@@ -59,7 +62,7 @@
             </p>
           </div>
           <popup-picker title="配送方式" :data="dispatches" :columns="1" v-model="tmpDispatch" ref="picker1" @on-show=""
-                        @on-hide="" @on-change="changeDispatch"></popup-picker>
+                        @on-hide="" @on-change="changeDispatch" v-if="hasMilk"></popup-picker>
           <datetime title="配送时间" format="YYYY-MM-DD HH:mm" minute-row v-model="params.dispatchTime"
                     @on-change="changeTime"></datetime>
           <!--<x-input title="商品名称：" placeholder="商品名称" required text-align="right" v-model="params.name"></x-input>-->
@@ -95,10 +98,12 @@
         address: null,
         firstData: {},
         goodsIds: [],
+        hasMilk: false,
         params: {
           goods: [],
           addressId: null,
           dispatchTime: null,
+          note: {},
           userMessage: '',
           couponId: ''
         },
@@ -117,7 +122,7 @@
           key: '1',
           value: '商家配送',
           name: '商家配送'
-        },{
+        }, {
           key: '2',
           value: '用户自提',
           name: '用户自提'
@@ -135,11 +140,14 @@
     },
     mounted() {
       vm = this
-      this.$nextTick(function () {
-        vm.getAddress()
-        vm.getCart()
-        vm.params.dispatchTime = me.formatDate(new Date(), false, 2) //默认派送时间
-      })
+      if (me.locals.get('isFirstConfirm')) {
+        vm.alert('温馨提示', '桶装水需要支付空桶押金，您可在对应商品详情缴付押金。(非电梯房在收货时需要支付一定的上楼费)', null, function () {
+          me.locals.remove('isFirstConfirm')
+        })
+      }
+      vm.getAddress()
+      vm.getCart()
+      vm.params.dispatchTime = me.formatDate(new Date(), false, 2)
     },
 //    computed: {
 //      theTotalPrice () {
@@ -157,14 +165,12 @@
         if (to.name === 'confirm_order') {
           vm.getAddress()
           vm.getCart()
+        } else {
+          vm.params.goods = []
         }
       }
     },
     methods: {
-      // 向父组件传值
-      setPageStatus(data) {
-        this.$emit('listenPage', data)
-      },
       toAddress(type) {
         me.sessions.set('ynTmpConfirm', vm.$route.query.goodsId)
         type === 1 ? vm.jump('myaddress', {from: 'confirm_order'}) : vm.jump('edit_address', {from: 'confirm_order'})
@@ -210,15 +216,15 @@
       },
       changeCoupon(val) {
         vm.switchData(vm.coupons, vm.tmpCoupon, 'couponId')
-        console.log(val, vm.params.couponId)
+        // console.log(val, vm.params.couponId)
         vm.calcPrice(vm.params.couponId)
       },
       changeDispatch(val) {
-        vm.switchData(vm.dispatches, vm.tmpDispatch, 'dispatch')
-        console.log(val, vm.params.dispatch)
+        // console.log(val)
+        vm.params.note.dispatchLabel = val.join('')
       },
       changeTime(val) {
-        console.log('change', val)
+        // console.log('change', val)
       },
       changeDispatchNum(id) {
         // console.log('change', id)
@@ -245,12 +251,16 @@
               var cur = resD.goodsList[i]
               cur.note = cur.note ? JSON.parse(cur.note) : null
               vm.params.goods.push({goodsId: cur.goodsId})
+              if (!vm.hasMilk && cur.goodsType === 'goods_type.2') {
+                vm.hasMilk = true
+                vm.params.note.dispatchLabel = vm.dispatches[0].name
+              }
             }
           }
 
           vm.curCartData = resD
           // vm.countTotal()
-          console.log(vm.curCartData, '购物车数据')
+          // console.log(vm.curCartData, '购物车数据')
           vm.switchData(vm.coupons, vm.tmpCoupon, 'couponId')
           vm.calcPrice()
           vm.getCoupon()
@@ -280,7 +290,7 @@
             vm.address = resD[0]
             vm.params.addressId = resD[0].id
           }
-          console.log(vm.address, '地址数据')
+          // console.log(vm.address, '地址数据')
         }, function () {
           vm.isPosting = false
           vm.processing(0, 1)
@@ -317,7 +327,7 @@
            totalAmount: 20
            }
            }*/
-          console.log(vm.firstData, '首单优惠数据')
+          // console.log(vm.firstData, '首单优惠数据')
           cb ? cb(resD) : null
         }, function () {
           vm.onFetching = false

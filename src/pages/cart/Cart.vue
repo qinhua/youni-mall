@@ -11,16 +11,18 @@
               @click="editGoods(goods.sellerId)">{{isEdit ? '完成' : '编辑'}}</span><span @click="emptyCart"
                                                                                       v-show="!isEdit">清空</span>
             </h4>-->
-            <h4 class="item-top" v-if="goods.goodsList&&goods.goodsList.length" v-cloak><i class="ico-seller" :style="goods.sellerImage?'background-image:url('+goods.sellerImage+')':''"></i>&nbsp;{{goods.sellerName}}&nbsp;&nbsp;<i class="fa fa-angle-right cc"></i><span @click="emptyCart">清空</span>
+            <h4 class="item-top" v-if="goods.goodsList&&goods.goodsList.length" v-cloak><i class="ico-seller"
+                                                                                           :style="goods.sellerImage?'background-image:url('+goods.sellerImage+')':''"></i>&nbsp;{{goods.sellerName}}&nbsp;&nbsp;<i
+              class="fa fa-angle-right cc"></i><span @click="emptyCart">清空</span>
             </h4>
             <ul class="has-list">
               <swipeout>
                 <!--<swipeout-item @on-close="" @on-open="" transition-mode="follow" :disabled="isEdit"
                                v-for="(item,index) in goods.goodsList"
                                :data-id="item.goodsId" key="index" :ref="'switem-'+goods.sellerId">-->
-                  <swipeout-item @on-close="" @on-open="" transition-mode="follow"
-                                 v-for="(item,index) in goods.goodsList"
-                                 :data-id="item.goodsId" key="index" :ref="'switem-'+goods.sellerId">
+                <swipeout-item @on-close="" @on-open="" transition-mode="follow"
+                               v-for="(item,index) in goods.goodsList"
+                               :data-id="item.goodsId" key="index" :ref="'switem-'+goods.sellerId">
                   <div slot="right-menu">
                     <!--<swipeout-button @click.native="onButtonClick('edit')" type="primary">编辑</swipeout-button>-->
                     <swipeout-button @click.native="delGoods(item.goodsId)" type="warn">删除</swipeout-button>
@@ -81,17 +83,19 @@
 
     <!--底部添加奶pop-checker-->
     <div v-transfer-dom>
-      <popup class="buyCountCon" v-model="showPop" position="bottom" max-height="80%">
+      <popup class="buyCountCon" v-model="showPop" position="bottom" max-height="100%">
         <group>
-          <div class="tags-con" v-if="favorTags.length" v-cloak>
-            <h4>口味：</h4>
-            <ul>
-              <li :class="idx===curFavorIdx?'active':''" v-for="(fa,idx) in favorTags" @click="changeFavorTag(idx,fa)">
-                {{fa}}
-              </li>
-            </ul>
+          <div class="top-con" v-if="curEditObj.goodsImage" v-cloak>
+            <div class="img-con"
+                 :style="curEditObj.goodsImage?('background-image:url('+curEditObj.goodsImage+')'):''"></div>
+            <div class="side-con">
+              <h3>￥{{curTotalPrice}}<!--<span>￥{{tg.originPrice}}</span>--></h3>
+              <p>单价：{{curEditObj.price|toFixed}}元</p>
+              <label>已选：{{curPriceTag?curPriceTag.note:'未选择'}}</label>
+            </div>
           </div>
           <div class="tags-con" v-if="priceTags.length" v-cloak>
+            <!--<div class="wrap">-->
             <h4>订购数量：</h4>
             <ul>
               <li :class="idx===curPriceIdx?'active':''" v-for="(tg,idx) in priceTags" :data-id="tg.id"
@@ -99,10 +103,19 @@
                 class="txt-del">￥{{tg.originPrice}}</i>【￥{{tg.salePrice}}元】
               </li>
             </ul>
+            <!--</div>-->
           </div>
+          <!--<div class="tags-con" v-if="favorTags.length" v-cloak>
+            <h4>口味：</h4>
+            <ul>
+              <li :class="idx===curFavorIdx?'active':''" v-for="(fa,idx) in favorTags" @click="changeFavorTag(idx,fa)">
+                {{fa}}
+              </li>
+            </ul>
+          </div>-->
           <x-input id="curMilkAmount" title="配送量(瓶/天)：" placeholder="请输入每日配送量" required text-align="right" type="number"
                    v-model="curMilkAmount" @on-change="changeMilkAmout"></x-input>
-          <x-input title="总价：" text-align="right" type="text" readonly v-model="curTotalPrice"></x-input>
+          <!--<x-input title="总价：" text-align="right" type="text" readonly v-model="curTotalPrice"></x-input>-->
         </group>
         <button type="button" class="btn btn-edit-sure" @click="addToCart">完成</button>
       </popup>
@@ -153,6 +166,8 @@
         curEditObj: {
           goodsId: null,
           goodsNote: '',
+          goodsImage: '',
+          price: null,
           goodsNum: 0,
           dispatchNum: 1
         },
@@ -321,13 +336,16 @@
           vm.onFetching = false
           vm.processing(0, 1)
           var resD = res.data
+          if (!resD.goodsList.length) {
+            me.locals.set('isFirstConfirm', true)
+          }
           for (var i = 0; i < resD.goodsList.length; i++) {
             var cur = resD.goodsList[i]
             cur.note = cur.note ? JSON.parse(cur.note) : null
           }
           vm.goods = resD
           // vm.countTotal()
-          console.log(vm.goods, '购物车数据')
+          // console.log(vm.goods, '购物车数据')
           cb ? cb(resD) : null
         }, function () {
           vm.onFetching = false
@@ -407,6 +425,8 @@
         vm.curEditObj = {
           goodsId: data.goodsId,
           goodsNote: data.note.goodsNote,
+          goodsImage: data.goodsImage,
+          price: data.price,
           goodsNum: data.goodsNum,
           dispatchNum: data.dispatchNum
         }
@@ -443,7 +463,7 @@
           vm.loadData(cartApi.add, vm.curEditObj, 'POST', function (res) {
             vm.isPosting = false
             if (res.success) {
-              vm.isEdit = false
+//              vm.isEdit = false
               vm.showPop = false
               vm.getCart()
               vm.curEditObj.dispatchNum = 1
@@ -479,9 +499,9 @@
       },
       goConfirm() {
         /*if (vm.isEdit) {
-          vm.toast('请先完成编辑！', 'warn')
-          return false
-        }*/
+         vm.toast('请先完成编辑！', 'warn')
+         return false
+         }*/
         vm.jump('confirm_order')
       },
       change(val) {
@@ -574,7 +594,7 @@
             .abs;
             bottom: 14/@rem;
             right: 20/@rem;
-            white-space:nowrap;
+            white-space: nowrap;
             .center;
             label, input {
               .iblock;
@@ -652,7 +672,7 @@
                       .borR(2px);
                       &.active {
                         .abs;
-                        z-index:2;
+                        z-index: 2;
                         padding: 0 40/@rem 0 2px;
                         border: 1px solid #e47b25;
                         &:before {
@@ -816,8 +836,56 @@
       }
     }
 
+    .top-con {
+      .rel;
+      .borBox;
+      padding: 10/@rem 20/@rem 10/@rem;
+      .bor-b;
+      .img-con {
+        .abs;
+        .size(150, 150);
+        left: 20/@rem;
+        top: 0;
+        overflow: hidden;
+        background: #f5f5f5 url(../../../static/img/bg_nopic.jpg) no-repeat center;
+        -webkit-background-size: cover;
+        background-size: cover;
+        .bor;
+        .borR(3px);
+      }
+      .side-con {
+        .borBox;
+        width: 100%;
+        height: 100%;
+        padding-left: 180/@rem;
+        h3 {
+          padding-bottom: 10/@rem;
+          .txt-normal;
+          .cdiy(@c2);
+          .fz(34);
+          span {
+            margin-left: 40/@rem;
+            .c9;
+            .fz(22);
+            .txt-del;
+          }
+        }
+        p {
+          .c9;
+          .fz(24);
+        }
+        label {
+          .c9;
+          .fz(24);
+        }
+      }
+    }
     .tags-con {
-      padding: 20/@rem 24/@rem;
+      padding: 10/@rem 24/@rem;
+      .wrap {
+        padding: 14/@rem 0;
+        .bor-b;
+      }
       h4 {
         .fz(24);
         font-weight: normal;

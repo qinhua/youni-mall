@@ -80,7 +80,10 @@
                     <span class="price">￥{{item.price|toFixed}}元</span>
                     <span class="hasSell">已售{{item.saleCount}}单</span>
                   </section>
-                  <label>{{item.label}}</label>
+                  <ul class="tags" v-if="item.label" v-cloak>
+                    <li v-for="t in item.label.split(',')">{{t}}</li>
+                  </ul>
+                  <!--<label>{{item.label}}</label>-->
                 </section>
               </div>
               <group class="buy-count">
@@ -1081,7 +1084,7 @@
         .wrap {
           .flex;
           .rel;
-          .h(150);
+          min-height:150/@rem;
         }
         .click-wrap {
           .borBox;
@@ -1089,20 +1092,20 @@
           overflow: hidden;
         }
         .img-con {
-          .abs-center-vertical;
+          .abs;
           .size(140, 140);
+          left:0;
+          top: 0;
           overflow: hidden;
           background: #f5f5f5 url(../../../static/img/bg_nopic.jpg) no-repeat center;
           -webkit-background-size: cover;
           background-size: cover;
         }
         .infos {
-          .flex;
-          .flex-d-v;
           .borBox;
           width: 100%;
           height: 100%;
-          padding-left: 160/@rem;
+          padding-left: 150/@rem;
           h3 {
             padding-bottom: 10/@rem;
             .txt-normal;
@@ -1135,6 +1138,22 @@
                 .c9;
                 .fz(22);
               }
+            }
+          }
+          .tags {
+            .flex-r(1);
+            .cdiy(#f34c18);
+            .fz(22);
+            overflow: hidden;
+            li {
+              .fl;
+              margin: 0 10/@rem 10/@rem;
+              padding: 1px 6px;
+              line-height: 1.8;
+              .cf;
+              .fz(16);
+              .borR(4px);
+              background: orange;
             }
           }
           label {
