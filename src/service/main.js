@@ -61,9 +61,9 @@ const userApi = {
 }
 const depositApi = {
   list: host + '/userDeposit/list',
-  add: host + '/userDeposit/add'
+  add: host + '/userDeposit/add',
+  refund: host + '/userDeposit/applyRefund'
 }
-
 const cartApi = {
   view: host + '/cart/view',
   add: host + '/cart/add',

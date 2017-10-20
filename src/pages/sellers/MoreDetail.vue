@@ -36,12 +36,12 @@
         </div>-->
       </div>
 
-      <div class="operate-con" v-if="seller.serviceType!=='seller_service_type.2'">
+      <!--<div class="operate-con" v-if="seller.serviceType!=='seller_service_type.2'">
         <h3><i class="fa fa-hand-o-right"></i>&nbsp;您可以在此处给店铺缴付押金({{seller.mortgage}}元)
           <button type="button" class="btn btn-deposite" @click="payDeposite(seller.id)">交押金</button>
-          <!--<span>已交押金{{seller.currentMortgage}}</span>-->
+          &lt;!&ndash;<span>已交押金{{seller.currentMortgage}}</span>&ndash;&gt;
         </h3>
-      </div>
+      </div>-->
       <div class="bottom">
         <div class="detail-txt">
           <div class="title"><h3>基本信息<span>营业时间：{{seller.businessTime||'24小时'}}</span></h3></div>
@@ -169,7 +169,7 @@
       },
       showDialog(id) {
         vm.showPop = false
-        vm.confirm('请填写桶数？', '<div class="depositeModal"><input id="bucketAmount" type="number" placeholder="输入数量（桶）" required></div>', function () {
+        vm.confirm('请填写桶数？', '<div class="customModal"><input id="bucketAmount" type="number" placeholder="输入数量（桶）" required></div>', function () {
           if (!me.isWeixin) {
             vm.toast('请在微信中操作！')
             return

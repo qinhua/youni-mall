@@ -48,7 +48,7 @@
           </div>
         </div>
         <div class="operate-con" v-if="details.type==='goods_type.1'">
-          <h3><i class="fa fa-hand-o-right"></i>&nbsp;缴付押金({{details.mortgage||0}}元)
+          <h3><i class="fa fa-hand-o-right"></i>&nbsp;桶装水需要缴付押金
             <button type="button" class="btn btn-deposite" @click="payDeposite(details.id)">交押金</button>
             <!--<span>已交押金{{seller.currentMortgage}}</span>-->
           </h3>
@@ -153,13 +153,13 @@
           </div>
           <div class="tags-con" v-if="priceTags.length" v-cloak>
             <div class="wrap">
-            <h4>订购数量：</h4>
-            <ul>
-              <li :class="idx===curPriceIdx?'active':''" v-for="(tg,idx) in priceTags" :data-id="tg.id"
-                  @click="changePriceTag(idx,tg)">{{tg.note}}({{tg.saleNum}}瓶)<br><i
-                class="txt-del">￥{{tg.originPrice}}</i>【￥{{tg.salePrice}}元】
-              </li>
-            </ul>
+              <h4>订购数量：</h4>
+              <ul>
+                <li :class="idx===curPriceIdx?'active':''" v-for="(tg,idx) in priceTags" :data-id="tg.id"
+                    @click="changePriceTag(idx,tg)">{{tg.note}}({{tg.saleNum}}瓶)<br><i
+                  class="txt-del">￥{{tg.originPrice}}</i>【￥{{tg.salePrice}}元】
+                </li>
+              </ul>
             </div>
           </div>
           <div class="tags-con" v-if="favorTags" v-cloak>
@@ -606,11 +606,9 @@
           }
         }
       },
-
-
       showDialog(id) {
         vm.showTip = false
-        vm.confirm('请填写桶数？', '<div class="depositeModal"><input id="bucketAmount" type="number" placeholder="输入数量（桶）" required></div>', function () {
+        vm.confirm('请填写桶数？', '<div class="customModal"><input id="bucketAmount" type="number" placeholder="输入数量（桶）" required></div>', function () {
           if (!me.isWeixin) {
             vm.toast('请在微信中操作！')
             return
@@ -624,6 +622,7 @@
           }
           vm.loadData(depositApi.add, {
             sellerId: id,
+            goodsId: vm.details.id,
             bucketNum: curVal
           }, 'POST', function (res) {
             vm.isPosting = false
@@ -988,7 +987,7 @@
           .cf;
           .block;
           padding: 10/@rem 20/@rem;
-          background: #f9a11e;
+          background: #f78d07;
           .borR(4px);
         }
       }

@@ -3756,7 +3756,7 @@ body {
   -webkit-transform: translate3d(0, -50%, 0);
   transform: translate3d(0, -50%, 0);
 }
-.depositeModal input {
+.customModal input {
   margin: 0.3125rem 0;
   padding: 0.4375rem 0.625rem;
   font-size: 0.8125rem;

@@ -3,51 +3,38 @@
     <div class="gua-tab-con">
       <tab class="gua-tab" active-color="#FE6246">
         <tab-item :selected="!params.status?true:false" @on-item-click="onItemClick">全部</tab-item>
-        <tab-item :selected="params.status==1?true:false" @on-item-click="onItemClick(1)">未退款</tab-item>
+        <tab-item :selected="params.status==1?true:false" @on-item-click="onItemClick(1)">正常</tab-item>
         <tab-item :selected="params.status==2?true:false" @on-item-click="onItemClick(2)">退款中</tab-item>
         <tab-item :selected="params.status==3?true:false" @on-item-click="onItemClick(3)">已退款</tab-item>
+        <tab-item :selected="params.status==4?true:false" @on-item-click="onItemClick(4)">已拒绝</tab-item>
       </tab>
     </div>
-    <div class="fee-list">
-      <scroller class="inner-scroller" ref="ticketScroller" height="100%" :on-refresh="refresh"
+    <div class="fee-list" v-if="list.length" v-cloak>
+      <scroller class="inner-scroller" ref="guaScroller" height="100%" :on-refresh="refresh"
                 :on-infinite="infinite"
                 refreshText="下拉刷新"
                 noDataText="就这么多了"
                 snapping>
         <!-- content goes here -->
-        <swipeout>
-          <swipeout-item @on-close="" @on-open="" transition-mode="follow" v-for="(item, index) in guarantee"
-                         :data-id="item.id" :data-waterid="item.waterId"
-                         v-cloak key="index" disabled>
-            <div slot="right-menu">
-              <swipeout-button @click.native="onSwiperClick('delete',item.id)" type="warn">删除</swipeout-button>
-            </div>
-            <div slot="content" class="demo-content vux-1px-t">
-              <div>
-                <section class="v-items">
-                  <section class="wrap">
-                    <div class="img-con"
-                         :style="item.ticketImage?('background-image:url('+item.ticketImage+')'):''"></div>
-                    <section class="infos">
-                      <h3>{{item.ticketName}}<span class="count">数量：<i>{{item.totalWaterNum}}桶</i></span></h3>
-                      <section class="middle">
-                        <span class="txt-del c9">￥{{item.totalAmount | toFixed}}元</span>
-                        <span class="sale-count">已兑换：<i>{{item.exchangeWaterNum}}桶</i></span>
-                        <button type="button" :class="['btn btn-buy',item.payStatus?'exchange':'']"
-                                @click="onButtonClick($event,item.id,item)"
-                                v-text="item.payStatus ? '兑换' : '支付'"></button>
-                      </section>
-                      <label class="price">实付：￥{{item.payAmount | toFixed}}元</label>
-                    </section>
-                  </section>
-                </section>
+        <section class="v-items" v-for="item in list" :data-id="item.id">
+          <section class="wrap">
+            <!--<img :src="item.headimgurl">-->
+            <div class="info-con">
+              <h3>{{item.sellerName}}<span :class="['tg',item.statusCls]">{{item.statusTxt}}</span></h3>
+              <div class="bottom">
+                <p>桶数：<i>{{item.bucketNum}}桶</i></p>
+                <p>单价：<i>￥{{item.totalAmount | toFixed}}元</i><span>总金额：<i>￥{{item.bucketAmount | toFixed}}元</i></span></p>
+                <div class="btn-group" v-if="item.status===1">
+                  <button type="button" class="btn" @click="refund(item.id)">申请退还
+                  </button>
+                </div>
               </div>
             </div>
-          </swipeout-item>
-        </swipeout>
+          </section>
+        </section>
       </scroller>
     </div>
-    <div class="wrap" v-if="list.length">
+    <!--<div class="wrap" v-if="list.length">
       <h2><i class="fa fa-smile-o"></i>&nbsp;这里列出了您的所有押金</h2>
       <x-table class="inner-table" :cell-bordered="true">
         <thead>
@@ -57,7 +44,7 @@
           <th>每桶(元)</th>
           <th>总押金(元)</th>
           <th>数量(桶)</th>
-          <!--<th>操作</th>-->
+          &lt;!&ndash;<th>操作</th>&ndash;&gt;
         </tr>
         </thead>
         <tbody>
@@ -68,22 +55,22 @@
           <td>{{item.bucketNum}}</td>
           <td>{{item.bucketAmount}}</td>
           <td>{{item.totalAmount}}</td>
-          <!--<td>
+          &lt;!&ndash;<td>
             <div class="fee">
               <p>单桶：{{item.bucketAmount}}</p>
               <p>总押金：{{item.totalAmount}}</p>
             </div>
-          </td>-->
+          </td>&ndash;&gt;
           <td>{{item.totalAmount}}</td>
-          <!--<td>
+          &lt;!&ndash;<td>
             <button type="button" class="btn btn-refund">退还</button>
-          </td>-->
+          </td>&ndash;&gt;
         </tr>
         </tbody>
       </x-table>
-    </div>
+    </div>-->
     <div class="iconNoData abs-center-vh" v-else><i></i>
-      <p>没交过押金</p></div>
+      <p>暂无记录</p></div>
   </div>
 </template>
 
@@ -91,7 +78,7 @@
   /* eslint-disable no-unused-vars */
   let me
   let vm
-  import {Tab, TabItem, Group, Cell, XTable, Swipeout, SwipeoutItem, SwipeoutButton} from 'vux'
+  import {Tab, TabItem, Group, Cell, XTable} from 'vux'
   import {depositApi} from '../../service/main.js'
 
   export default {
@@ -102,15 +89,10 @@
         onFetching: false,
         isPosting: false,
         list: [],
-        params: {
-          status: 1,
-          userType: 1,
-          pageSize: 10,
-          pageNo: 1
-        }
+        params: {}
       }
     },
-    components: {Tab, TabItem, Group, Cell, XTable, Swipeout, SwipeoutItem, SwipeoutButton},
+    components: {Tab, TabItem, Group, Cell, XTable},
     beforeMount() {
       me = window.me
     },
@@ -120,31 +102,77 @@
     },
     computed: {},
     methods: {
-      getDeposits() {
-        vm.processing()
-        vm.processing()
+      refresh(done) {
+        // console.log('下拉加载')
+        setTimeout(function () {
+          vm.getDeposits()
+          try {
+            vm.$refs.guaScroller.finishPullToRefresh()
+          } catch (e) {
+            // console.log(e)
+          }
+        }, 1200)
+      },
+      infinite(done) {
+        // console.log('无限滚动')
+        setTimeout(function () {
+          vm.getDeposits(true)
+          try {
+            vm.$refs.guaScroller.finishInfinite(true)
+          } catch (e) {
+            // console.log(e)
+          }
+        }, 1000)
+      },
+      getDeposits(isLoadMore) {
+        // vm.processing()
         vm.isPosting = true
         vm.loadData(depositApi.list, vm.params, 'POST', function (res) {
           var resD = res.data.itemList
+          if (resD.length) {
+            for (var i = 0; i < resD.length; i++) {
+              var cur = resD[i];
+              switch (cur.status) {
+                case 1:
+                  cur.statusTxt = '正常'
+                  cur.statusCls = 'normal'
+                  break
+                case 2:
+                  cur.statusTxt = '退款中'
+                  cur.statusCls = 'during'
+                  break
+                case 3:
+                  cur.statusTxt = '退款失败'
+                  cur.statusCls = 'fail'
+                  break
+              }
+            }
+          }
           vm.list = resD
-          console.log(vm.list, '保证金数据')
+          // console.log(vm.list, '保证金数据')
           vm.isPosting = false
-          vm.processing(0, 1)
+          // vm.processing(0, 1)
         }, function () {
           vm.isPosting = false
-          vm.processing(0, 1)
+          // vm.processing(0, 1)
         })
       },
       onItemClick(status) {
         vm.list = []
         status ? vm.params.status = status : delete vm.params.status
-        vm.getOrders()
+        vm.getDeposits()
       },
       refund(id) {
         vm.confirm('确认退还押金？', '', function () {
-          vm.loadData(depositApi.refund, vm.params, 'POST', function (res) {
-            vm.isPosting = true
+          vm.isPosting = true
+          vm.loadData(depositApi.refund, {id: id}, 'POST', function (res) {
             vm.isPosting = false
+            if (res.success) {
+              vm.toast('退款申请已提交')
+              vm.getDeposits()
+            } else {
+              vm.toast(res.message || '操作失败', 'warn')
+            }
           }, function () {
             vm.isPosting = false
           })
@@ -161,7 +189,7 @@
 
   .my-guarantee {
     min-height: 100%;
-    .bf;
+    .bf5;
     h2 {
       padding: 14/@rem 20/@rem;
       .fz(24);
@@ -238,92 +266,87 @@
         .none;
       }
       .inner-scroller {
-        .borBox;
-        padding: 88px 0 150px;
+        padding: 44px 0 50px;
         .v-items {
-          padding: 20/@rem;
+          .borBox;
           .bf;
-          /*&:not(:last-child) {
-            .bor-b;
-          }*/
+          .bor-t;
           .wrap {
-            .rel;
-            .h(140);
-          }
-          .img-con {
-            .abs;
-            top: 0;
-            .size(140, 140);
-            overflow: hidden;
-            background: #f5f5f5 url(../../../static/img/noImg.png) no-repeat center;
-            -webkit-background-size: cover;
-            background-size: cover;
-          }
-          .infos {
-            .flex;
-            .flex-d-v;
-            .borBox;
-            width: 100%;
-            height: 100%;
-            padding-left: 160/@rem;
-            h3 {
-              .flex-r(1);
-              .fz(26);
-              .txt-normal;
-              .c3;
-              .ellipsis;
+            padding: 14/@rem 20/@rem;
+            img {
+              .size(80, 80);
+              .abs-center-vertical;
+              left: 20/@rem;
+              .borR(50%);
             }
-            .count {
-              .abs;
-              right: 0;
-              .fz(20);
-              .c3;
-              i {
+            .info-con {
+              .rel;
+              .borBox;
+              /*padding-left: 100/@rem;*/
+              h3 {
                 .txt-normal;
-                .c9;
-              }
-            }
-            .middle {
-              .flex-r(1);
-              padding: 10/@rem 0;
-              .price {
+                .c3;
                 .fz(26);
-                .cdiy(@c2);
-              }
-              span {
-                &.price {
-                  .cdiy(@c2);
-                  .fz(26);
-                }
-                &.sale-count {
-                  padding-left: 30/@rem;
-                  .c9;
-                  .fz(22);
-                  i {
-                    .txt-normal;
+                .ellipsis-clamp-2;
+                .tg {
+                  float: right;
+                  padding: 0 2px;
+                  font-weight: normal;
+                  .c3;
+                  .fz(16);
+                  &.normal {
+                    .cdiy(#66c745);
+                    .bor(1px,solid,#66c745);
+                  }
+                  &.during {
+                    .cdiy(#fbaf65);
+                    .bor(1px,solid,#fbaf65);
+                  }
+                  &.fail {
+                    .cdiy(#999);
+                    .bor(1px,solid,#999);
                   }
                 }
               }
-              .btn-buy {
-                .fr;
-                padding: 2px 20/@rem;
+              .bottom{
+                .rel;
+                padding-top:10/@rem;
+              }
+              p {
                 .fz(24);
-                .cf;
-                /*.bdiy(#f16b41);*/
-                .bdiy(#5cc5d0);
-                .borR(4px);
-                &.exchange {
-                  background: #eca53f;
+                line-height: 1.8;
+                .c7;
+                span {
+                  padding-left: 30/@rem;
+                }
+                i {
+                  .cdiy(@c2);
+                  font-style: normal;
                 }
               }
-            }
-            label {
-              .flex-r(1);
-              .c9;
-              .fz(22);
-              .ellipsis;
-              &.price {
-                .cdiy(@c2);
+              .btn-group {
+                .abs;
+                width: 140/@rem;
+                right: 0;
+                bottom: 0;
+                button {
+                  width: 100%;
+                  .fl;
+                  padding: 2px 0;
+                  .fz(24);
+                  .cf;
+                  .bdiy(#fea146);
+                  .borR(4px);
+                  &:not(:last-child){
+                    margin-bottom:12/@rem;
+                  }
+                  &.agree{
+                    .bdiy(#66c745);
+                  }
+                  &.decline{
+                    .bdiy(#f35858);
+                  }
+                }
               }
             }
           }

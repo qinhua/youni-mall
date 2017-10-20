@@ -319,7 +319,7 @@
         if (vm.isPosting) return false
         vm.isPosting = true
         if (status === 4) {
-          vm.confirm('请填写暂停天数', '<div class="depositeModal"><input id="stopDay" type="number" placeholder="输入天数(整数)" required></div>', function () {
+          vm.confirm('请填写暂停天数', '<div class="customModal"><input id="stopDay" type="number" placeholder="输入天数(整数)" required></div>', function () {
             var curVal = window.document.getElementById('stopDay').value
             if (!curVal) {
               vm.toast('请填写天数', 'warn')
