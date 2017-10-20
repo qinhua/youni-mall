@@ -2,8 +2,9 @@
   <div class="my-guarantee" v-cloak>
     <div class="gua-tab-con">
       <tab class="gua-tab" active-color="#FE6246">
-        <tab-item :selected="!params.status?true:false" @on-item-click="onItemClick">全部</tab-item>
+        <!--<tab-item :selected="!params.status?true:false" @on-item-click="onItemClick">全部</tab-item>-->
         <tab-item :selected="params.status==1?true:false" @on-item-click="onItemClick(1)">正常</tab-item>
+        <tab-item :selected="params.status==5?true:false" @on-item-click="onItemClick(5)">申请退款</tab-item>
         <tab-item :selected="params.status==2?true:false" @on-item-click="onItemClick(2)">退款中</tab-item>
         <tab-item :selected="params.status==3?true:false" @on-item-click="onItemClick(3)">已退款</tab-item>
         <tab-item :selected="params.status==4?true:false" @on-item-click="onItemClick(4)">已拒绝</tab-item>
@@ -20,10 +21,11 @@
           <section class="wrap">
             <!--<img :src="item.headimgurl">-->
             <div class="info-con">
-              <h3>{{item.sellerName}}<span :class="['tg',item.statusCls]">{{item.statusTxt}}</span></h3>
+              <h3>商家名：{{item.sellerName}}<span :class="['tg',item.statusCls]">{{item.statusTxt}}</span></h3>
               <div class="bottom">
                 <p>桶数：<i>{{item.bucketNum}}桶</i></p>
-                <p>单价：<i>￥{{item.totalAmount | toFixed}}元</i><span>总金额：<i>￥{{item.bucketAmount | toFixed}}元</i></span></p>
+                <p>单价：<i>￥{{item.totalAmount | toFixed}}元</i><span>总金额：<i>￥{{item.bucketAmount | toFixed}}元</i></span>
+                </p>
                 <div class="btn-group" v-if="item.status===1">
                   <button type="button" class="btn" @click="refund(item.id)">申请退还
                   </button>
@@ -78,7 +80,7 @@
   /* eslint-disable no-unused-vars */
   let me
   let vm
-  import {Tab, TabItem, Group, Cell, XTable} from 'vux'
+  import {Tab, TabItem} from 'vux'
   import {depositApi} from '../../service/main.js'
 
   export default {
@@ -89,10 +91,12 @@
         onFetching: false,
         isPosting: false,
         list: [],
-        params: {}
+        params: {
+          status: 1
+        }
       }
     },
-    components: {Tab, TabItem, Group, Cell, XTable},
+    components: {Tab, TabItem},
     beforeMount() {
       me = window.me
     },
@@ -125,9 +129,12 @@
         }, 1000)
       },
       getDeposits(isLoadMore) {
+        if (vm.isPosting) return false
         // vm.processing()
         vm.isPosting = true
         vm.loadData(depositApi.list, vm.params, 'POST', function (res) {
+          vm.isPosting = false
+          // vm.processing(0, 1)
           var resD = res.data.itemList
           if (resD.length) {
             for (var i = 0; i < resD.length; i++) {
@@ -145,13 +152,15 @@
                   cur.statusTxt = '退款失败'
                   cur.statusCls = 'fail'
                   break
+                case 5:
+                  cur.statusTxt = '退款申请中'
+                  cur.statusCls = 'during'
+                  break
               }
             }
           }
           vm.list = resD
           // console.log(vm.list, '保证金数据')
-          vm.isPosting = false
-          // vm.processing(0, 1)
         }, function () {
           vm.isPosting = false
           // vm.processing(0, 1)
@@ -163,7 +172,7 @@
         vm.getDeposits()
       },
       refund(id) {
-        vm.confirm('确认退还押金？', '', function () {
+        vm.confirm('提交退还申请？', '提交申请后，商家审核通过即可退还', function () {
           vm.isPosting = true
           vm.loadData(depositApi.refund, {id: id}, 'POST', function (res) {
             vm.isPosting = false
@@ -296,21 +305,21 @@
                   .fz(16);
                   &.normal {
                     .cdiy(#66c745);
-                    .bor(1px,solid,#66c745);
+                    .bor(1px, solid, #66c745);
                   }
                   &.during {
                     .cdiy(#fbaf65);
-                    .bor(1px,solid,#fbaf65);
+                    .bor(1px, solid, #fbaf65);
                   }
                   &.fail {
                     .cdiy(#999);
-                    .bor(1px,solid,#999);
+                    .bor(1px, solid, #999);
                   }
                 }
               }
-              .bottom{
+              .bottom {
                 .rel;
-                padding-top:10/@rem;
+                padding-top: 10/@rem;
               }
               p {
                 .fz(24);
@@ -337,13 +346,13 @@
                   .cf;
                   .bdiy(#fea146);
                   .borR(4px);
-                  &:not(:last-child){
-                    margin-bottom:12/@rem;
+                  &:not(:last-child) {
+                    margin-bottom: 12/@rem;
                   }
-                  &.agree{
+                  &.pass {
                     .bdiy(#66c745);
                   }
-                  &.decline{
+                  &.deny {
                     .bdiy(#f35858);
                   }
                 }
