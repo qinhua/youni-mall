@@ -370,9 +370,17 @@
             }
             vm.sellers = resD.itemList
           } else {
+            /*if (resD.itemList.length) {
+              for (var j = 0; j < resD.itemList.length; j++) {
+                var cur = resD.itemList[j];
+                vm.sellers.push(cur)
+              }
+            } else {
+              vm.noMore = true
+            }*/
             resD.itemList.length ? vm.sellers.concat(resD.itemList) : vm.noMore = true
           }
-          console.log(vm.sellers, '附近卖家')
+          // console.log(vm.sellers, '附近卖家')
         }, function () {
           vm.isPosting = false
           vm.processing(0, 1)

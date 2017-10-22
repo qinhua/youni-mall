@@ -89,14 +89,14 @@
         this.$emit('listenPage', data)
       },
       refresh(done) {
-        console.log('下拉加载')
+        // console.log('下拉加载')
         setTimeout(function () {
           vm.getCoupons()
           vm.$refs.couponScroller.finishPullToRefresh()
         }, 1200)
       },
       infinite(done) {
-        console.log('无限滚动')
+        // console.log('无限滚动')
         setTimeout(function () {
           vm.getCoupons(true)
           vm.$refs.couponScroller.finishInfinite(true)
@@ -138,9 +138,17 @@
             }
             vm.coupons = resD.itemList
           } else {
+            /*if (resD.itemList.length) {
+              for (var j = 0; j < resD.itemList.length; j++) {
+                var cur = resD.itemList[j];
+                vm.coupons.push(cur)
+              }
+            } else {
+              vm.noMore = true
+            }*/
             resD.itemList.length ? vm.coupons.concat(resD.itemList) : vm.noMore = true
           }
-          console.log(vm.coupons, '优惠券数据')
+          // console.log(vm.coupons, '优惠券数据')
         }, function () {
           vm.isPosting = false
           vm.processing(0, 1)
