@@ -640,7 +640,7 @@
           .price-con {
             .abs;
             .borBox;
-            padding: 14/@rem 20/@rem;
+            padding: 0 20/@rem 20/@rem 14/@rem;
             height: 160/@rem;
             top: 0;
             right: 0;

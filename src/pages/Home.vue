@@ -127,7 +127,7 @@
           </div>
           <div class="tags-con" v-if="priceTags.length" v-cloak>
             <div class="wrap">
-              <h4>订购数量：</h4>
+              <h4>订奶月份：</h4>
               <ul>
                 <li :class="idx===curPriceIdx?'active':''" v-for="(tg,idx) in priceTags" :data-id="tg.id"
                     @click="changePriceTag(idx,tg)">{{tg.note}}({{tg.saleNum}}瓶)<br><i
@@ -254,53 +254,7 @@
               value: '奶'
             }
           ],
-          brands: [
-            {
-              key: '',
-              value: '全部'
-            },
-            {
-              key: 1,
-              value: '怡宝'
-            },
-            {
-              key: 2,
-              value: '康师傅'
-            },
-            {
-              key: 3,
-              value: '百岁山'
-            },
-            {
-              key: 4,
-              value: '花果山'
-            },
-            {
-              key: 5,
-              value: '水老官'
-            },
-            {
-              key: 6,
-              value: '一方人'
-            },
-            {
-              key: 7,
-              value: '农夫山泉'
-            },
-            {
-              key: 8,
-              value: '八宝山'
-            },
-            {
-              key: 9,
-              value: '昆仑山'
-            },
-            {
-              key: -1,
-              value: '其它',
-              name: '其它'
-            }
-          ]
+          brands: []
         },
         curFilterType: '', // 当前筛选分类
         curFilterDict: null, // 当前的filter数据
@@ -386,6 +340,7 @@
         if (to.name === 'home') {
           vm.resetScroll()
           vm.getMap()
+          vm.getBrands()
           vm.getGoods()
           vm.viewCart()
         }
@@ -476,6 +431,14 @@
         vm.loadData(homeApi.topNotice, null, 'POST', function (res) {
           // console.log(res.data, '首页TopNews')
           vm.notice = res.data.itemList
+        })
+      },
+      getBrands() {
+        var param = vm.curSelFilter.types.key ? {goodsType: vm.curSelFilter.types.key} : null
+        vm.loadData(homeApi.brandList, param, 'POST', function (res) {
+          // console.log(res.data, '品牌列表')
+          vm.filters.brands = res.data.itemList
+          vm.filters.brands.unshift({key: '', value: '全部'})
         })
       },
       getGoods(isLoadMore) {
@@ -597,6 +560,9 @@
         vm.curSelFilter.types.key ? vm.params.goodsType = vm.curSelFilter.types.key : delete vm.params.goodsType
         vm.curSelFilter.brands.key ? vm.params.brandId = vm.curSelFilter.brands.key : delete vm.params.brandId
         vm.hideFilter()
+        if (key.indexOf('goods_type') > -1 || !key) {
+          vm.getBrands()
+        }
         vm.getGoods()
       },
       /* 上下拉刷新 */

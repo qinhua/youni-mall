@@ -13,6 +13,7 @@ window.youniMall = {
 const homeApi = {
   banner: host + '/home/banner',
   topNotice: host + '/home/topNotice',
+  brandList: host + '/home/brandList',
 }
 const goodsApi = {
   list: host + '/home/goodsList',

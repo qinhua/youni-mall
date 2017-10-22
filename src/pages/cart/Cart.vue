@@ -96,7 +96,7 @@
           </div>
           <div class="tags-con" v-if="priceTags.length" v-cloak>
             <!--<div class="wrap">-->
-            <h4>订购数量：</h4>
+            <h4>订奶月份：</h4>
             <ul>
               <li :class="idx===curPriceIdx?'active':''" v-for="(tg,idx) in priceTags" :data-id="tg.id"
                   @click="changePriceTag(idx,tg)">{{tg.note}}({{tg.saleNum}}瓶)<br><i

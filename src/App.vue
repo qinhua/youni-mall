@@ -8,7 +8,7 @@
     <geo :visible="false" :cache="true" @on-geo-end="getMap" v-if="$route.path!=='/auth'"></geo>
 
     <!--标签栏-->
-    <tabbar v-if="showTabbar" style="position:fixed">
+    <tabbar class="no-callout" v-if="showTabbar" style="position:fixed">
       <tabbar-item :selected="(curSelected===1||$route.path=='/home')?true:false" link="/home">
         <img slot="icon" src="../static/img/ico_home.png">
         <img slot="icon-active" src="../static/img/ico_home_sel.png">

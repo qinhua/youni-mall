@@ -346,7 +346,7 @@
               padding: 1px 8px;
               line-height: 1.8;
               .cf;
-              .fz(16);
+              .fz(20);
               .borR(4px);
               &.c1 {
                 .bdiy(#fd5900);

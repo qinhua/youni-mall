@@ -29,7 +29,7 @@
             <div class="bottom">
               <label class="note" v-if="seller.companyName"><i class="ion ion-ent">企</i>{{seller.companyName}}</label>
               <!--<span><i class="fa fa-check-circle"></i>营业执照</span>-->
-              <span><i class="fa fa-clock-o"></i>&nbsp;{{seller.businessTime||'24小时营业'}}</span>
+              <span><i class="fa fa-clock-o"></i>&nbsp;{{seller.businessTime || '24小时营业'}}</span>
             </div>
           </div>
         </div>
@@ -77,7 +77,7 @@
                     :class="item.type==='goods_type.2'?'milk':''">{{item.type === 'goods_type.2' ? '奶' : '水'}}</span>{{item.name}}
                   </h3>
                   <section class="middle">
-                    <span class="price">￥{{item.price|toFixed}}元</span>
+                    <span class="price">￥{{item.price | toFixed}}元</span>
                     <span class="hasSell">已售{{item.saleCount}}单</span>
                   </section>
                   <ul class="tags" v-if="item.label" v-cloak>
@@ -166,8 +166,8 @@
   let me
   let vm
   import Swiper from '../../components/Swiper'
-  import {Group, GroupTitle, XNumber,XInput, Popup,LoadMore,TransferDom} from 'vux'
-  import {goodsApi, nearbyApi, cartApi} from '../../service/main.js'
+  import {Group, GroupTitle, XNumber, XInput, Popup, LoadMore, TransferDom} from 'vux'
+  import {homeApi, goodsApi, nearbyApi, cartApi} from '../../service/main.js'
   import {mapState, mapMutations} from 'vuex'
 
   export default {
@@ -223,53 +223,7 @@
               value: '奶'
             }
           ],
-          brands: [
-            {
-              key: '',
-              value: '全部'
-            },
-            {
-              key: 1,
-              value: '怡宝'
-            },
-            {
-              key: 2,
-              value: '康师傅'
-            },
-            {
-              key: 3,
-              value: '百岁山'
-            },
-            {
-              key: 4,
-              value: '花果山'
-            },
-            {
-              key: 5,
-              value: '水老官'
-            },
-            {
-              key: 6,
-              value: '一方人'
-            },
-            {
-              key: 7,
-              value: '农夫山泉'
-            },
-            {
-              key: 8,
-              value: '八宝山'
-            },
-            {
-              key: 9,
-              value: '昆仑山'
-            },
-            {
-              key: -1,
-              value: '其它',
-              name: '其它'
-            }
-          ]
+          brands: []
         },
         curFilterType: '', // 当前筛选分类
         curFilterDict: null, // 当前的filter数据
@@ -336,6 +290,7 @@
     },
     mounted() {
       vm = this
+      vm.getBrands()
       vm.getSeller()
       vm.getGoods()
       vm.viewCart()
@@ -415,6 +370,14 @@
           query: {thedata: window.encodeURIComponent(JSON.stringify(vm.seller))}
         })
       },
+      getBrands() {
+        var param = vm.curSelFilter.types.key ? {goodsType: vm.curSelFilter.types.key} : null
+        vm.loadData(homeApi.brandList, param, 'POST', function (res) {
+          // console.log(res.data, '品牌列表')
+          vm.filters.brands = res.data.itemList
+          vm.filters.brands.unshift({key: '', value: '全部'})
+        })
+      },
       /* 页面数据 */
       getSeller() {
         vm.sellerId = vm.params.sellerId = vm.$route.query.id
@@ -452,7 +415,7 @@
           }
         })
       },
-      scrollNotice(text){
+      scrollNotice(text) {
         if (text) {
           setTimeout(function () {
             var noticeCon = vm.$refs.noticeCon
@@ -591,6 +554,9 @@
         vm.curSelFilter.types.key ? vm.params.goodsType = vm.curSelFilter.types.key : delete vm.params.goodsType
         vm.curSelFilter.brands.key ? vm.params.brandId = vm.curSelFilter.brands.key : delete vm.params.brandId
         vm.hideFilter()
+        if (key.indexOf('goods_type') > -1 || !key) {
+          vm.getBrands()
+        }
         vm.getGoods()
       },
       /* 购物车 */
@@ -844,7 +810,7 @@
               padding: 1px 8px;
               line-height: 1.8;
               .cf;
-              .fz(16);
+              .fz(20);
               .borR(4px);
               &.c1 {
                 .bdiy(#fd5900);
@@ -1084,7 +1050,7 @@
         .wrap {
           .flex;
           .rel;
-          min-height:150/@rem;
+          min-height: 150/@rem;
         }
         .click-wrap {
           .borBox;
@@ -1094,7 +1060,7 @@
         .img-con {
           .abs;
           .size(140, 140);
-          left:0;
+          left: 0;
           top: 0;
           overflow: hidden;
           background: #f5f5f5 url(../../../static/img/bg_nopic.jpg) no-repeat center;

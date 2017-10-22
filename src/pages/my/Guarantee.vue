@@ -7,7 +7,7 @@
         <tab-item :selected="params.status==5?true:false" @on-item-click="onItemClick(5)">申请退款</tab-item>
         <tab-item :selected="params.status==2?true:false" @on-item-click="onItemClick(2)">退款中</tab-item>
         <tab-item :selected="params.status==3?true:false" @on-item-click="onItemClick(3)">已退款</tab-item>
-        <tab-item :selected="params.status==4?true:false" @on-item-click="onItemClick(4)">已拒绝</tab-item>
+        <tab-item :selected="params.status==4?true:false" @on-item-click="onItemClick(6)">已拒绝</tab-item>
       </tab>
     </div>
     <div class="fee-list" v-if="list.length" v-cloak>
@@ -149,12 +149,20 @@
                   cur.statusCls = 'during'
                   break
                 case 3:
+                  cur.statusTxt = '已退款'
+                  cur.statusCls = 'normal'
+                  break
+                case 4:
                   cur.statusTxt = '退款失败'
                   cur.statusCls = 'fail'
                   break
                 case 5:
                   cur.statusTxt = '退款申请中'
                   cur.statusCls = 'during'
+                  break
+                case 6:
+                  cur.statusTxt = '已拒绝'
+                  cur.statusCls = 'fail'
                   break
               }
             }
