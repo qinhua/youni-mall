@@ -60,9 +60,13 @@
             <p v-for="(ext, idx) in details.extras">{{ext.name}}<span>￥{{ext.type ? '-' : ''}}{{ext.value}}.00</span>
             </p>
           </div>-->
-          <div class="total-price">
+          <!--<div class="total-price">
             共{{details.totalGoodsNum}}件商品&nbsp;合计：<span>￥{{details.payAmount | toFixed}}</span>（含上楼费）
+          </div>-->
+          <div class="total-price" v-if="details.payAmount!==details.totalAmount">共{{details.totalGoodsNum}}件商品&nbsp;&nbsp;合计：<i class="txt-normal txt-del c9">￥{{details.totalAmount | toFixed}}</i>&nbsp;&nbsp;实付：<span>￥{{details.payAmount | toFixed}}元</span>
           </div>
+          <div class="total-price" v-else>共{{details.totalGoodsNum}}件商品&nbsp;&nbsp;合计：<span>￥{{details.payAmount | toFixed}}元</span></div>
+
           <div class="btns" v-if="details.status===1">
             <button class="btn btn-pay" @click="rePay(details.orderId)">支付</button>
             <button class="btn btn-del" @click="cancelOrder(details.orderId)">取消订单</button>
