@@ -19,6 +19,20 @@ body {
   }
 }
 
+.isWebTip {
+  .fix;
+  top: 0;
+  z-index: 80;
+  width: 100%;
+  height: 44px;
+  line-height: 44px;
+  .borBox;
+  padding: 0 20/@rem;
+  .fz(24);
+  .cf;
+  background: rgba(255, 108, 0, 0.72);
+}
+
 [v-cloak] {
   display: none;
 }
@@ -221,9 +235,10 @@ body {
   line-height: 40px;
 }
 
-.vux-cell-value{
+.vux-cell-value {
   .c3!important;
 }
+
 ._v-content .loading-layer {
   height: 40px !important;
   line-height: 40px !important;

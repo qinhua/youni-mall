@@ -1,5 +1,6 @@
 <template>
   <div class="container">
+    <div class="isWebTip" v-if="isWeb"><i class="fa fa-exclamation-triangle"></i>&nbsp;部分功能可能无法使用，建议在微信中打开</div>
     <!--<div class="btn flush-button s02" onclick="javascript:me.locals.clear();me.sessions.clear();me.lightPop('ok,已清理');">-->
     <!--清理缓存-->
     <!--</div>-->
@@ -70,6 +71,7 @@
     name: 'app',
     data() {
       return {
+        isWeb: false,
         geoData: {
           address: '定位中…'
         }, // 定位数据
@@ -82,10 +84,11 @@
     },
     components: {Geo, Tabbar, TabbarItem},
     beforeMount() {
-      // console.log(window.me)
+      vm = this
+      // wx外部提示用户
+      !me.isWeixin ? vm.isWeb = true : false
     },
     mounted() {
-      // me.attachClick()
       vm = this
     },
     computed: {
@@ -100,7 +103,7 @@
     methods: {
       // 全局定位
       getMap(data) {
-        console.log(data, 'home geo info')
+        // console.log(data, 'home geo info')
         this.geoData = data
         this.$store.commit('storeData', {key: 'geoData', data: data})
       },
