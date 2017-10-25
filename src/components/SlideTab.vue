@@ -33,7 +33,7 @@
       vm.slideTab = vm.initTab()
       this.$nextTick(function () {
         this.$on('childMethod', function () {
-          console.log('监听成功')
+          // console.log('监听成功')
         })
       })
     },
@@ -42,7 +42,7 @@
     methods: {
       reset () {
         vm.slideTab = vm.initTab()
-        console.log('调用成功')
+        // console.log('调用成功')
       },
       selectTab(index, key, value) {
         vm.current = index

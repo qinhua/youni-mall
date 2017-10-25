@@ -136,14 +136,14 @@
         this.$emit('listenPage', data)
       },
       refresh(done) {
-        console.log('下拉加载')
+        // console.log('下拉加载')
         setTimeout(function () {
           vm.getCart(false, true)
           vm.$refs.goodsScroller.finishPullToRefresh()
         }, 1200)
       },
       infinite(done) {
-        console.log('无限滚动')
+        // console.log('无限滚动')
         setTimeout(function () {
           vm.getCart(true, true)
           vm.$refs.goodsScroller.finishInfinite(true)
@@ -175,7 +175,7 @@
               var cur = vm.curCartData[i]
               if (cur.goodsId === obj.goodsId) {
                 if (cur.goodsNum === obj.goodsNum) {
-                  console.log(cur.goodsNum, 855855)
+                  // console.log(cur.goodsNum, 855855)
                   vm.curCartData.splice(i, 1)
                 } else {
                   cur.goodsNum = obj.goodsNum
@@ -223,7 +223,7 @@
               allChecker[j].classList.remove('demo2-item-selected')
             }
           }
-          console.log(vm.curCartData, '最后的购物车数据')
+          // console.log(vm.curCartData, '最后的购物车数据')
         }, 0)
       },
       getCart(isLoadMore, cb) {
@@ -332,7 +332,7 @@
         }
       },
       change(val) {
-        console.log('change', val)
+        // console.log('change', val)
       }
     }
   }

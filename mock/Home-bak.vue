@@ -370,7 +370,7 @@
                 // document.getElementById('tip').innerHTML = '定位失败';
               }
             } catch (e) {
-              console.log(e)
+              // console.log(e)
             }
           }
         },800)
@@ -434,14 +434,14 @@
       /* 页面数据 */
       getBanner (cb) {
         vm.loadData(homeApi.banner, null, 'POST', function (res) {
-          console.log(res.data, '首页Banner')
+          // console.log(res.data, '首页Banner')
           vm.banner = res.data.itemList
           cb ? cb() : null
         })
       },
       getNotice () {
         vm.loadData(homeApi.topNotice, null, 'POST', function (res) {
-          console.log(res.data, '首页TopNews')
+          // console.log(res.data, '首页TopNews')
           vm.notice = res.data.itemList
         })
       },
@@ -456,7 +456,7 @@
             filter: ''
           }
         vm.loadData(homeApi.goodsList, params, 'POST', function (res) {
-          console.log(res.data, '首页GoodsList')
+          // console.log(res.data, '首页GoodsList')
           if (!isLoadMore) {
             vm.goods = res.data.itemList
             if(res.data.noMore){
@@ -475,7 +475,7 @@
       /* 商品筛选 */
       showFilter (type, e) {
         vm.factive = type
-        console.log(vm.subActive)
+        // console.log(vm.subActive)
         if (vm.showFilterCon) {
           if (vm.curFilterType === type) {
             vm.factive = ''
@@ -500,7 +500,7 @@
       },
       chooseFilter (idx, key, value, e) {
         vm.goods = []
-        console.log(JSON.stringify(vm.filterData), vm.curFilterType)
+        // console.log(JSON.stringify(vm.filterData), vm.curFilterType)
         if (JSON.stringify(vm.filterData).indexOf(vm.curFilterType) === -1) {
           vm.filterData.push({
             type: vm.curFilterType,
@@ -509,7 +509,7 @@
           })
         } else {
           for (var i = 0; i < vm.filterData.length; i++) {
-            console.log(vm.filterData[i].filterName, value)
+            // console.log(vm.filterData[i].filterName, value)
             if (vm.filterData[i].filterName !== value) {
               vm.filterData[i] = {
                 type: vm.curFilterType,
@@ -521,7 +521,7 @@
         }
         vm.factive = ''
         vm.showFilterCon = false
-        console.log(vm.filterData, '最后的筛选数据')
+        // console.log(vm.filterData, '最后的筛选数据')
         var lastF = {
           goodsType: 1,
           goodsCategory: 'water',
@@ -572,7 +572,7 @@
         vm.showFilterCon ? vm.showFilterCon = false : null
       },
       changeCount (obj) {
-        console.log(obj)
+        // console.log(obj)
         if (obj.type==='add') {
           this.additem(obj.event)
           this.count ++
@@ -582,7 +582,7 @@
           this.count = obj.value
         }
         vm.$store.commit('updateCart', this.count )
-        console.log(vm.$store.state.cart.count)
+        // console.log(vm.$store.state.cart.count)
       },
       /* 购物车 */
       additem(event){

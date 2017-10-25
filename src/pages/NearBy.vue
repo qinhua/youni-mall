@@ -254,7 +254,7 @@
         var tmp = me.locals.get('cur5656Position')//存储的用户选择位置
         if (tmp) {
           var data = JSON.parse(tmp)
-          console.log(data, 'home amap info')
+          // console.log(data, 'home amap info')
           if (data) {
             vm.geoData = data
             vm.address = data.name

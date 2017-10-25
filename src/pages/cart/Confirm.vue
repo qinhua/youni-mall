@@ -304,7 +304,7 @@
               var cur = resD[i]
               vm.coupons.push({key: cur.couponId, value: vm.types[cur.goodsType], name: vm.types[cur.goodsType]})
             }
-            console.log(JSON.stringify(vm.coupons), '可用的优惠券数据')
+            // console.log(JSON.stringify(vm.coupons), '可用的优惠券数据')
           }
           cb ? cb(resD) : null
         }, function () {

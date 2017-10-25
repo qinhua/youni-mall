@@ -571,7 +571,7 @@
         }
       },
       changeCount(obj) {
-        console.log(obj)
+        // console.log(obj)
         vm.isBuy = false
         if (vm.cartData.sellerId && obj.sellerId !== vm.cartData.sellerId) {
           // vm.toast(res.message || '购物车中已有其他店铺商品，请先清空')

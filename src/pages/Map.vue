@@ -80,7 +80,7 @@
     methods: {
       showMap () {
         vm.lastPage = vm.$route.params.path ? vm.$route.params.path.replace(/\_/g, '/') : ''
-        console.log('上一页：' + vm.lastPage)
+        // console.log('上一页：' + vm.lastPage)
         try {
           AMapUI.loadUI(['misc/PositionPicker'], function (PositionPicker) {
             // 创建地图
@@ -151,7 +151,7 @@
               // 监听marker/列表的选中事件
               AMap.event.addListener(placeSearch, 'selectChanged', function (results) {
                 // 获取当前选中的结果数据
-                console.log(results.selected.data)
+                // console.log(results.selected.data)
                 var data=results.selected.data
                 var tmp = {
                   address:data.name,
@@ -227,7 +227,7 @@
           })
         } catch (e) {
           vm.lastPage ? vm.$router.push({path: vm.lastPage}) : vm.$router.back()
-          console.log(e)
+          // console.log(e)
         }
       },
       // 向父组件传值

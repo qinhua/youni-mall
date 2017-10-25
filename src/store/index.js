@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import globalStore from './modules/global'
-import cartStore from './modules/cart'
 Vue.use(Vuex)
 /* const state = {
 }
@@ -21,7 +20,6 @@ export default new Vuex.Store({
 export default new Vuex.Store({
   // 区分不同页面的数据
   modules: {
-    global: globalStore,
-    cart: cartStore
+    global: globalStore
   }
 })

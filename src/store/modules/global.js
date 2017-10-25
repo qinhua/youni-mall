@@ -23,7 +23,6 @@ export default {
         for (var i = 0; i < state.dict.length; i++) {
           var cur = state.dict[i]
           if (cur.dictType === type) {
-            console.log(cur.items)
             return cur.items
           }
         }

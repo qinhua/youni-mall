@@ -316,7 +316,7 @@
               allChecker[j].classList.remove('demo2-item-selected')
             }
           }
-          console.log(vm.curCartData, '最后的购物车数据')
+          // console.log(vm.curCartData, '最后的购物车数据')
         }, 0)
       },
       countTotal() {
@@ -505,7 +505,7 @@
         vm.jump('confirm_order')
       },
       change(val) {
-        console.log('change', val)
+        // console.log('change', val)
       }
     }
   }

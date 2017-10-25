@@ -306,7 +306,6 @@
     },
     mounted() {
       vm = this
-      // me.attachClick()
       vm.getMap()
       vm.getBanner()
       vm.getNotice()
@@ -328,10 +327,8 @@
      //如果要动态改变，必须有setter方法
      curCount: {
      get: function () {
-     return this.$store.state.cart.count
      },
      set: function (newValue) {
-     this.$store.commit('updateCart', newValue)
      }
      }
      },*/
@@ -355,7 +352,7 @@
         var tmp = me.locals.get('cur5656Position')//存储的用户选择位置
         if (tmp) {
           var data = JSON.parse(tmp)
-          console.log(data, 'home amap info')
+          // console.log(data, 'home amap info')
           if (data) {
             vm.geoData = data
             vm.address = data.name
@@ -588,7 +585,7 @@
       viewCart(cb) {
         vm.loadData(cartApi.view, null, 'POST', function (res) {
           var resD = res.data
-          console.log(resD, '购物车数据')
+          // console.log(resD, '购物车数据')
           vm.cartData = resD
           if (!resD.goodsList.length) {
             me.locals.set('isFirstConfirm', true)

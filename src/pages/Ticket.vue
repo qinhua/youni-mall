@@ -31,7 +31,7 @@
       <scroller class="inner-scroller" ref="ticketScroller" height="100%" :on-refresh="refresh"
                 :on-infinite="infinite"
                 refreshText="下拉刷新"
-                noDataText="就这么多了"
+                :noDataText="tickets.length?'就这么多了':''"
                 snapping>
         <!-- content goes here -->
         <swipeout>

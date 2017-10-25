@@ -104,7 +104,7 @@
       },
       onItemClick(type) {
         type ? vm.params.type = vm.types[type - 1] : delete vm.params.type
-        console.log(vm.params.type)
+        // console.log(vm.params.type)
         vm.getCoupons()
       },
       filterTicket(type, isMine) {

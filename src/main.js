@@ -36,7 +36,7 @@ if(me.isPrivacyMode()){
 }
 // 在路由路由跳转前判断一些东西
 router.beforeEach((to, from, next) => {
-  console.log(store.state, '当前vuex中的data')
+  // console.log(store.state, '当前vuex中的data')
   /* 判断页面的方向 */
   /* const history = window.sessionStorage
    history.clear()

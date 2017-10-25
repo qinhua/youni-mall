@@ -7,7 +7,7 @@
 # install dependencies
 npm install
 
-copy "mock/checker|x-number" to replace the origin files in node_module[vux/src/components/..]
+use "mock/checker|x-number" to replace the origin files in node_module[vux/src/components/..]
 
 # serve with hot reload at localhost:8080
 npm run dev

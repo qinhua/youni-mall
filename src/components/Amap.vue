@@ -124,7 +124,7 @@
                 name: inputer.value
               }
             }
-            console.log('%c当前地图中心点数据:'+JSON.stringify(lastObj),'color:green,font-size:18px')
+            // console.log('%c当前地图中心点数据:'+JSON.stringify(lastObj),'color:green,font-size:18px')
             finished(lastObj)
           }, false)
           btnClear.addEventListener('click', function () {
@@ -173,7 +173,7 @@
              if (data['province'] && typeof data['province'] === 'string') {
              console.log('城市：' + (data['city'] || data['province']))*/
             vm.currentPoint = map.getCenter()
-            console.log('%c' + vm.currentPoint, 'color:darkred;font-size:20px')
+            // console.log('%c' + vm.currentPoint, 'color:darkred;font-size:20px')
             regeocoder(vm.currentPoint)
 
             // 自定义搜索
@@ -210,7 +210,7 @@
                     geoByIp()
                     return
                   }
-                  console.log(data, '来自浏览器定位')
+                  // console.log(data, '来自浏览器定位')
                   var tmp = {
                     source: 'browser',
                     address: data.formattedAddress,
@@ -352,7 +352,7 @@
                 // 监听marker/列表的选中事件
                 AMap.event.addListener(placeSearch, 'selectChanged', function (results) {
                   // 获取当前选中的结果数据
-                  console.log(results.selected.data)
+                  // console.log(results.selected.data)
                   // me.locals.set('cur5656Position', JSON.stringify(results.selected.data))
                   // vm.lastPage ? vm.$router.push({path: vm.lastPage}) : vm.$router.back()
                   var lastObj = {

@@ -113,9 +113,6 @@
       }
     },
     watch: {
-      'curCount'() {
-        return vm.$store.state.cart.count
-      },
       '$route'(to, from) {
         /* let isBack = this.$router.isBack //  监听路由变化时的状态为前进还是后退
          console.log(isBack)

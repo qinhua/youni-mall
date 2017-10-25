@@ -32,7 +32,7 @@
       vm = this
       // me.attachClick()
       vm.userId = vm.$route.query.userId
-      console.log(vm.userId)
+      // console.log(vm.userId)
     },
     methods: {
       updateUser () {
@@ -44,7 +44,7 @@
         vm.isPosting = true
         vm.processing()
         vm.loadData(userApi.updateName, {userId: vm.userId, nickName: vm.nickName}, 'POST', function (res) {
-          console.log(res, '修改用户信息')
+          // console.log(res, '修改用户信息')
           this.$store.commit('updateNickName', vm.nickName)
           vm.$router.back()
           vm.isPosting = false

@@ -87,7 +87,7 @@
     },
     methods: {
       logHide(str) {
-        console.log('on-hide', str)
+        // console.log('on-hide', str)
       },
       choosePoint() {
         vm.showMap = true
@@ -151,13 +151,13 @@
         }
       },
       changeArea(ids, names) {
-        console.log(ids, names)
+        // console.log(ids, names)
         vm.area = names[0] + (names[1].indexOf('市辖区') === -1 ? names[1] : '') + names[2]
         vm.detailAddress = ''
-        console.log(vm.area)
+        // console.log(vm.area)
       },
       changeStatus(value, disabled) {
-        console.log(value, disabled)
+        // console.log(value, disabled)
       },
       validate() {
         if (vm.params.name === '') {
@@ -193,12 +193,12 @@
           } else {
             vm.params.address = vm.detailAddress
           }
-          console.log('最后选择的数据：', vm.params)
+          // console.log('最后选择的数据：', vm.params)
           // 更新还是新增
           vm.loadData(userApi.setAddress, vm.params, 'POST', function (res) {
             vm.isPosting = false
             vm.processing(0, 1)
-            console.log(vm.lastPage, 7989854)
+            // console.log(vm.lastPage, 7989854)
             if (vm.lastPage.name === 'confirm_order') {
               if (vm.lastPage.data !== 'undefined') {
                 vm.jump(vm.lastPage.name, {goodsId: vm.lastPage.data})

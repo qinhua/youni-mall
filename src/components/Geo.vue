@@ -75,7 +75,7 @@
                   geoByIp()
                   return
                 }
-                console.log(data, '来自浏览器定位')
+                // console.log(data, '来自浏览器定位')
                 var tmp = {
                   source: 'browser',
                   address: data.formattedAddress,

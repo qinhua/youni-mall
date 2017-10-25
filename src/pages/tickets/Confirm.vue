@@ -195,18 +195,18 @@
       },
       changeCoupon(val) {
         vm.switchData(vm.coupons, vm.tmpCoupon, 'couponId')
-        console.log(val, vm.params.couponId)
+        // console.log(val, vm.params.couponId)
         vm.calcPrice(vm.params.couponId)
       },
       changeTime(val) {
-        console.log('change', val)
+        // console.log('change', val)
       },
       getGoods() {
         try {
           vm.tickets = vm.$route.query.thedata ? JSON.parse(window.decodeURIComponent(vm.$route.query.thedata)) : {}
           vm.tickets.userMessage = ''
           vm.params.id = vm.tickets.id
-          console.log(vm.tickets, '带过来的数据')
+          // console.log(vm.tickets, '带过来的数据')
         } catch (e) {
           // console.log(e)
         }
