@@ -233,9 +233,11 @@ body.isInApp div[class*=header] {
   /*横屏 css*/
 }
 @media screen and (min-width: 780px) {
-  html .browser-tips,
-  body .browser-tips {
-    display: block;
+  html,
+  body {
+    /*.browser-tips {
+      .block;
+    }*/
   }
 }
 .browser-tips {
