@@ -21,7 +21,7 @@
             :class="details.categoryName==='奶'?'milk':''">{{details.categoryName}}</span>{{details.name}}</h3>
           <div class="wrap">
             <div class="txt-con">
-              <p class="middle"><span class="price">￥{{(details.price || 0) | toFixed}}</span><sub>已售{{details.saleCount}}单</sub>
+              <p class="middle"><span class="price">￥{{(details.price || 0) | toFixed}}</span><sub>已售{{details.saleCount}}件</sub>
                 <!--<span class="stock">剩余{{details.stock}}件</span>-->
               </p>
               <ul class="tags" v-if="details.label">

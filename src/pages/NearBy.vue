@@ -58,7 +58,7 @@
                     </ol>
                     <span>{{item.sellerScore | toFixed(1)}}分</span>
                   </div>
-                  <span class="hasSell">已售{{item.sellerCount}}单</span>
+                  <span class="hasSell">已售{{item.sellerCount}}件</span>
                 </section>
                 <div class="tags">
                   <label :class="item.authLevelCls">{{item.authLevelName}}</label>

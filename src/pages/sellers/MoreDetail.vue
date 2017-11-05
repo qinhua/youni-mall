@@ -19,7 +19,7 @@
                   <li class="gray" v-for="star in 5">★</li>
                 </ol>
                 <span
-                  class="hasSell"><i>{{(seller.sellerScore || 0) | toFixed(1)}}分</i>已售{{seller.sellerCount}}单</span>
+                  class="hasSell"><i>{{(seller.sellerScore || 0) | toFixed(1)}}分</i>已售{{seller.sellerCount}}件</span>
               </div>
               <div class="tags">
                 <label class="c2">{{seller.authLevelName}}</label>

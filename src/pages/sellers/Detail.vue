@@ -19,7 +19,7 @@
                 <ol class="star" v-else>
                   <li class="gray" v-for="star in 5">★</li>
                 </ol>
-                <span class="hasSell"><i>{{(seller.sellerScore || 0) | toFixed(1)}}分</i>已售{{seller.sellerCount}}单</span>
+                <span class="hasSell"><i>{{(seller.sellerScore || 0) | toFixed(1)}}分</i>已售{{seller.sellerCount}}件</span>
               </div>
               <div class="tags">
                 <label class="c2" v-text="seller.authLevelName"></label>
@@ -78,7 +78,7 @@
                   </h3>
                   <section class="middle">
                     <span class="price">￥{{item.price | toFixed}}元</span>
-                    <span class="hasSell">已售{{item.saleCount}}单</span>
+                    <span class="hasSell">已售{{item.saleCount}}件</span>
                   </section>
                   <ul class="tags" v-if="item.label" v-cloak>
                     <li v-for="t in item.label.split(',')">{{t}}</li>
