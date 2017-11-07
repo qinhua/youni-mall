@@ -140,7 +140,7 @@
     },
     mounted() {
       vm = this
-      if (me.locals.get('isFirstConfirm')) {
+      if (!vm.hasMilk && me.locals.get('isFirstConfirm')) {
         vm.alert('温馨提示', '桶装水需要支付空桶押金，您可在对应商品详情缴付押金。(非电梯房在收货时需要支付一定的上楼费)', null, function () {
           me.locals.remove('isFirstConfirm')
         })

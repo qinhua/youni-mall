@@ -4,7 +4,7 @@
       <div class="swiper-wrapper">
         <div class="swiper-slide" v-for="(item,index) in slides" :key="index+1">
           <a :href="item.linkUrl" target="blank">
-            <img class="wd-img swiper-lazy" :data-src="item.image" alt="">
+            <img class="wd-img" :src="item.image" alt="">
           </a>
         </div>
       </div>
