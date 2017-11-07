@@ -145,8 +145,7 @@
               </li>
             </ul>
           </div>
-          <x-input id="curMilkAmount" title="配送量(瓶/天)：" placeholder="请输入每日配送量" required text-align="right" type="number"
-                   v-model="curMilkAmount" @on-change="changeMilkAmout"></x-input>
+          <x-input id="curMilkAmount" title="配送量(瓶/天)：" placeholder="请输入每日配送量" required text-align="right" type="number" v-model="curMilkAmount" @on-change="changeMilkAmout"></x-input>
           <!--<x-input class="total-p" title="总价：" text-align="right" type="text" readonly
                    v-model="curTotalPrice"></x-input>-->
         </group>
@@ -764,7 +763,7 @@
     overflow: scroll; // 此两个属性至关重要，不写@scroll监听不到滚动
 
     .swiper-home {
-      min-height: 320/@rem;
+      height: 320/@rem;
       margin-bottom: 10/@rem;
       .swiper-container {
         /*p {
@@ -1138,7 +1137,7 @@
           padding-bottom: 10/@rem;
           .txt-normal;
           .cdiy(@c2);
-          .fz(34);
+          .fz(32);
           span {
             margin-left: 40/@rem;
             .c9;

@@ -1303,7 +1303,7 @@
           padding-bottom: 10/@rem;
           .txt-normal;
           .cdiy(@c2);
-          .fz(34);
+          .fz(32);
           span {
             margin-left: 40/@rem;
             .c9;

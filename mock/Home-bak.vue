@@ -88,7 +88,7 @@
                   <h3>{{item.name}}</h3>
                   <section class="middle">
                     <span class="price">￥{{item.price}}</span>
-                    <span class="hasSell">已售{{item.saleCount}}单</span>
+                    <span class="hasSell">已售{{item.saleCount}}件</span>
                   </section>
                   <label>{{item.label}}</label>
                 </section>
