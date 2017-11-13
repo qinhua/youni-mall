@@ -98,6 +98,7 @@
         address: null,
         firstData: {},
         goodsIds: [],
+        hasWater: false,
         hasMilk: false,
         params: {
           goods: [],
@@ -140,11 +141,6 @@
     },
     mounted() {
       vm = this
-      if (!vm.hasMilk && me.locals.get('isFirstConfirm')) {
-        vm.alert('温馨提示', '桶装水需要支付空桶押金，您可在对应商品详情缴付押金。(非电梯房在收货时需要支付一定的上楼费)', null, function () {
-          me.locals.remove('isFirstConfirm')
-        })
-      }
       vm.getAddress()
       vm.getCart()
       vm.params.dispatchTime = me.formatDate(new Date(), false, 2)
@@ -255,6 +251,14 @@
                 vm.hasMilk = true
                 vm.params.note.dispatchLabel = vm.dispatches[0].name
               }
+              if (cur.goodsType === 'goods_type.1') {
+                vm.hasWater = true
+              }
+            }
+            if (vm.hasWater && me.locals.get('isFirstConfirm')) {
+              vm.alert('温馨提示', '桶装水需要支付空桶押金，您可在对应商品详情缴付押金。(非电梯房在收货时需要支付一定的上楼费)', null, function () {
+                me.locals.remove('isFirstConfirm')
+              })
             }
           }
 

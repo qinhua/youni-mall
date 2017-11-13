@@ -306,6 +306,7 @@
     mounted() {
       vm = this
       vm.getMap()
+      vm.getBrands()
       vm.getBanner()
       vm.getNotice()
       vm.getGoods()

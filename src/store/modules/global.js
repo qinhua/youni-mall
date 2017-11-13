@@ -43,7 +43,8 @@ export default {
       state.wxInfo = null
       state.tmpConfirm = false
       me.locals.remove('ynWxUser')
-      me.locals.remove('isFirstConfirm')
+      // me.locals.remove('isFirstConfirm')
+      me.locals.set('isFirstConfirm', true)
     },
     /* 更新路由方向 */
     updateDirection(state, payload) {
