@@ -766,12 +766,16 @@
     .swiper-home {
       height: 320/@rem;
       margin-bottom: 10/@rem;
+      overflow: hidden;
       .swiper-container {
         /*p {
           padding: 10/@rem 20/@rem;
           .b3;
           .cf;
         }*/
+        .swiper-wrapper {
+          height: 320/@rem;
+        }
         .swiper-pagination {
           bottom: 5px;
         }
