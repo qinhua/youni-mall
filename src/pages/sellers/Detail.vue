@@ -114,7 +114,7 @@
                  :style="curLinedata.linedata.imgurl?('background-image:url('+curLinedata.linedata.imgurl+')'):''"></div>
             <div class="side-con">
               <h3>￥{{curTotalPrice}}<!--<span>￥{{tg.originPrice}}</span>--></h3>
-              <p>单价：{{curLinedata.linedata.price|toFixed}}元</p>
+              <!--<p>单价：{{curLinedata.linedata.price|toFixed}}元</p>-->
               <label>已选：{{curPriceTag?curPriceTag.note:'未选择'}}</label>
             </div>
           </div>

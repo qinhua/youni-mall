@@ -15,6 +15,7 @@ import '../static/js/sign.js'
 import 'myMixin'
 import store from './store'
 import VueScroller from 'vue-scroller'
+import Lazyload from 'vue-lazyload'
 import {AlertPlugin, ConfirmPlugin, ToastPlugin, LoadingPlugin} from 'vux'
 
 const FastClick = require('fastclick')
@@ -25,6 +26,12 @@ Vue.use(AlertPlugin)
 Vue.use(ToastPlugin)
 Vue.use(LoadingPlugin)
 Vue.use(VueScroller)
+Vue.use(Lazyload, {
+  preLoad: 1.3,
+  error: './static/img/bg_nopic.jpg',
+  loading: './static/svg/spinner.svg',
+  attempt: 2
+})
 import {commonApi, userApi} from './service/main.js'
 
 Vue.config.productionTip = false
@@ -199,6 +206,13 @@ Vue.prototype.confirm = function (title, content, confirmCb, cancelCb, confirmte
       confirmCb ? confirmCb() : null
     },
     onShow() {
+      $(document).on('click','.weui-mask',function(){
+        try{
+          _this.$vux.confirm.hide()
+        }catch(e){
+          //console.log(e)
+        }
+      })
     },
     onHide() {
     }

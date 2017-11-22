@@ -12,8 +12,10 @@
         </span>
           </template>
         </x-address>
-        <x-input title="详细地址：" placeholder="输入详细地址" v-model="detailAddress" required readonly text-align="right"
-                 @click.native="choosePoint"></x-input>
+        <!--<x-input title="详细地址：" placeholder="输入详细地址" v-model="detailAddress" required readonly text-align="right"
+                 @click.native="choosePoint"></x-input>-->
+        <x-textarea title="详细地址：" :max="80" placeholder="输入详细地址" @on-blur="" v-model="detailAddress"
+                    show-clear></x-textarea>
         <x-input title="门牌号：" placeholder="门牌号" v-model="params.houseCode"></x-input>
         <div class="checker-group">
           <label>设为默认地址：</label>
@@ -27,7 +29,7 @@
       </group>
       <div class="add-address" @click="updateAddress"><i class="fa fa-save"></i>&nbsp;保存</div>
     </div>
-    <amap @on-receive-data="getMap" v-if="showMap"></amap>
+    <!--<amap @on-receive-data="getMap" v-if="showMap"></amap>-->
   </div>
 </template>
 
@@ -35,7 +37,7 @@
   /* eslint-disable no-unused-vars */
   let me
   let vm
-  import {Group, Cell, XAddress, ChinaAddressV3Data, XInput, Checker, CheckerItem} from 'vux'
+  import {Group, Cell, XAddress, ChinaAddressV3Data, XTextarea, XInput, Checker, CheckerItem} from 'vux'
   import Amap from '../../components/Amap.vue'
   import {commonApi, userApi} from '../../service/main.js'
 
@@ -66,7 +68,7 @@
         }
       }
     },
-    components: {Amap, Group, Cell, XAddress, XInput, Checker, CheckerItem},
+    components: {Amap, Group, Cell, XAddress, XTextarea, XInput, Checker, CheckerItem},
     beforeMount() {
       me = window.me
     },

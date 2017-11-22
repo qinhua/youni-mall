@@ -48,8 +48,7 @@
           <div class="content basics">
             <p><i>公司名称：</i><span>{{seller.companyName}}</span></p>
             <p><i>公司地址：</i><span>{{seller.address}}</span></p>
-            <p><i>联系电话：</i><span>{{seller.phone}}</span><a class="btn btn-dial" :href="'tel:'+seller.phone"><i
-              class="fa fa-phone"></i>&nbsp;拨打</a></p>
+            <p><i>联系电话：</i><span>{{seller.phone}}</span><a class="btn btn-dial" :href="'tel:'+seller.phone"><i class="fa fa-phone"></i>&nbsp;拨打</a></p>
           </div>
         </div>
       </div>
@@ -59,7 +58,7 @@
           <div class="title"><h3>营业执照</h3></div>
           <div class="content license">
             <div>
-              <img class="previewer-demo-img" :src="seller.businessLicense" width="100"
+              <img class="previewer-demo-img" v-lazy.container="seller.businessLicense" width="100"
                    @click="preview(0)">
             </div>
           </div>

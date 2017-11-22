@@ -234,7 +234,7 @@ import $ from 'jquery'
     },
     //表单验证
     chineseName: /^[\u4e00-\u9fa5]{2,6}$/,
-    mobilePhone: /^(13|15|18|17)\d{9}$/,
+    mobilePhone: /^(13|14|15|17|18)\d{9}$/,
     isHan: /^[\u4E00-\u9FA5]$/,
     isEnglish: /^[a-zA-Z]$/,
     hasHan: /[\u4E00-\u9FA5]/g,
