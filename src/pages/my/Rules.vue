@@ -464,7 +464,7 @@
           style="font-size:10.5pt; line-height:115%; margin:0pt 0pt 10pt; orphans:0; text-align:justify; widows:0"><span
           style="font-size:10.5pt">9.4</span><span
           style=" font-size:10.5pt">友</span><span
-          style=" font-size:10.5pt">你商城的客户服务电话：XXX-XXX-XXX，您如对本协议条款有任何疑问或者需要帮助，请通过上述电话与</span><span
+          style=" font-size:10.5pt">你商城的客户服务电话：027-59322527，您如对本协议条款有任何疑问或者需要帮助，请通过上述电话与</span><span
           style=" font-size:10.5pt">友</span><span style=" font-size:10.5pt">你联系。</span>
         </p>
 
