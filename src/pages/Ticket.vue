@@ -417,6 +417,14 @@
               } else {
                 vm.$router.push({path: '/ticket/2'})
               }
+            },
+            cancel: function (res) {
+              // 取消支付后的回调函数
+              if (vm.isMe) {
+                vm.$router.push({path: '/order'})
+              } else {
+                vm.$router.push({path: '/ticket/2'})
+              }
             }
           })
         })

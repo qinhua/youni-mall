@@ -673,12 +673,13 @@
             success: function (res) {
               // 支付成功后的回调函数
               /*if(other){
-
                }else{
-
                }
                vm.$router.push({path: '/order'})*/
-            }
+            },
+            /*cancel: function (res) {
+              // 取消支付后的回调函数
+            }*/
           })
         })
         wx.error(function (res) {
