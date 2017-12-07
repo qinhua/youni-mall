@@ -102,6 +102,8 @@
     </div>
 
     <div class="extra-col">
+      <p v-if="details.note">配送方式：{{details.note}}</p>
+      <p>派送时间：{{details.dispatchTime}}</p>
       <p>订单编号：{{details.appOrderNumber}}</p>
       <p>创建时间：{{details.createTime}}</p>
       <!--<p>付款时间：{{details.createTime}}</p>
