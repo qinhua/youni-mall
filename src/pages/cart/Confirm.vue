@@ -217,7 +217,9 @@
       },
       changeDispatch(val) {
         // console.log(val)
-        vm.params.note.dispatchLabel = val.join('')
+        vm.params.note = JSON.stringify({
+          dispatchLabel: val.join('')
+        })
       },
       changeTime(val) {
         // console.log('change', val)
@@ -249,7 +251,9 @@
               vm.params.goods.push({goodsId: cur.goodsId})
               if (!vm.hasMilk && cur.goodsType === 'goods_type.2') {
                 vm.hasMilk = true
-                vm.params.note.dispatchLabel = vm.dispatches[0].name
+                vm.params.note = JSON.stringify({
+                  dispatchLabel: vm.dispatches[0].name
+                })
               }
               if (cur.goodsType === 'goods_type.1') {
                 vm.hasWater = true
