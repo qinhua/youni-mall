@@ -469,7 +469,7 @@ import $ from 'jquery'
       getPos: function () {
         $.ajax({
           type: 'GET',
-          url: 'http://util.kakamobi.cn/h5/city-locate.htm',
+          url: 'http://util.xxx.cn/h5/city-locate.htm',
           data: 'uuid=' + Math.random(),
           async: false,
           dataType: 'JSON',
@@ -2362,7 +2362,7 @@ import $ from 'jquery'
           swf: 'webuploader/Uploader.swf',
 
           // 文件接收服务端。
-          server: 'http://upload.image.kakamobi.cn/api/open/admin-upload.htm?bucket=saturn-image',
+          server: 'xxx',
 
           // 选择文件的按钮。可选。
           // 内部根据当前运行是创建，可能是input元素，也可能是flash.
