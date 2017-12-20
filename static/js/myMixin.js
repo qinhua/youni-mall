@@ -1114,7 +1114,6 @@ import $ from 'jquery'
      * @returns {Array|{index: number, input: string}}
      */
     isOnline: navigator.onLine,
-    isInApp: navigator.userAgent.toLowerCase().match(/mucang/i) ? true : false,
     isWeixin: !!window.navigator.userAgent.toLowerCase().match(/MicroMessenger/i),
     isWeibo: !!window.navigator.userAgent.toLowerCase().match(/WeiBo/i),
     isQq: !!window.navigator.userAgent.toLowerCase().match(/QQ/i),
