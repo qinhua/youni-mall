@@ -234,7 +234,7 @@ import $ from 'jquery'
     },
     //表单验证
     chineseName: /^[\u4e00-\u9fa5]{2,6}$/,
-    mobilePhone: /^(13|14|15|17|18)\d{9}$/,
+    mobilePhone: /^(13|14|15|16|17|18|19)\d{9}$/,
     isHan: /^[\u4E00-\u9FA5]$/,
     isEnglish: /^[a-zA-Z]$/,
     hasHan: /[\u4E00-\u9FA5]/g,
@@ -440,39 +440,40 @@ import $ from 'jquery'
       window.open(url, title, "height=" + h || 0 + ", width=" + w || 0 + ", top=" + h || 0 + "t, left=" + l || 0 + "+,toolbar=" + tool || 'no' + ", menubar=" + menu || 'no' + ", scrollbars=" + scro || 'no' + ", resizable=resize" + ", location=" + loc || 'no' + ", status=" + sta || 'no');
     },
     mesAray: ['提交中，请稍等', '提交成功', '提交失败, 请稍后再试', '请勿重复提交', '获取失败！'],
-    lightPop: function (msg, autoHide) {
+    /**
+     * 模态提示
+     * @param msg 等于'ko'时为关闭
+     * @param autoHide 等于-1时不自动关闭
+     */
+    lightPop: function (msg, autoHide, cb) {
+      if (msg === "ko") {
+        document.querySelector('#j-fixedTip').style.display = "none";
+        return false;
+      }
       var lightTimeOut = null; //弹出提示层
-      var $fixedTip = $('#j-fixedTip');
-      $fixedTip.length > 0 ? $fixedTip.html(msg) : $('body').append('<div id="j-fixedTip" class="fixedTip">' + msg + '</div>');
-      $fixedTip.show();
+      var fixedTip = document.querySelector('#j-fixedTip');
+      var poper = document.createElement("div");
+      poper.id = "j-fixedTip";
+      poper.className = "fixedTip";
+      poper.innerHTML = msg;
+      fixedTip ? fixedTip.innerHTML = msg : document.body.appendChild(poper);
+      document.querySelector('#j-fixedTip').style.display = "block";
       clearTimeout(lightTimeOut);
-      if (autoHide === -1) return;
+      cb ? cb() : null;
+      if (autoHide === -1) return false;
       lightTimeOut = setTimeout(function () {
-        $("#j-fixedTip").hide();
+        document.querySelector('#j-fixedTip').style.display = "none";
       }, 2000);
     },
-    //lightPop: function (msg) {
-    //    var fixedTip = document.querySelector('#j-fixedTip');
-    //    var poper = document.createElement("div");
-    //    poper.id = "j-fixedTip";
-    //    poper.className = "fixedTip";
-    //    poper.innerHTML = msg;
-    //    fixedTip ? fixedTip.innerHTML = msg : document.body.appendChild(poper);
-    //    document.querySelector('#j-fixedTip').style.display = "block";
-    //    clearTimeout(lightTimeOut);
-    //    lightTimeOut = setTimeout(function () {
-    //        document.querySelector('#j-fixedTip').style.display = "none";
-    //    }, 1800);
-    //},
     // 获取定位
     pos: {
       getPos: function () {
         $.ajax({
           type: 'GET',
-          url: 'http://util.xxx.cn/h5/city-locate.htm',
+          url: '://util.xxx.cn/h5/city-locate.htm',
           data: 'uuid=' + Math.random(),
           async: false,
-          dataType: 'JSON',
+          dataType: 'JSONP',
           success: function (res) {
             if (res.success) {
               myMixin.pos.userIp = res.data.ip;
@@ -648,17 +649,20 @@ import $ from 'jquery'
       var popStr = '<div id="pop" class="pop ' + (cls || '') + '">' +
         '<div class="pop-out"><div class="pop-in fadeInUp"><div' + (popHeight ? 'style="max-height: ' + popHeight + 'px;' : '') + ' class="content ' + (popHeight ? 'overflow' : '') + '">' + msg + '</div><span class="js-closepop iconClose"><i>×</i></span></div></div></div>';
       $('body').append(popStr);
+      $('html,body').removeClass('disable-scroll');
       var $pop = $('#pop');
       $pop.addClass('on');
       cb && cb();
       $(document).on('click', '#pop .js-closepop', function (e) {
-        $('#pop').remove();
-        closeCb && closeCb();
         e.stopPropagation();
+        $('#pop').remove();
+        $('html,body').removeClass('disable-scroll');
+        closeCb && closeCb();
       });
     },
     closePop: function (cb) {
       $('#pop').remove();
+      $('html,body').removeClass('disable-scroll');
       cb && cb();
     },
 
@@ -678,43 +682,80 @@ import $ from 'jquery'
         mask.fadeIn(100);
       };
     },
-    //滑动到某处
-    scroll: function (num, time) {
-      var speed = (!time) ? 0 : time;
-      $("body").animate({
-        scrollTop: num
-      }, speed);
+    /**
+     * 滑动到某处
+     * @param config{ele:滚动元素，value:scrollTop值,time:过度时间}
+     */
+    scroll: function (config) {
+      var sets = $.extend({
+        ele: "html,body",
+        value: 0,
+        time: 0
+      }, config)
+      $(sets.ele).animate({
+        scrollTop: sets.value
+      }, sets.time);
     },
     /**
      * 返回顶部
      * @param trigger,触发元素
      */
     back2Top: function (trigger) {
-      var clientH = document.documentElement.clientHeight;
+      var clientH = document.documentElement.clientHeight, scrollTop;
       if (!trigger) {
         var ele = document.createElement("div");
         ele.id = "back2Top";
         document.body.appendChild(ele);
-        trigger = $("#back2Top");
+        trigger = ele;
       }
       document.addEventListener('scroll', function (e) {
         setTimeout(function () {
-          e.preventDefault();
-          var scrollTop = document.body.scrollTop;
+          e.stopPropagation();
+          scrollTop = document.body.scrollTop || document.querySelector('html').scrollTop;
           if (scrollTop + clientH > clientH + 300) {
-            //trigger.show();
-            trigger.addClass("roll-in");
+            //trigger.style.display='block';
+            trigger.classList.add("roll-in");
           } else {
-            //trigger.hide();
-            trigger.removeClass("roll-in");
+            //trigger.style.display='none';
+            trigger.classList.remove("roll-in");
           }
-        }, 100)
+        }, 180)
       }, false);
-      trigger.click(function () {
-        $("body").animate({
+      trigger.addEventListener('click', function (e) {
+        $("html,body").animate({
           scrollTop: 0
         }, 300);
-      });
+      }, false);
+    },
+    /**
+     * 滚动显示/隐藏按钮
+     * @param trigger,触发元素
+     */
+    scrollReveal: function (trigger, target) {
+      var clientH = document.documentElement.clientHeight, docH = $(document).height(), scrollTop, targetPos;
+      trigger = (typeof trigger === 'string') ? $(trigger) : trigger;
+      target ? (typeof target === 'string' ? targetPos = $(target).offset().top : target.offset().top) : null;
+      trigger.addClass('');
+      document.addEventListener('scroll', function (e) {
+        e.stopPropagation();
+        setTimeout(function () {
+          e.preventDefault();
+          scrollTop = document.body.scrollTop || document.querySelector('html').scrollTop;
+          if (!target) {
+            if (scrollTop > 100) {
+              trigger.addClass("fade-in");
+            } else {
+              trigger.removeClass("fade-in");
+            }
+          } else {
+            if (scrollTop > Math.abs(docH - targetPos) + 50) {
+              trigger.addClass("fade-in");
+            } else {
+              trigger.removeClass("fade-in");
+            }
+          }
+        }, 250)
+      }, false);
     },
     //swiper通用配置
     swiper: {

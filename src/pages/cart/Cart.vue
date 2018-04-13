@@ -839,7 +839,8 @@
     .top-con {
       .rel;
       .borBox;
-      padding: 10/@rem 20/@rem 10/@rem;
+      height:170/@rem;
+      padding: 10/@rem 20/@rem;
       .bor-b;
       .img-con {
         .abs;
